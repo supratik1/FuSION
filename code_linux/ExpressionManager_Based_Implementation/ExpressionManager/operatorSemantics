@@ -1,0 +1,590 @@
+//	Language for representing rules
+// $operator	Label to specify Operato symbol
+// $minargs	Minimum number of arguments
+// $maxargs	Maximum number of arguments
+// $infinity	Any number of oprands can be passed to the operator
+// $operandtype Operand type 	
+//	(Ordered set of operands can be specified with multiple $operandtype usage)
+// $other	Other operands type
+// $infer	Inferred type
+// $print	for specific operator constraint formmatted  string to be printed
+// Various operand types can be any one of these
+// 			SIGNED_BITVECTOR
+// 			UNSIGNED_BITVECTOR
+//			SIGNED_INTEGER
+//			UNSIGNED_INTEGER
+//			REAL
+//			BOOL
+// Specifying Bitvector width operator [integer] is used
+
+// Computations to be performed
+// %max(integer,integer) Maximum
+// %min(integer,integer) Minimum
+// %add(integer,integer)	add
+// %addall(-)	addall	(use #1 for operad widths calculation)
+
+	
+// %print	print
+// 	Inside print %labeli for the specified operand i's label
+//		     %i is for the width of the operand i
+//		     %name for the name of the current expression
+//		     %infer the type of inferred for the current operator
+//		
+// $i for iterate for number of arguments for that operator
+
+// The string to be printed directly as it is specified in " " (double quotes)
+
+//----------------------------Operator Number 1: add-------------------
+//operator add over  signed integer operands
+$operator:add	$minargs:2	$maxargs:2	$operand1:SIGNED_INTEGER[0]	$operand2:SIGNED_INTEGER[0]	$infer:SIGNED_INTEGER[0]	
+$print:
+{ 
+$once "(define %label1 :: int)" ;
+$once "(define %label2 :: int)" ;
+$once "(define %name :: int )" ;
+$once "(assert (= %name (+  %label1  %label2 ) )" ;
+}
+
+//operator add over  unsigned integer operands
+$operator:add	$minargs:2	$maxargs:2	$operand1:UNSIGNED_INTEGER[0]	$operand2:UNSIGNED_INTEGER[0]	$infer:UNSIGNED_INTEGER[0]	
+$print:
+{ 
+$once "(define %label1 :: int)" ;
+$once "(define %label2 :: int)" ;
+$once "(define %name :: int )" ;
+$once "(assert (= %name (+  %label1  %label2 ) )" ;
+}
+
+//operator add over  reals
+$operator:add	$minargs:2	$maxargs:2	$operand1:REAL[0]	$operand2:REAL[0]	$infer:REAL[0]	
+$print:
+{ 
+$once "(define %label1 :: real)" ;
+$once "(define %label2 :: real)" ;
+$once "(define %name :: int )" ;
+$once "(assert (= %name (+  %label1  %label2 ) )" ;
+}
+
+
+//operator add over unsigned bitvector operands
+$operator:add 	$minargs:2	$maxargs:2	$operand1:UNSIGNED_BITVECTOR[#1] $operand2:UNSIGNED_BITVECTOR[#2] $infer:UNSIGNED_BITVECTOR[%add(%max(#1,#2),1)]
+$print:
+{
+$once "( define %label1 :: bitvector %1 )" ;
+$once "( define %label2 :: bitvector %2 )" ;
+$once "( define %name :: bitvector %infer )" ;
+$once "( assert (= %name (bv-add %label1  %label2 ) )" ;
+}
+
+//operator add over signed bitvector operands
+$operator:add 	$minargs:2	$maxargs:2	$operand1:SIGNED_BITVECTOR[#1] $operand2:SIGNED_BITVECTOR[#2] $infer:SIGNED_BITVECTOR[%add(%max(#1,#2),1)]
+$print:
+{
+$once "( define %label1 :: bitvector %1 )" ;
+$once "( define %label2 :: bitvector %2 )" ;
+$once "( define %name :: bitvector %infer )" ;
+$once "( assert (= %name (bv-add %label1  %label2 ) )" ;
+}
+
+
+
+
+
+//----------------------------Operator Number 2: sub-------------------
+//operator sub over  signed integer operands
+$operator:sub	$minargs:2	$maxargs:2	$operand1:SIGNED_INTEGER[0]	$operand2:SIGNED_INTEGER[0]	$infer:SIGNED_INTEGER[0]	
+$print:
+{ 
+$once "(define %label1 :: int)" ;
+$once "(define %label2 :: int)" ;
+$once "(define %name :: int )" ;
+$once "(assert (= %name (-  %label1  %label2 ) )" ;
+}
+
+//operator sub over  unsigned integer operands
+$operator:sub	$minargs:2	$maxargs:2	$operand1:UNSIGNED_INTEGER[0]	$operand2:UNSIGNED_INTEGER[0]	$infer:UNSIGNED_INTEGER[0]	
+$print:
+{ 
+$once "(define %label1 :: int)" ;
+$once "(define %label2 :: int)" ;
+$once "(define %name :: int )" ;
+$once "(assert (= %name (-  %label1  %label2 ) )" ;
+}
+
+//operator sub over  reals
+$operator:sub	$minargs:2	$maxargs:2	$operand1:REAL[0]	$operand2:REAL[0]	$infer:REAL[0]	
+$print:
+{ 
+$once "(define %label1 :: real)" ;
+$once "(define %label2 :: real)" ;
+$once "(define %name :: int )" ;
+$once "(assert (= %name (-  %label1  %label2 ) )" ;
+}
+
+
+//operator sub over unsigned bitvector operands
+$operator:sub 	$minargs:2	$maxargs:2	$operand1:UNSIGNED_BITVECTOR[#1] $operand2:UNSIGNED_BITVECTOR[#2] $infer:UNSIGNED_BITVECTOR[%add(%max(#1,#2),1)]
+$print:
+{
+$once "( define %label1 :: bitvector %1 )" ;
+$once "( define %label2 :: bitvector %2 )" ;
+$once "( define %name :: bitvector %infer )" ;
+$once "( assert (= %name (bv-sub %label1  %label2 ) )" ;
+}
+
+//operator sub over signed bitvector operands
+$operator:sub 	$minargs:2	$maxargs:2	$operand1:SIGNED_BITVECTOR[#1] $operand2:SIGNED_BITVECTOR[#2] $infer:SIGNED_BITVECTOR[%add(%max(#1,#2),1)]
+$print:
+{
+$once "( define %label1 :: bitvector %1 )" ;
+$once "( define %label2 :: bitvector %2 )" ;
+$once "( define %name :: bitvector %infer )" ;
+$once "( assert (= %name (bv-sub %label1  %label2 ) )" ;
+}
+
+
+//----------------------------Operator Number 3: gt-------------------
+//Operator BITVECTOR GREATER THAN
+$operator:gt 	$minargs:2	$maxargs:2	$operand1:UNSIGNED_BITVECTOR[#1]	$operand2:UNSIGNED_BITVECTOR[#2] $infer:BOOL[0]	
+$print:
+{
+$once "(define %label1 :: bitvector %1 )" ;
+$once "(define %label2 :: bitvector %2 )" ;
+$once "(define %name :: bitvector %infer )" ;
+$once "(assert %name (bv-gt %label1 %label2 )))" ;
+}
+
+$operator:gt 	$minargs:2	$maxargs:2	$operand1:SIGNED_BITVECTOR[#1]	$operand2:SIGNED_BITVECTOR[#2] 	$infer:BOOL[0]	
+$print:
+{
+$once "(define %label1 :: bitvector %1 )" ;
+$once "(define %label2 :: bitvector %2 )" ;
+$once "(define %name :: bitvector %infer )" ;
+$once "(assert %name (bv-sgt %label1 %label2 )))" ;
+}
+
+
+//----------------------------Operator Number 4: ge-------------------
+//Operator BITVECTOR GREATER THAN EQUAL
+$operator:ge 	$minargs:2	$maxargs:2	$operand1:UNSIGNED_BITVECTOR[#1]	$operand2:UNSIGNED_BITVECTOR[#2] 	$infer:BOOL[0]	
+$print:
+{
+$once "(define %label1 :: bitvector %1 )" ;
+$once "(define %label2 :: bitvector %2 )" ;
+$once "(define %name :: bitvector %infer )" ;
+$once "(assert %name (bv-ge %label1 %label2 )))" ;
+}
+
+$operator:ge 	$minargs:2	$maxargs:2	$operand1:SIGNED_BITVECTOR[#1]	$operand2:SIGNED_BITVECTOR[#2] 	$infer:BOOL[0]	
+$print:
+{
+$once "(define %label1 :: bitvector %1 )" ;
+$once "(define %label2 :: bitvector %2 )" ;
+$once "(define %name :: bitvector %infer )" ;
+$once "(assert %name (bv-sge %label1 %label2 )))" ;
+}
+
+//----------------------------Operator Number 5: lt-------------------
+//Operator BITVECTOR LESS THAN
+$operator:lt 	$minargs:2	$maxargs:2	$operand1:UNSIGNED_BITVECTOR[#1]	$operand2:UNSIGNED_BITVECTOR[#2] 	$infer:BOOL[0]	
+$print:
+{
+$once "(define %label1 :: bitvector %1 )" ;
+$once "(define %label2 :: bitvector %2 )" ;
+$once "(define %name :: bitvector %infer )" ;
+$once "(assert %name (bv-lt %label1 %label2 )))" ;
+}
+
+$operator:lt 	$minargs:2	$maxargs:2	$operand1:SIGNED_BITVECTOR[#1]	$operand2:SIGNED_BITVECTOR[#2] 	$infer:BOOL[0]	
+$print:
+{
+$once "(define %label1 :: bitvector %1 )" ;
+$once "(define %label2 :: bitvector %2 )" ;
+$once "(define %name :: bitvector %infer )" ;
+$once "(assert %name (bv-slt %label1 %label2 )))" ;
+}
+
+//----------------------------Operator Number 6: le-------------------
+//Operator BITVECTOR LESS THAN EQUAL
+$operator:le 	$minargs:2	$maxargs:2	$operand1:UNSIGNED_BITVECTOR[#1]	$operand2:UNSIGNED_BITVECTOR[#2] 	$infer:BOOL[0]	
+$print:
+{
+$once "(define %label1 :: bitvector %1 )" ;
+$once "(define %label2 :: bitvector %2 )" ;
+$once "(define %name :: bitvector %infer )" ;
+$once "(assert %name (bv-le %label1 %label2 )))" ;
+}
+
+$operator:le 	$minargs:2	$maxargs:2	$operand1:SIGNED_BITVECTOR[#1]	$operand2:SIGNED_BITVECTOR[#2] 	$infer:BOOL[0]	
+$print:
+{
+$once "(define %label1 :: bitvector %1 )" ;
+$once "(define %label2 :: bitvector %2 )" ;
+$once "(define %name :: bitvector %infer )" ;
+$once "(assert %name (bv-sle %label1 %label2 )))" ;
+}
+
+
+//----------------------------Operator Number 7: lognot-------------------
+//Operator LOGICAL NOT ON BOOL
+$operator:lognot	$minargs:1	$maxargs:1	$operand1:BOOL[0]	$infer:BOOL[0]
+$print:
+{
+$once "(define %label1 :: bool )";
+$once "(define %name :: bool )";
+$once "(assert (= %name (not %label1)) )";
+}
+
+//----------------------------Operator Number 8: logand-------------------
+//Operator Logical AND
+$operator:logand 	$minargs:2	$maxargs:2	$operand1:BOOL[0]	$operand2:BOOL[0] 	$infer:BOOL[0]	
+$print:
+{
+$once "(define %label1 :: bitvector %1 )" ;
+$once "(define %label2 :: bitvector %2 )" ;
+$once "(define %name :: bitvector %infer )" ;
+$once "(assert %name (and %label1 %label2 )))" ;
+}
+
+//----------------------------Operator Number 9: logor-------------------
+//Operator Logical OR
+$operator:logor 	$minargs:2	$maxargs:2	$operand1:BOOL[0]	$operand2:BOOL[0] 	$infer:BOOL[0]	
+$print:
+{
+$once "(define %label1 :: bitvector %1 )" ;
+$once "(define %label2 :: bitvector %2 )" ;
+$once "(define %name :: bitvector %infer )" ;
+$once "(assert %name (or %label1 %label2 )))" ;
+}
+
+
+//----------------------------Operator Number 10: bitand-------------------
+//Operator BITVECTOR AND
+$operator:bitand 	$minargs:2	$maxargs:2	$operand1:UNSIGNED_BITVECTOR[#1]	$operand2:UNSIGNED_BITVECTOR[#2] 	$infer:UNSIGNED_BITVECTOR[#1]	
+$print:
+{
+$once "(define %label1 :: bitvector %1 )" ;
+$once "(define %label2 :: bitvector %2 )" ;
+$once "(define %name :: bitvector %infer )" ;
+$once "(assert %name (bv-and %label1 %label2 )))" ;
+}
+
+$operator:bitand 	$minargs:2	$maxargs:2	$operand1:SIGNED_BITVECTOR[#1]	$operand2:SIGNED_BITVECTOR[#2] 	$infer:SIGNED_BITVECTOR[#1]
+$print:
+{
+$once "(define %label1 :: bitvector %1 )" ;
+$once "(define %label2 :: bitvector %2 )" ;
+$once "(define %name :: bitvector %infer )" ;
+$once "(assert %name (bv-and %label1 %label2 )))" ;
+}
+
+
+//----------------------------Operator Number 11: bitor-------------------
+//Operator BITVECTOR OR
+$operator:bitor 	$minargs:2	$maxargs:2	$operand1:UNSIGNED_BITVECTOR[#1]	$operand2:UNSIGNED_BITVECTOR[#2] 	$infer:UNSIGNED_BITVECTOR[#1]	
+$print:
+{
+$once "(define %label1 :: bitvector %1 )" ;
+$once "(define %label2 :: bitvector %2 )" ;
+$once "(define %name :: bitvector %infer )" ;
+$once "(assert %name (bv-or %label1 %label2 )))" ;
+}
+$operator:bitor 	$minargs:2	$maxargs:2	$operand1:SIGNED_BITVECTOR[#1]	$operand2:SIGNED_BITVECTOR[#2] 	$infer:SIGNED_BITVECTOR[#1]	
+$print:
+{
+$once "(define %label1 :: bitvector %1 )" ;
+$once "(define %label2 :: bitvector %2 )" ;
+$once "(define %name :: bitvector %infer )" ;
+$once "(assert %name (bv-or %label1 %label2 )))" ;
+}
+
+
+//----------------------------Operator Number 12: bitxor-------------------
+//Operator BITVECTOR XOR
+$operator:bitxor 	$minargs:2	$maxargs:2	$operand1:UNSIGNED_BITVECTOR[#1]	$operand2:UNSIGNED_BITVECTOR[#2] 	$infer:UNSIGNED_BITVECTOR[#1]	
+$print:
+{
+$once "(define %label1 :: bitvector %1 )" ;
+$once "(define %label2 :: bitvector %2 )" ;
+$once "(define %name :: bitvector %infer )" ;
+$once "(assert %name (bv-xor %label1 %label2 )))" ;
+}
+$operator:bitxor 	$minargs:2	$maxargs:2	$operand1:SIGNED_BITVECTOR[#1]	$operand2:SIGNED_BITVECTOR[#2] 	$infer:SIGNED_BITVECTOR[#1]	
+$print:
+{
+$once "(define %label1 :: bitvector %1 )" ;
+$once "(define %label2 :: bitvector %2 )" ;
+$once "(define %name :: bitvector %infer )" ;
+$once "(assert %name (bv-xor %label1 %label2 )))" ;
+}
+
+//----------------------------Operator Number 13: bitxnor-------------------
+//Operator BITVECTOR XNOR
+$operator:bitxnor 	$minargs:2	$maxargs:2	$operand1:UNSIGNED_BITVECTOR[#1]	$operand2:UNSIGNED_BITVECTOR[#2] 	$infer:UNSIGNED_BITVECTOR[#1]	
+$print:
+{
+$once "(define %label1 :: bitvector %1 )" ;
+$once "(define %label2 :: bitvector %2 )" ;
+$once "(define %name :: bitvector %infer )" ;
+$once "(assert %name (bv-xnor %label1 %label2 )))" ;
+}
+$operator:bitxnor 	$minargs:2	$maxargs:2	$operand1:SIGNED_BITVECTOR[#1]	$operand2:SIGNED_BITVECTOR[#2] 	$infer:SIGNED_BITVECTOR[#1]	
+$print:
+{
+$once "(define %label1 :: bitvector %1 )" ;
+$once "(define %label2 :: bitvector %2 )" ;
+$once "(define %name :: bitvector %infer )" ;
+$once "(assert %name (bv-xnor %label1 %label2 )))" ;
+}
+
+//----------------------------Operator Number 14: bitneg-------------------
+//Operator BITWISE NEGATION
+$operator:bitneg	$minargs:1	$maxargs:1	$operand1:UNSIGNED_BITVECTOR[#1] 	$infer:UNSIGNED_BITVECTOR[#1]
+$print:
+{
+$once "(define %label1 ::bitvector %1 )";
+$once "(define %name :: bitvector %1 )";
+$once "(assert (= %name (bv-neg %label1)) )";
+}
+
+$operator:bitneg	$minargs:1	$maxargs:1	$operand1:SIGNED_BITVECTOR[#1] 	$infer:SIGNED_BITVECTOR[#1]
+$print:
+{
+$once "(define %label1 ::bitvector %1 )";
+$once "(define %name :: bitvector %1 )";
+$once "(assert (= %name (bv-neg %label1)) )";
+}
+
+
+
+//----------------------------Operator Number 15: ite-------------------
+//operator ite over boolean operator and two signed bitvector
+$operator:ite	$minargs:3	$maxargs:3	$operand1:BOOL[0]	$operand2:SIGNED_BITVECTOR[#2]	$operand3:SIGNED_BITVECTOR[#3]	$infer:SIGNED_BITVECTOR[%max(#2,#3)]	
+$print:
+{
+$once "( define %label1 :: bool )" ;
+$once "( define %label2 :: bitvector %2 )" ;
+$once "( define %label3 :: bitvector %3 )" ;
+$once "( define %name :: bitvector %infer )" ;
+$once "( assert  (= %name (ite %label1 %label2 %label3 ) ) )" ;
+}
+
+//operator ite over boolean operator and two signed bitvector
+$operator:ite	$minargs:3	$maxargs:3	$operand1:BOOL[0]	$operand2:UNSIGNED_BITVECTOR[#2]	$operand3:UNSIGNED_BITVECTOR[#3]	$infer:UNSIGNED_BITVECTOR[%max(#2,#3)]	
+$print:
+{
+$once "(define %label1 :: bool )" ;
+$once "(define %label2 :: bitvector %2 )" ;
+$once "(define %label3 :: bitvector %3 )" ;
+$once "(define %name :: bitvector %infer )" ;
+$once "(assert  (= %name (ite %label1 %label2 %label3 ) ) )" ;
+}
+
+
+
+//----------------------------Operator Number 16: concat-------------------
+//operator concat over signed bitvectors
+$operator:concat $minargs:2  	$maxargs:$infinity $operand1:SIGNED_BITVECTOR[#1] $operand2:SIGNED_BITVECTOR[#2]  $other:SIGNED_BITVECTOR[#4] $infer:SIGNED_BITVECTOR[%addall(#1)]
+$print:
+{ 
+$once $printall "( define %labeli :: bitvector %i )";
+$once "(define %name :: bitvector %infer )";
+$once "( assert  (= %name $i{ (bv-concat %labeli %labeli+1 )} ))";
+}
+
+
+//operator concat over signed bitvectors
+$operator:concat $minargs:2  	$maxargs:$infinity $operand1:UNSIGNED_BITVECTOR[#1] $operand2:UNSIGNED_BITVECTOR[#2]  $other:UNSIGNED_BITVECTOR[#4] $infer:UNSIGNED_BITVECTOR[%addall(#1)]
+$print:
+{ 
+$once $printall "( define %labeli :: bitvector %i )";
+$once "(define %name :: bitvector %infer )";
+$once "( assert  (= %name $i{ (bv-concat %labeli %labeli+1 )} ))";
+}
+
+//----------------------------Operator Number 17: leftshift-------------------
+//Operator LEFT SHIFT
+$operator:leftshift	$minargs:2	$maxargs:2	$operand1:UNSIGNED_BITVECTOR[#1] 	$operand2:SIGNED_INTEGER[0] $infer:UNSIGNED_BITVECTOR[#1]
+$print:
+{
+$once "(define %label1 ::bitvector %1 )";
+$once "(define %name :: bitvector %1 )";
+$once "(assert (= %name (bv-shift-left0 %label1 %label2)) )";
+}
+
+//----------------------------Operator Number 18: rightshift-------------------
+//Operator RIGHT SHIFT
+$operator:rightshift	$minargs:2	$maxargs:2	$operand1:UNSIGNED_BITVECTOR[#1] 	$operand2:SIGNED_INTEGER[0] $infer:UNSIGNED_BITVECTOR[#1]
+$print:
+{
+$once "(define %label1 ::bitvector %1 )";
+$once "(define %name :: bitvector %1 )";
+$once "(assert (= %name (bv-shift-right0 %label1 %label2)) )";
+}
+
+
+
+//----------------------------Operator Number 19: redand-------------------
+//Operator REDUCTION AND
+$operator:redand	$minargs:1	$maxargs:1	$operand1:UNSIGNED_BITVECTOR[#1] 	$infer:UNSIGNED_BITVECTOR[1]
+$print:
+{
+$once "(define %label1 ::bitvector %1 )";
+$once "(define %name :: bitvector 1 )";
+$once "( assert  (= %name $i{ (bv-and %labeli %labeli+1 )} ))";
+}
+
+//----------------------------Operator Number 20: redor-------------------
+//Operator REDUCTION OR
+$operator:redor 	$minargs:1	$maxargs:1	$operand1:UNSIGNED_BITVECTOR[#1] 	$infer:UNSIGNED_BITVECTOR[1]
+$print:
+{
+$once "(define %label1 ::bitvector %1 )";
+$once "(define %name :: bitvector 1 )";
+$once "( assert  (= %name $i{ (bv-or %labeli %labeli+1 )} ))";
+}
+
+//----------------------------Operator Number 21: redxor-------------------
+//Operator REDUCTION XOR
+$operator:redxor 	$minargs:1	$maxargs:1	$operand1:UNSIGNED_BITVECTOR[#1] 	$infer:UNSIGNED_BITVECTOR[1]
+$print:
+{
+$once "(define %label1 ::bitvector %1 )";
+$once "(define %name :: bitvector 1 )";
+$once "( assert  (= %name $i{ (bv-xor %labeli %labeli+1 )} ))";
+}
+
+//----------------------------Operator Number 22: redxnor-------------------
+//Operator REDUCTION OR
+$operator:redxnor 	$minargs:1	$maxargs:1	$operand1:UNSIGNED_BITVECTOR[#1] 	$infer:UNSIGNED_BITVECTOR[1]
+$print:
+{
+$once "(define %label1 ::bitvector %1 )";
+$once "(define %name :: bitvector 1 )";
+$once "( assert  (= %name (bv-neg $i{ (bv-xor %labeli %labeli+1 )} )))";
+}
+
+//----------------------------Operator Number 23: rednor-------------------
+//Operator REDUCTION NOR
+$operator:rednor 	$minargs:1	$maxargs:1	$operand1:UNSIGNED_BITVECTOR[#1] 	$infer:UNSIGNED_BITVECTOR[1]
+$print:
+{
+$once "(define %label1 ::bitvector %1 )";
+$once "(define %name :: bitvector 1 )";
+$once "( assert  (= %name (bv-neg $i{ (bv-or %labeli %labeli+1 )} )))";
+}
+
+
+$operator:logeq 	$minargs:2	$maxargs:2	$operand1:UNSIGNED_BITVECTOR[#1]	$operand2:UNSIGNED_BITVECTOR[#1]	$infer:BOOL[0]
+$print:
+{ 
+$once "(define %label1 :: bitvector %1)" ;
+$once "(define %label2 :: bitvector %1)" ;
+$once "(define %name :: bool )" ;
+$once "(assert (= %name (= %label1  %label2 ) )" ;
+}
+
+$operator:logeq 	$minargs:2	$maxargs:2	$operand1:SIGNED_BITVECTOR[#1]	$operand2:SIGNED_BITVECTOR[#1]	$infer:BOOL[0]
+$print:
+{ 
+$once "(define %label1 :: bitvector %1)" ;
+$once "(define %label2 :: bitvector %1)" ;
+$once "(define %name :: bool )" ;
+$once "(assert (= %name (= %label1  %label2 ) )" ;
+}
+
+
+
+$operator:logeq 	$minargs:2	$maxargs:2	$operand1:SIGNED_BITVECTOR[#1]	$operand2:SIGNED_BITVECTOR[#1]	$infer:BOOL[0]
+$print:
+{ 
+$once "(define %label1 :: bitvector %1)" ;
+$once "(define %label2 :: bitvector %1)" ;
+$once "(define %name :: bool )" ;
+$once "(assert (= %name (= %label1  %label2))" ;
+}
+
+
+
+$operator:logeq 	$minargs:2	$maxargs:2	$operand1:SIGNED_BITVECTOR[#1]	$operand2:SIGNED_BITVECTOR[#1]	$infer:BOOL[0]
+$print:
+{ 
+$once "(define %label1 :: bitvector %1)" ;
+$once "(define %label2 :: bitvector %1)" ;
+$once "(define %name :: bool )" ;
+$once "(assert (= %name (= %label1  %label2))" ;
+}
+
+//The very fact that select operator needs some calculations not yet implemented in the 
+//inferencerules_parser and InferTypes..
+$operator:select 	$minargs:3	$maxargs:3	$operand1:SIGNED_BITVECTOR[#1]	$operand2:SIGNED_INTEGER[0]	$operand3:SIGNED_INTEGER[0]  	$infer:SIGNED_BITVECTOR[0]
+$print:
+{ 
+$once "(define %label1 :: bitvector %1)" ;
+$once "(define %label2 :: int)" ;
+$once "(define %label3 :: int)" ;
+$once "(define %name :: bitvector )" ;
+$once "(assert (= %name (= %label1  %label2))" ;
+}
+
+$operator:select 	$minargs:3	$maxargs:3	$operand1:UNSIGNED_BITVECTOR[#1]	$operand2:SIGNED_INTEGER[0]	$operand3:SIGNED_INTEGER[0]  	$infer:UNiSIGNED_BITVECTOR[0]
+$print:
+{ 
+$once "(define %label1 :: bitvector %1)" ;
+$once "(define %label2 :: int)" ;
+$once "(define %label3 :: int)" ;
+$once "(define %name :: bitvector )" ;
+$once "(assert (= %name (= %label1  %label2))" ;
+}
+
+//The very fact that select operator needs some calculations not yet implemented in the 
+//inferencerules_parser and InferTypes..
+$operator:select 	$minargs:3	$maxargs:3	$operand1:UNSIGNED_BITVECTOR[#1]	$operand2:SIGNED_INTEGER[0]	$operand3:SIGNED_INTEGER[0]  	$infer:UNSIGNED_BITVECTOR[0]
+$print:
+{ 
+$once "(define %label1 :: bitvector %1)" ;
+$once "(define %name :: bitvector)" ;
+$once "(assert (= %name (bv-extract  %label3  %label2 %label1) )" ;
+}
+
+//----------------------------Operator Number 24: divide -------------------
+//operator divide over unsigned bitvector operands
+$operator:divide 	$minargs:2	$maxargs:2	$operand1:UNSIGNED_BITVECTOR[#1] $operand2:UNSIGNED_BITVECTOR[#2] $infer:UNSIGNED_BITVECTOR[%add(%max(#1,#2),1)]
+$print:
+{
+$once "( define %label1 :: bitvector %1 )" ;
+$once "( define %label2 :: bitvector %2 )" ;
+$once "( define %name :: bitvector %infer )" ;
+$once "( assert (= %name (bv-div %label1  %label2 ) )" ;
+}
+
+//operator divide over signed bitvector operands
+$operator:divide 	$minargs:2	$maxargs:2	$operand1:SIGNED_BITVECTOR[#1] $operand2:SIGNED_BITVECTOR[#2] $infer:SIGNED_BITVECTOR[%add(%max(#1,#2),1)]
+$print:
+{
+$once "( define %label1 :: bitvector %1 )" ;
+$once "( define %label2 :: bitvector %2 )" ;
+$once "( define %name :: bitvector %infer )" ;
+$once "( assert (= %name (bv-div %label1  %label2 ) )" ;
+}
+
+//----------------------------Operator Number 25: multiply -------------------
+//operator multiply over unsigned bitvector operands
+$operator:multiply 	$minargs:2	$maxargs:2	$operand1:UNSIGNED_BITVECTOR[#1] $operand2:UNSIGNED_BITVECTOR[#2] $infer:UNSIGNED_BITVECTOR[%add(%max(#1,#2),1)]
+$print:
+{
+$once "( define %label1 :: bitvector %1 )" ;
+$once "( define %label2 :: bitvector %2 )" ;
+$once "( define %name :: bitvector %infer )" ;
+$once "( assert (= %name (bv-mul %label1  %label2 ) )" ;
+}
+
+//operator multiply over signed bitvector operands
+$operator:multiply 	$minargs:2	$maxargs:2	$operand1:SIGNED_BITVECTOR[#1] $operand2:SIGNED_BITVECTOR[#2] $infer:SIGNED_BITVECTOR[%add(%max(#1,#2),1)]
+$print:
+{
+$once "( define %label1 :: bitvector %1 )" ;
+$once "( define %label2 :: bitvector %2 )" ;
+$once "( define %name :: bitvector %infer )" ;
+$once "( assert (= %name (bv-mul %label1  %label2 ) )" ;
+}

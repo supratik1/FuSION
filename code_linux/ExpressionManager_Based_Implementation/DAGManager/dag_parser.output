@@ -1,0 +1,195 @@
+Grammar
+
+    0 $accept: DAGFile $end
+
+    1 DAGFile: DAGExpressionsList
+
+    2 DAGExpressionsList: DAGExpressionsList DAGExpression
+    3                   | %empty
+
+    4 DAGExpression: t_String t_Eq Expr
+
+    5 Expr: Operator t_OBrack Operand_Expressions_List t_CBrack
+    6     | Symbol_Or_Literal
+
+    7 Operand_Expressions_List: Operand_Expressions_List t_Comma Expr
+    8                         | Expr
+
+    9 Symbol_Or_Literal: t_String
+
+   10 Operator: t_String
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+error (256)
+t_String (258) 4 9 10
+t_OBrack (259) 5
+t_CBrack (260) 5
+t_Comma (261) 7
+t_Eq (262) 4
+
+
+Nonterminals, with rules where they appear
+
+$accept (8)
+    on left: 0
+DAGFile (9)
+    on left: 1, on right: 0
+DAGExpressionsList (10)
+    on left: 2 3, on right: 1 2
+DAGExpression (11)
+    on left: 4, on right: 2
+Expr (12)
+    on left: 5 6, on right: 4 7 8
+Operand_Expressions_List (13)
+    on left: 7 8, on right: 5 7
+Symbol_Or_Literal (14)
+    on left: 9, on right: 6
+Operator (15)
+    on left: 10, on right: 5
+
+
+State 0
+
+    0 $accept: . DAGFile $end
+
+    $default  reduce using rule 3 (DAGExpressionsList)
+
+    DAGFile             go to state 1
+    DAGExpressionsList  go to state 2
+
+
+State 1
+
+    0 $accept: DAGFile . $end
+
+    $end  shift, and go to state 3
+
+
+State 2
+
+    1 DAGFile: DAGExpressionsList .
+    2 DAGExpressionsList: DAGExpressionsList . DAGExpression
+
+    t_String  shift, and go to state 4
+
+    $default  reduce using rule 1 (DAGFile)
+
+    DAGExpression  go to state 5
+
+
+State 3
+
+    0 $accept: DAGFile $end .
+
+    $default  accept
+
+
+State 4
+
+    4 DAGExpression: t_String . t_Eq Expr
+
+    t_Eq  shift, and go to state 6
+
+
+State 5
+
+    2 DAGExpressionsList: DAGExpressionsList DAGExpression .
+
+    $default  reduce using rule 2 (DAGExpressionsList)
+
+
+State 6
+
+    4 DAGExpression: t_String t_Eq . Expr
+
+    t_String  shift, and go to state 7
+
+    Expr               go to state 8
+    Symbol_Or_Literal  go to state 9
+    Operator           go to state 10
+
+
+State 7
+
+    9 Symbol_Or_Literal: t_String .
+   10 Operator: t_String .
+
+    t_OBrack  reduce using rule 10 (Operator)
+    $default  reduce using rule 9 (Symbol_Or_Literal)
+
+
+State 8
+
+    4 DAGExpression: t_String t_Eq Expr .
+
+    $default  reduce using rule 4 (DAGExpression)
+
+
+State 9
+
+    6 Expr: Symbol_Or_Literal .
+
+    $default  reduce using rule 6 (Expr)
+
+
+State 10
+
+    5 Expr: Operator . t_OBrack Operand_Expressions_List t_CBrack
+
+    t_OBrack  shift, and go to state 11
+
+
+State 11
+
+    5 Expr: Operator t_OBrack . Operand_Expressions_List t_CBrack
+
+    t_String  shift, and go to state 7
+
+    Expr                      go to state 12
+    Operand_Expressions_List  go to state 13
+    Symbol_Or_Literal         go to state 9
+    Operator                  go to state 10
+
+
+State 12
+
+    8 Operand_Expressions_List: Expr .
+
+    $default  reduce using rule 8 (Operand_Expressions_List)
+
+
+State 13
+
+    5 Expr: Operator t_OBrack Operand_Expressions_List . t_CBrack
+    7 Operand_Expressions_List: Operand_Expressions_List . t_Comma Expr
+
+    t_CBrack  shift, and go to state 14
+    t_Comma   shift, and go to state 15
+
+
+State 14
+
+    5 Expr: Operator t_OBrack Operand_Expressions_List t_CBrack .
+
+    $default  reduce using rule 5 (Expr)
+
+
+State 15
+
+    7 Operand_Expressions_List: Operand_Expressions_List t_Comma . Expr
+
+    t_String  shift, and go to state 7
+
+    Expr               go to state 16
+    Symbol_Or_Literal  go to state 9
+    Operator           go to state 10
+
+
+State 16
+
+    7 Operand_Expressions_List: Operand_Expressions_List t_Comma Expr .
+
+    $default  reduce using rule 7 (Operand_Expressions_List)

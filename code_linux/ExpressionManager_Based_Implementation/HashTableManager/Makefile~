@@ -1,0 +1,10 @@
+SS = /home/sukanya/sukanya-cse-git-desktop/network_tool/ExpressionManager_Based_Implementation
+include $(SS)/Makefile.include
+
+build: $(HASHTABLE_MANAGER).o
+
+$(HASHTABLE_MANAGER).o : $(HASHTABLE_MANAGER).cc
+	$(CC) $(CFLAGS)  $(HASHTABLE_MANAGER).cc $(INCLUDE)
+
+clean:
+	rm -f *.o *.gch

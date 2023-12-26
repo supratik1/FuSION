@@ -1,0 +1,281 @@
+#ifndef DAG_SIMPLIFIER_H
+#define DAG_SIMPLIFIER_H
+#include <string>
+#include <vector>
+#include <fstream>
+#include <set>
+#include <map>
+//#include "DagManager.h"
+#include "../Common/helping_functions.h"
+#include "LogManager.h"
+#include <ostream>
+using namespace std;
+//types of constants
+class t_DAGManager;
+class t_DAGNode;
+
+
+const int placeholder = 50011;
+const int fixed_string = 50012;
+const int other = 50013;
+
+struct PCPair
+{
+    t_DAGNode *parent;
+    t_DAGNode *child;
+};
+
+class t_RewriteRuleExpression;
+
+//this all code should be DAGManager level code
+//therefore whatever all we do
+// should be portable to any dag
+
+class t_RewriteRuleExpression
+{
+public:
+    //This is a expression
+    string m_op_name; //either an operator or operand name
+    int m_type_of_expr; //constant variable or function
+    int m_expression_index;
+    string m_valid_substring;
+
+    vector< t_RewriteRuleExpression *> m_arguments;
+
+    void printRewriteRuleExpression(ofstream *outfile);
+    t_RewriteRuleExpression(
+                            string op_name_to_set,
+                            int type_of_expression_to_set,
+                            vector<t_RewriteRuleExpression *> arguments_to_set,
+                            int expression_index_to_set,
+                            string valid_substring_to_set
+                            );
+    t_RewriteRuleExpression(
+                            string op_name_to_set,
+                            int type_of_expression_to_set,
+                            int expression_index_to_set, string valid_substring_to_set);
+    string getValidSubstringOfRewriteRuleExpression();
+
+    string
+    getStringOfRuleComponent()
+    {
+        //    cerr<<"Getting string of rule componenet\n";
+        switch (this->m_type_of_expr)
+        {
+            case placeholder:
+                return this->m_op_name;
+            case fixed_string:
+                return this->m_valid_substring;
+            case other:
+                return this->m_valid_substring;
+            default:
+                cout << "ERROR!! In getting string of a rule component\n";
+        }
+        return "-1";
+    }
+    bool isLeafRewriteRuleExpression();
+
+};
+
+/**
+ * Synopsis : This struct represents a RewriteRule
+ *
+ *
+ *
+ *
+ */
+struct t_RewriteRule
+{
+public:
+    int m_priority; //smaller the number, higher the priority
+
+    //This is the complete Rewrite Rule
+    t_RewriteRuleExpression *lhs;
+    t_RewriteRuleExpression *rhs;
+
+    t_RewriteRule(t_RewriteRuleExpression *lhs_to_set, t_RewriteRuleExpression *rhs_to_set, int priority_to_set = 0)
+    {
+        this->lhs = lhs_to_set;
+        this->rhs = rhs_to_set;
+        this->m_priority = priority_to_set;
+    }
+
+    inline string getValidStringOfLHSOfRule()
+    {
+        return lhs->getValidSubstringOfRewriteRuleExpression();
+    }
+    /**
+     * @method getLHSRewriteRuleOperator
+     * @author rajkumar
+     * @return Topmost operator name in the LHS of rewrite rule
+     */
+    inline string getLHSRewriteRuleOperator()
+    {
+        return lhs->m_op_name;
+    }
+    void printRewriteRule(ofstream * outfile);
+};
+
+class t_VectorOfRewriteRuleExpressions
+{
+public:
+    vector<t_RewriteRuleExpression *> m_v_arguments;
+
+    t_VectorOfRewriteRuleExpressions(vector<t_RewriteRuleExpression* > v_arguments_to_push)
+    {
+        for (int i = 0; i < v_arguments_to_push.size(); i++)
+        {
+            m_v_arguments.push_back(v_arguments_to_push[i]);
+        }
+    }
+
+    t_VectorOfRewriteRuleExpressions() //A do nothing constructor..
+    {
+    }
+};
+
+class t_DAGSimplifier
+{
+    //set of valid substrings, any subtree of lhs of rewrite rules
+    set<string> m_ValidSubstrings;
+
+    //set of valid strings corresponding to lhs of rules
+    set<string> m_ValidStringsOfRules;
+
+    /**
+     * Changing the data structure for storing the rules.
+     * map[ OperatorName ] = vector<RewriteRule>
+     * For faster search implementations.
+     */
+    map<string,vector<t_RewriteRule*> > m_MapOfRewriteRulesBasedOnOperators;
+
+    //set of rewrite rules
+    vector<t_RewriteRule *> m_setOfRewriteRules;
+    vector<t_RewriteRule *> m_sortedSetOfRewriteRules;
+
+    //DAGManager to use
+    t_DAGManager *m_dag_manager;
+
+    //Log file pointer
+    ofstream *m_dag_simplifier_log;
+    t_Logger* m_logManager;
+    /**
+     * This is a call back function used by the simplifier to create new nodes.
+     * By default, it calls the m_dag_manager->createNode;
+     */
+    //typedef t_DAGNode* CallBackType(const std::string& label, const vector<t_DAGNode*>& children);
+    t_DAGNode* (*m_callBack)(const std::string& label, const vector<t_DAGNode*>& children);
+    //CallBackType m_callBack;
+public:
+    static t_DAGNode* defaultCallBack(const std::string& label, const vector<t_DAGNode*>& children);
+    void setNodeCreationCallBack( t_DAGNode* (*cbt)(const std::string& label, const vector<t_DAGNode*>& children) )
+    {
+        m_callBack = cbt;
+    }
+    
+    //constructor and destructor
+    t_DAGSimplifier(t_DAGManager *dag_manager_to_use);
+    ~t_DAGSimplifier();
+    bool LOG(string message);
+
+    //preprocessing
+
+    //add valid substring to ValidSubstrings when a subtree of a rule is parsed from rules file
+    bool addValidSubstring(string valid_substring_to_add);
+
+    //add valid LHS string to ValidStringsOfRules when LHS of a rule is parsed from rules file
+    bool addValidStringOfLHSOfARule(string valid_string_to_add);
+
+    //add a complete rewrite rule to setOfRewriteRules when a complete rule is parsed from the rules file
+    bool addARewriteRule(t_RewriteRule *rule_to_add);
+
+    //query operations
+
+    //test if a string is a valid substring of any rule, used during labeling
+    bool checkIfValidSubstring(string substring_to_test_for_validity);
+
+    //test if a string is a valid lhs of a rule, used during labeling
+    bool checkIfValidStringOfLHSOfARule(string string_to_test_for_validity);
+
+    //Simply print out all valid substrings that were ever generated from ValidSubstrings
+    bool printAllValidSubStrings(ofstream *outfile);
+
+    //simply print out all lhs string of rules from ValidStringsOfRules
+    bool printAllValidStringsOfLHSOfRules(ofstream *outfile);
+
+    //simply print out all the rewrite rules that are read by the simplifier from setOfRewriteRules
+    bool printAllRewriteRules(ofstream *outfile);
+
+
+
+    //initialize the labels of DAG
+    bool initializeAbstractRuleSignaturesOfDAG(t_DAGNode *root);
+    bool clearAbstractRuleSignaturesOfDAG(t_DAGNode *root);
+
+private:
+    bool addAbstractRuleSignaturesToADAGNode(t_DAGNode *node);
+
+    bool sortTheRewriteRulesAsPerPriority();
+public:
+    bool printSortedRules(ofstream *outfile);
+private:
+
+    bool addADAGNodeAsMatchedForARule(t_RewriteRule *rule_matched, t_DAGNode * node_on_which_the_rule_is_matched);
+
+
+    bool getCorrespondenceBetweenRuleComponentStringsAndDAGNodes
+    (
+     t_RewriteRuleExpression* lhs,
+     t_DAGNode *r,
+     map <string, t_DAGNode *>& MapOfRuleComponentStringToDAGNode,
+     set<t_DAGNode *> & dagnodes_visited
+     );
+
+    t_DAGNode *applyRuleAtANodeAndConstructRHS(t_DAGNode * &current_node, t_RewriteRule *rule, t_DAGNode * &simplifier_invoked_on, map<string, t_DAGNode *>& MapOfRuleNodeNameToDAGNode, set<t_DAGNode *> &dagnodes_corr_to_rhs);
+
+
+
+
+
+    bool increamental_update(set<t_DAGNode *> nodes_to_update);
+
+    t_DAGNode * constructRHSOfRuleRecursively
+    (
+     t_RewriteRuleExpression *expression,
+     map<string, t_DAGNode *> MapOfRuleNodeNameToDAGNode,
+     set<t_DAGNode *> &dagnodes_corr_to_rhs
+     );
+
+    bool removeEdgesCorrespondingToLHSOfRule(t_RewriteRuleExpression *rhs, t_DAGNode *node);
+
+    bool removeEdgesCorrespondingToLHSOfRuleRecursively(t_RewriteRuleExpression *rhs, t_DAGNode *node, vector<PCPair *> & v);
+
+    bool checkIfNodeHasAAbstractRuleSignature(t_DAGNode *node, string simpl_label_to_test);
+
+    bool addDAGNodesMatchingThisRuleToSetOfMatchedNodes(t_DAGNode *root, t_RewriteRule *rule, set<t_DAGNode *> &NodesMatched,bool recursionOnChildren);
+
+
+    bool checkSetsOfStringsForEquality(set<string> set1, set<string> set2);
+
+    bool checkFunctionalEquivalanceOfDAGNodes(t_DAGNode *node1, t_DAGNode *node2);
+
+    bool checkIfARuleMatchesOnADAGNode
+    (
+     t_RewriteRuleExpression *expression,
+     t_DAGNode *node_to_test
+     );
+
+    bool increamental_update_recursively(t_DAGNode * node_to_update);
+
+public:
+    bool RunAStrategy(t_DAGNode * &root, string Strategy);
+    bool runFCFSStrategy(t_DAGNode * &root);
+    bool runPriorityStrategy(t_DAGNode *&root);
+    bool runRandomStrategy(t_DAGNode *&root);
+
+    /**Update 27-09-2010@rajkumar*/
+    bool runPriorityStrategyV2(t_DAGNode *&root,bool increamental_update_flag = false);
+};
+
+
+#endif

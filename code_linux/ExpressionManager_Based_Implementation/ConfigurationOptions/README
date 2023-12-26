@@ -1,0 +1,17 @@
+This directory contains the code for reading command line options/execution options. 
+
+
+Making the code:
+
+Following targets are available in the top makefile
+
+
+build: Compile the code and create .obj files.
+
+test: Compile the code, link and create executable CommandOptions. Use this executable for testing the code
+
+clean: Removes log files, object files, debug files.
+
+
+distclean: Removes everything except source code, makefiles, config files and testcases
+

@@ -1,0 +1,37 @@
+# the cmdline options help file
+# description : TODO
+
+--help?This help
+--module-name?The top module name
+--cdfg-file?Output file to put the CDFG into. Not required if you are not generating the CDFG output
+--cdfggenarguments?CDFG Arguments. Use it to give arguments to CDFG for giving it to LIRA\One can also give FileName which contains the options [default is --design]
+--run-from?The stage from which you want the program to run. Acceptable values are\READRTL [default]\READCDFG
+--run-to?The stage up to which you want the program to run. Acceptable values are\EVALANDCOMPARE\GENERATEEXPRS [default]
+--signals?Required. This is the file that is generated which will contain the list of interesting signals\Default is SignalsToObserve
+--verbosity?Verbosity level, accepted values are\0 No message level [default]\1 Restructure cycle messages\2 Run level\3 Signal type logging\4 Debug level
+--cycles?Number of cycles the evaluation to be run. Not required for STE\(used to verify with LIRA by evaluation and comparing) [default is 0]
+#--fixedinput-flag?TODO [default is 0]
+#--fixedinput-file?TODO
+#--disable-recursion-restructure?TODO [default is 0]
+-allow-cycle-signals?If specified, allow combinational signals in cycle
+-generate-new-inputs?Not required. Used for evaluation and comparison with LIRA
+--ste-file-name?Specify the STE file name
+-wste?If specified, perform Word level STE. Otherwise, performs evaluation and comparison
+--add-atoms?The filename containing user level atom indices\This option is used to add user level atomization. Not required if bit blasting is set
+#--python-convert-file?todo
+--invalid-bit-generation-level?Set to 0, for fast but conservative invalid generation\Set to 3 for slow but less conservative invalid bit generation\Currently, only for invalid bit generation of memory read expressions
+--path-separator?This specifies the path separator that is used to separate the hierarchy\If set to '/' specify signals e.g. toy-addition/arg1[3:0] [default]\If set to '.' specify signals e.g. toy-addition.arg1[3:0]
+--weaken-file?The name of the file containing the weakened signals
+--pruning-level?Number denoting the pruning level. Acceptable values are\0 (no pruning)\1 (pruning based on consequent)\2 (pruning based on antecedent) [default]\3 (pruning based on weakening)
+-print-debug-output?True|false [default is false]
+--extra-user-constraints?The filename containing the extra user-constraints
+-check-assertion?If specified, checks whether consequent -> input constraints\otherwise input constraints -> consequent\You can specify input constraints in a file and specify that file in the configuration options
+-last-dimension-bitvec?Setting this option, the 2 dimensional memories are printed as\1 dimensional memories in SMT format i.e. var[3:0][7:0] will be printed to SMT as\(declare-fun var () (Array (_ BitVec 2) (_ BitVec 8)))(accepted by boolector)\If the option is not specified, the same memory is printed as\(declare-fun var () (Array (_ BitVec 2) (Array (_ BitVec 3) (_ BitVec 1))))\(not accepted by boolector but accepted by Z3)
+-do-bit-blasting?If specified, performs bit blasting by making each atom of 1 bit
+--antecedent-file?The name of the antecedent file
+--consequent-file?The name of the consequent file. The consequent list should be preceded by '=>'
+#-select-read-modification?todo
+-print-full-expression?True|false [default is false]
+#--dag-id-file?todo
+-consequent-exact-match?True|false [default is false]
+-bmc?If specified, perform bounded model checking

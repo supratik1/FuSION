@@ -1,0 +1,6 @@
+undefined => 0
+PPrel => 1
+PCrel => 2
+GErel => 3
+ECrel => 4
+maplink => 5

@@ -1,0 +1,259 @@
+#Choose your compilation options here....
+QE = true #Definition Added by Ajith John on 9 June 2013 
+#GPROF = true
+VALGRIND = true
+#FORTE_COMPARISON = true
+MAKE = make
+
+ifdef QE #LIRA is not required in this case
+	CC = g++
+else
+	include $(LIRA)/ConfigFiles/lira.mak
+	CC = g++-3.4
+endif
+
+ifdef GPROF
+  #LINK_FLAGS += -g Line changed by Ajith John on 8 Jan 2014
+  LINK_FLAGS += -pg
+endif
+ifdef VALGRIND
+  LINK_FLAGS += -g 
+endif
+#-Wuninitialized -O -Wreturn-type
+CFLAGS =  -c $(LINK_FLAGS) $(INCLUDE) 
+ifdef FORTE_COMPARISON
+CFLAGS += -DSTE_FORTE_COMPARISON
+endif
+
+ifdef QE #ifdef Added by Ajith John on 9 June 2013
+CFLAGS += -DQE
+endif
+
+YFLAGS = -d -v
+LEX = flex
+YACC = bison
+
+
+#----------------------------------------LIST of DIRECTORIES
+SS = /home/sukanya/sukanya-cse-git-desktop/network_tool/ExpressionManager_Based_Implementation
+COMMON_DIR = $(SS)/Common
+COMMAND_OPTIONS_DIR = $(SS)/ConfigurationOptions
+CDFG_READER_DIR = $(SS)/CDFG
+HASHTABLE_MANAGER_DIR = $(SS)/HashTableManager
+DAG_MANAGER_DIR = $(SS)/DAGManager
+PREPROCESSOR_DIR = $(SS)/Preprocessors
+SIMULATOR_DIR = $(SS)/Simulator
+EXPRESSION_MANAGER_DIR = $(SS)/ExpressionManager
+TEST_DIRECTORY = $(SS)/Test
+LOGMANAGER_DIR = $(SS)/LogManager
+#----------------------------------------
+ALLDIRECTORIES = $(COMMON_DIR) $(LOGMANAGER_DIR) $(COMMAND_OPTIONS_DIR) $(CDFG_READER_DIR) $(HASHTABLE_MANAGER_DIR) $(DAG_MANAGER_DIR) $(SIMULATOR_DIR) $(EXPRESSION_MANAGER_DIR) 
+
+
+#----------------------------------------List of files
+#----------------------------------------DIRECTORY BY DIRECTORY
+
+#----------------------------------------CDFG
+
+CDFG_READER = $(CDFG_READER_DIR)/CDFGReader
+CDFG = $(CDFG_READER_DIR)/CDFG
+CDFGUTIL = $(CDFG_READER_DIR)/CDFGUtil
+CDFG_LEXER = $(CDFG_READER_DIR)/cdfg_lexer
+CDFG_PARSER = $(CDFG_READER_DIR)/cdfg_parser
+YACC_UTILS = $(CDFG_READER_DIR)/yacc_utils
+CDFG_TO_FILE = $(CDFG_READER_DIR)/CDFGToFile
+TRAVERSE_CDFG = $(CDFG_READER_DIR)/TraverseCDFG
+BA_NBA_CA_SEPERATOR = $(CDFG_READER_DIR)/SeperateBlockNonBlock
+CDFG_GENERATOR = $(CDFG_READER_DIR)/CDFGGenerator
+CREATE_NODES = $(CDFG_READER_DIR)/CreateNodes
+CDFG_GEN_UTILS = $(CDFG_READER_DIR)/CDFGGenerationUtils
+
+
+
+#-----------------------------------------HashTableManager
+HASHTABLE_MANAGER = $(HASHTABLE_MANAGER_DIR)/HashTable_WithStandardKeys
+
+
+
+#----------------------------------------- Common
+HELPING_FUNCTIONS = $(COMMON_DIR)/helping_functions
+
+#----------------------------------------- LogManager
+LOGMANAGER = $(LOGMANAGER_DIR)/LogManager
+
+#----------------------------------------- CommandOptions
+COMMAND_OPTIONS = $(COMMAND_OPTIONS_DIR)/ConfigurationOptions
+
+
+
+#----------------------------------------- DAGManager
+DAG_MANAGER = $(DAG_MANAGER_DIR)/DagManager
+ADVANCED_DAG_MAN = $(DAG_MANAGER_DIR)/AdvancedDAGManipulation
+DAGNODE = $(DAG_MANAGER_DIR)/DAGNode
+DAG_SIMPLIFIER = $(DAG_MANAGER_DIR)/DAGSimplifier
+GC = $(DAG_MANAGER_DIR)/GC
+STRATEGIES = $(DAG_MANAGER_DIR)/Strategies
+MATCHING_FNS = $(DAG_MANAGER_DIR)/MatchingFunctions
+
+
+
+#----------------------------------------- Simulator
+SIMULATOR = $(SIMULATOR_DIR)/Simulator
+STATEMENT_SIMULATORS = $(SIMULATOR_DIR)/StatementSimulators
+SIMULATOR = $(SIMULATOR_DIR)/SymbolicSimulator
+EXPRESSION_CONTAINERS = $(SIMULATOR_DIR)/ExpressionContainers
+SIGNAL = $(SIMULATOR_DIR)/Signal
+ATOM = $(SIMULATOR_DIR)/Atom
+LISTOFEXPRESSIONS = $(SIMULATOR_DIR)/ListOfExpressions
+EXPRESSION_GENERATOR = $(SIMULATOR_DIR)/ExpressionGenerator
+CA_SIMULATOR = $(SIMULATOR_DIR)/CASimulator
+AB_SIMULATOR = $(SIMULATOR_DIR)/ABSimulator
+PASSII = $(SIMULATOR_DIR)/PassII
+RESTRUCTURE = $(SIMULATOR_DIR)/Restructure
+
+
+
+#----------------------------------------- ExpressionManager
+
+EXPRESSION_MANAGER = $(EXPRESSION_MANAGER_DIR)/ExpressionManager
+EXPRESSION = $(EXPRESSION_MANAGER_DIR)/Expression
+EXPRESSIONASDAG = $(EXPRESSION_MANAGER_DIR)/ExpressionAsDAG
+EXPRESSION_VALUE = $(EXPRESSION_MANAGER_DIR)/ExpressionValue
+INFERTYPE_EXPRESSION = $(EXPRESSION_MANAGER_DIR)/InferTypeOfExpression
+BVFNS = $(EXPRESSION_MANAGER_DIR)/NewBV
+EXPRESSION_EVALUATOR = $(EXPRESSION_MANAGER_DIR)/ExpressionEvaluator
+INVALID_BIT_MANAGER = $(EXPRESSION_MANAGER_DIR)/InvalidBitManager
+
+
+#----------------------------------------- Comparison and Evaluation
+
+COMPARATOR = Comparator
+LIRAEVALUATOR = LiraEvaluator
+LIRA_EVALUATOR=LiraEvaluator
+
+
+
+
+
+
+
+#*******************************EXECUTING THE CODE
+#*******************************All following targets contain main
+#----------------------------------------- ----------------------------------------- 
+#----------------------------------------- ----------------------------------------- 
+#----------------------------------------- ----------------------------------------- 
+#----------------------------------------- -----------------------------------------
+
+LOGMANAGER_DEP_DIRS = $(LOGMANAGER_DIR) $(COMMON_DIR)
+
+
+#Lists Of Test Files
+
+CDFG_READER_TEST = CDFGReaderTest
+
+CDFG_READER_TEST_DEP_DIRS = $(CDFG_READER_DIR) $(COMMON_DIR) $(LOGMANAGER_DIR) $(COMMAND_OPTIONS_DIR) $(HASHTABLE_MANAGER_DIR) 
+
+CDFG_READER_TEST_DEP_FILES = $(CDFG_READER).cc $(CDFGUTIL).cc $(YACC_UTILS).cc $(TRAVERSE_CDFG).cc $(BA_NBA_CA_SEPERATOR).cc $(CDFG_GEN_UTILS).cc $(HELPING_FUNCTIONS).cc $(COMMAND_OPTIONS).cc $(CDFG_TO_FILE).cc
+
+
+
+
+#----------------------------------------- ----------------------------------------- 
+#----------------------------------------- ----------------------------------------- 
+#----------------------------------------- ----------------------------------------- 
+#----------------------------------------- ----------------------------------------- 
+
+
+HASHTABLE_WITH_STDKEYS1 = TestHashTable_StdKeys1
+HASHTABLE_WITH_STDKEYS2 = TestHashTable_StdKeys2
+HASHTABLE_WITH_STDKEYS3 = TestHashTable_StdKeys3
+
+HASHTABLE_DEP_DIRS = $(HASHTABLE_MANAGER_DIR)/
+#HASHTABLE_FILE = $(HASHTABLE_MANAGER_DIR)/HashTable_WithStandardKeys.h
+
+
+#----------------------------------------- ----------------------------------------- 
+#----------------------------------------- ----------------------------------------- 
+#----------------------------------------- ----------------------------------------- 
+#----------------------------------------- ----------------------------------------- 
+
+DAG_MANAGER_TEST = TestDAG
+DAG_MANAGER_TEST2 = TestDAG2
+DAG_MANAGER_TEST3 = TestDAG3
+DAG_SIMPLIFIER_TEST = TestSimplifier1
+DAG_SIMPLIFIER_TEST2 = TestSimplifier2
+DAG_SIMPLIFIER_TEST_ITE = TestSimplifierITE
+DAG_SIMPLIFIER_TEST_RAND1 = TestSimplifierRand1
+
+DAG_MANAGER_DEP_DIRS = $(HASHTABLE_MANAGER_DIR) $(DAG_MANAGER_DIR) $(HASHTABLE_MANAGER_DIR) $(LOGMANAGER_DIR)
+
+DAG_MANAGER_TEST_DEP_FILES = $(ADVANCED_DAG_MAN).cc $(DAG_MANAGER).cc $(DAGNODE).cc $(GC).cc $(HELPING_FUNCTIONS).cc $(HASHTABLE_MANAGER).cc $(LOGMANAGER).cc
+
+DAG_SIMPLIFIER_TEST_DEP_FILES = $(ADVANCED_DAG_MAN).cc $(DAG_MANAGER).cc $(DAGNODE).cc $(GC).cc  $(DAG_SIMPLIFIER).cc $(STRATEGIES).cc $(MATCHING_FNS).cc $(HELPING_FUNCTIONS).cc $(LOGMANAGER).cc
+
+
+
+
+
+#----------------------------------------- ----------------------------------------- 
+#----------------------------------------- ----------------------------------------- 
+#----------------------------------------- ----------------------------------------- 
+#----------------------------------------- ----------------------------------------- 
+SIMULATOR_TEST = SimulatorTest
+
+SIMULATOR_TEST_DEP_DIRS = $(CDFG_READER_DIR) $(COMMON_DIR) $(COMMAND_OPTIONS_DIR) $(SIMULATOR_DIR) $(EXPRESSION_MANAGER_DIR) $(DAG_MANAGER_DIR) $(SIMULATOR_DIR) $(HASHTABLE_MANAGER_DIR) $(LOGMANAGER_DIR) 
+
+SIMULATOR_TEST_DEP_FILES = $(CDFG_READER).cc $(CDFG_TO_FILE).cc $(CDFGUTIL).cc $(TRAVERSE_CDFG).cc $(YACC_UTILS).cc $(CDFG_GEN_UTILS).cc  $(COMMAND_OPTIONS).cc $(SIMULATOR).cc $(STATEMENT_SIMULATORS).cc $(EXPRESSION_CONTAINERS).cc $(SIGNAL).cc $(ATOM).cc $(LISTOFEXPRESSIONS).cc $(EXPRESSION_GENERATOR).cc $(CA_SIMULATOR).cc $(AB_SIMULATOR).cc $(PASSII).cc $(RESTRUCTURE).cc $(ADVANCED_DAG_MAN).cc $(DAG_MANAGER).cc $(DAGNODE).cc $(BA_NBA_CA_SEPERATOR).cc $(GC).cc  $(DAG_SIMPLIFIER).cc $(STRATEGIES).cc $(MATCHING_FNS).cc  $(HELPING_FUNCTIONS).cc $(LOGMANAGER).cc $(EXPRESSION_MANAGER).cc $(EXPRESSION).cc $(EXPRESSIONASDAG).cc $(EXPRESSION_VALUE).cc $(EXPRESSION_EVALUATOR).cc $(INFERTYPE_EXPRESSION).cc $(BVFNS).cc $(HASHTABLE_MANAGER).cc $(CDFG_GENERATOR).cc $(CREATE_NODES).cc $(INVALID_BIT_MANAGER).cc
+
+#----------------------------------------- ----------------------------------------- 
+#----------------------------------------- ----------------------------------------- 
+#----------------------------------------- ----------------------------------------- 
+#----------------------------------------- ----------------------------------------- 
+
+
+
+TEST_EXPR_MNGR1 = testExpressionManager1
+
+EXPRESSION_MANAGER_DEP_DIRS =  $(COMMON_DIR) $(COMMAND_OPTIONS_DIR) $(LOGMANAGER_DIR) $(EXPRESSION_MANAGER_DIR)  $(DAG_MANAGER_DIR) $(HASHTABLE_MANAGER_DIR)
+
+EXPRESSION_MANAGER_DEP_FILES = $(HELPING_FUNCTIONS).cc $(EXPRESSION_MANAGER).cc $(EXPRESSION).cc $(EXPRESSIONASDAG).cc $(EXPRESSION_VALUE).cc $(INVALID_BIT_MANAGER).cc $(EXPRESSION_EVALUATOR).cc $(INFERTYPE_EXPRESSION).cc $(BVFNS).cc $(ADVANCED_DAG_MAN).cc $(DAG_MANAGER).cc $(DAGNODE).cc $(GC).cc  $(DAG_SIMPLIFIER).cc $(STRATEGIES).cc $(MATCHING_FNS).cc $(HASHTABLE_MANAGER).cc $(LOGMANAGER).cc $(COMMAND_OPTIONS).cc
+
+
+
+#----------------------------------------- ----------------------------------------- 
+#----------------------------------------- ----------------------------------------- 
+#----------------------------------------- ----------------------------------------- 
+#----------------------------------------- ----------------------------------------- 
+
+
+EVAL_AND_COMPARE = EvaluationAndComparision
+
+EVAL_AND_COMPARE_DEP_DIRS = $(CDFG_READER_DIR) $(COMMON_DIR) $(COMMAND_OPTIONS_DIR) $(SIMULATOR_DIR) $(EXPRESSION_MANAGER_DIR) $(DAG_MANAGER_DIR) $(HASHTABLE_MANAGER_DIR) $(LOGMANAGER_DIR)
+
+
+E_AND_C_DEP_FILES = $(CDFG_READER).cc $(CDFG_TO_FILE).cc $(CDFGUTIL).cc $(TRAVERSE_CDFG).cc $(YACC_UTILS).cc $(CDFG_GEN_UTILS).cc $(COMMAND_OPTIONS).cc $(SIMULATOR).cc $(STATEMENT_SIMULATORS).cc $(EXPRESSION_CONTAINERS).cc $(SIGNAL).cc $(ATOM).cc $(LISTOFEXPRESSIONS).cc $(EXPRESSION_GENERATOR).cc $(CA_SIMULATOR).cc $(AB_SIMULATOR).cc $(PASSII).cc $(RESTRUCTURE).cc $(LOGMANAGER).cc $(ADVANCED_DAG_MAN).cc $(DAG_MANAGER).cc $(DAGNODE).cc $(BA_NBA_CA_SEPERATOR).cc $(GC).cc  $(DAG_SIMPLIFIER).cc $(STRATEGIES).cc $(MATCHING_FNS).cc  $(HELPING_FUNCTIONS).cc $(EXPRESSION_MANAGER).cc $(EXPRESSION).cc $(EXPRESSIONASDAG).cc $(EXPRESSION_VALUE).cc $(EXPRESSION_EVALUATOR).cc $(INFERTYPE_EXPRESSION).cc $(BVFNS).cc $(HASHTABLE_MANAGER).cc $(CDFG_GENERATOR).cc $(CREATE_NODES).cc $(INVALID_BIT_MANAGER).cc
+
+
+
+
+#----------------------------------------- ----------------------------------------- 
+#----------------------------------------- ----------------------------------------- 
+#----------------------------------------- ----------------------------------------- 
+#----------------------------------------- ----------------------------------------- 
+
+
+
+TEST_CDFG_GENERATOR = testCDFGGenerator
+#TEST_CDFG_GENERATOR_DEP_O_FILES = $(BA_NBA_CA_SEPERATOR).o $(CDFGUTIL).o $(TRAVERSE_CDFG).o $(CDFG_GENERATOR).o $(CREATE_NODES).o $(HELPING_FUNCTIONS)_LIRA.o $(CDFG_GEN_UTILS)_LIRA.o $(CDFG_TO_FILE)_LIRA.o $(LOGMANAGER).o $(HASHTABLE_MANAGER).o $(COMMAND_OPTIONS).o
+
+#TEST_CDFG_GENERATOR_DEP_SRC_FILES = $(BA_NBA_CA_SEPERATOR).cc $(CDFGUTIL).cc $(TRAVERSE_CDFG).cc $(CDFG_GENERATOR).cc $(CREATE_NODES).cc $(HELPING_FUNCTIONS).cc $(CDFG_GEN_UTILS).cc $(CDFG_TO_FILE).cc $(HASHTABLE_MANAGER).cc $(LOGMANAGER).cc $(COMMAND_OPTIONS).cc 
+
+TEST_CDFG_GENERATOR_DEP_O_FILES = $(CDFG_GENERATOR).o $(CREATE_NODES).o $(HELPING_FUNCTIONS)_LIRA.o $(CDFG_GEN_UTILS)_LIRA.o $(CDFG_TO_FILE)_LIRA.o $(LOGMANAGER).o $(HASHTABLE_MANAGER).o $(COMMAND_OPTIONS).o
+
+TEST_CDFG_GENERATOR_DEP_SRC_FILES = $(CDFG_GENERATOR).cc $(CREATE_NODES).cc $(HELPING_FUNCTIONS).cc $(CDFG_GEN_UTILS).cc $(CDFG_TO_FILE).cc $(HASHTABLE_MANAGER).cc $(LOGMANAGER).cc $(COMMAND_OPTIONS).cc 
+
+
+#TEST_CDFG_GENERATOR_DEP_SRC_FILES = $(CDFG_READER).cc $(CDFG_TO_FILE).cc $(CDFGUTIL).cc $(TRAVERSE_CDFG).cc $(YACC_UTILS).cc $(CDFG_GEN_UTILS).cc $(COMMAND_OPTIONS).cc $(SIMULATOR).cc $(STATEMENT_SIMULATORS).cc $(EXPRESSION_CONTAINERS).cc $(SIGNAL).cc $(ATOM).cc $(LISTOFEXPRESSIONS).cc $(EXPRESSION_GENERATOR).cc $(CA_SIMULATOR).cc $(AB_SIMULATOR).cc $(PASSII).cc $(RESTRUCTURE).cc $(LOGMANAGER).cc $(ADVANCED_DAG_MAN).cc $(DAG_MANAGER).cc $(DAGNODE).cc $(BA_NBA_CA_SEPERATOR).cc $(GC).cc  $(DAG_SIMPLIFIER).cc $(STRATEGIES).cc $(MATCHING_FNS).cc  $(HELPING_FUNCTIONS).cc $(EXPRESSION_MANAGER).cc $(EXPRESSION).cc $(EXPRESSIONASDAG).cc $(EXPRESSION_VALUE).cc $(EXPRESSION_EVALUATOR).cc $(INFERTYPE_EXPRESSION).cc $(BVFNS).cc $(HASHTABLE_MANAGER).cc $(CDFG_GENERATOR).cc $(CREATE_NODES).cc $(INVALID_BIT_MANAGER).cc
+#TEST_CDFG_GENERATOR_DEP_O_FILES = $(CDFG_READER).o $(CDFG_TO_FILE).o $(CDFGUTIL).o $(TRAVERSE_CDFG).o $(YACC_UTILS).o $(CDFG_GEN_UTILS).o $(COMMAND_OPTIONS).o $(SIMULATOR).o $(STATEMENT_SIMULATORS).o $(EXPRESSION_CONTAINERS).o $(SIGNAL).o $(ATOM).o $(LISTOFEXPRESSIONS).o $(EXPRESSION_GENERATOR).o $(CA_SIMULATOR).o $(AB_SIMULATOR).o $(PASSII).o $(RESTRUCTURE).o $(LOGMANAGER).o $(ADVANCED_DAG_MAN).o $(DAG_MANAGER).o $(DAGNODE).o $(BA_NBA_CA_SEPERATOR).o $(GC).o  $(DAG_SIMPLIFIER).o $(STRATEGIES).o $(MATCHING_FNS).o  $(HELPING_FUNCTIONS).o $(EXPRESSION_MANAGER).o $(EXPRESSION).o $(EXPRESSIONASDAG).o $(EXPRESSION_VALUE).o $(EXPRESSION_EVALUATOR).o $(INFERTYPE_EXPRESSION).o $(BVFNS).o $(HASHTABLE_MANAGER).o $(CDFG_GENERATOR).o $(CREATE_NODES).o $(INVALID_BIT_MANAGER).o
+
+

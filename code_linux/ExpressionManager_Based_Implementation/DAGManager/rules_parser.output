@@ -1,0 +1,490 @@
+Terminals unused in grammar
+
+   t_Comma
+   t_Eq
+
+
+Grammar
+
+    0 $accept: RulesFile $end
+
+    1 RulesFile: RulesList
+
+    2 RulesList: RulesList Rule
+    3          | %empty
+
+    4 Rule: t_Integer nt_LHSExpr t_Arrow nt_RHSExpr
+
+    5 nt_LHSExpr: t_OBrack Operator nt_LHS_Arguments_List t_CBrack
+    6           | LHSVariable
+    7           | LHSConstant
+    8           | LHSBoolVariable
+    9           | t_String
+
+   10 LHSVariable: t_Variable
+
+   11 LHSBoolVariable: t_BoolVariable
+
+   12 LHSConstant: t_True
+   13            | t_False
+   14            | t_Constant
+   15            | t_Integer
+
+   16 nt_RHSExpr: t_OBrack Operator nt_RHS_Arguments_List t_CBrack
+   17           | RHSVariable
+   18           | RHSConstant
+   19           | RHSBoolVariable
+   20           | t_String
+
+   21 RHSVariable: t_Variable
+
+   22 RHSBoolVariable: t_BoolVariable
+
+   23 RHSConstant: t_True
+   24            | t_False
+   25            | t_Constant
+   26            | t_Integer
+
+   27 nt_LHS_Arguments_List: nt_LHS_Arguments_List nt_LHSExpr
+   28                      | nt_LHSExpr
+
+   29 nt_RHS_Arguments_List: nt_RHS_Arguments_List nt_RHSExpr
+   30                      | nt_RHSExpr
+
+   31 Operator: t_String
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+error (256)
+t_String (258) 9 20 31
+t_Arrow (259) 4
+t_True (260) 12 23
+t_False (261) 13 24
+t_Constant (262) 14 25
+t_Integer (263) 4 15 26
+t_Variable (264) 10 21
+t_OBrack (265) 5 16
+t_CBrack (266) 5 16
+t_Comma (267)
+t_Eq (268)
+t_BoolVariable (269) 11 22
+
+
+Nonterminals, with rules where they appear
+
+$accept (15)
+    on left: 0
+RulesFile (16)
+    on left: 1, on right: 0
+RulesList (17)
+    on left: 2 3, on right: 1 2
+Rule (18)
+    on left: 4, on right: 2
+nt_LHSExpr (19)
+    on left: 5 6 7 8 9, on right: 4 27 28
+LHSVariable (20)
+    on left: 10, on right: 6
+LHSBoolVariable (21)
+    on left: 11, on right: 8
+LHSConstant (22)
+    on left: 12 13 14 15, on right: 7
+nt_RHSExpr (23)
+    on left: 16 17 18 19 20, on right: 4 29 30
+RHSVariable (24)
+    on left: 21, on right: 17
+RHSBoolVariable (25)
+    on left: 22, on right: 19
+RHSConstant (26)
+    on left: 23 24 25 26, on right: 18
+nt_LHS_Arguments_List (27)
+    on left: 27 28, on right: 5 27
+nt_RHS_Arguments_List (28)
+    on left: 29 30, on right: 16 29
+Operator (29)
+    on left: 31, on right: 5 16
+
+
+State 0
+
+    0 $accept: . RulesFile $end
+
+    $default  reduce using rule 3 (RulesList)
+
+    RulesFile  go to state 1
+    RulesList  go to state 2
+
+
+State 1
+
+    0 $accept: RulesFile . $end
+
+    $end  shift, and go to state 3
+
+
+State 2
+
+    1 RulesFile: RulesList .
+    2 RulesList: RulesList . Rule
+
+    t_Integer  shift, and go to state 4
+
+    $default  reduce using rule 1 (RulesFile)
+
+    Rule  go to state 5
+
+
+State 3
+
+    0 $accept: RulesFile $end .
+
+    $default  accept
+
+
+State 4
+
+    4 Rule: t_Integer . nt_LHSExpr t_Arrow nt_RHSExpr
+
+    t_String        shift, and go to state 6
+    t_True          shift, and go to state 7
+    t_False         shift, and go to state 8
+    t_Constant      shift, and go to state 9
+    t_Integer       shift, and go to state 10
+    t_Variable      shift, and go to state 11
+    t_OBrack        shift, and go to state 12
+    t_BoolVariable  shift, and go to state 13
+
+    nt_LHSExpr       go to state 14
+    LHSVariable      go to state 15
+    LHSBoolVariable  go to state 16
+    LHSConstant      go to state 17
+
+
+State 5
+
+    2 RulesList: RulesList Rule .
+
+    $default  reduce using rule 2 (RulesList)
+
+
+State 6
+
+    9 nt_LHSExpr: t_String .
+
+    $default  reduce using rule 9 (nt_LHSExpr)
+
+
+State 7
+
+   12 LHSConstant: t_True .
+
+    $default  reduce using rule 12 (LHSConstant)
+
+
+State 8
+
+   13 LHSConstant: t_False .
+
+    $default  reduce using rule 13 (LHSConstant)
+
+
+State 9
+
+   14 LHSConstant: t_Constant .
+
+    $default  reduce using rule 14 (LHSConstant)
+
+
+State 10
+
+   15 LHSConstant: t_Integer .
+
+    $default  reduce using rule 15 (LHSConstant)
+
+
+State 11
+
+   10 LHSVariable: t_Variable .
+
+    $default  reduce using rule 10 (LHSVariable)
+
+
+State 12
+
+    5 nt_LHSExpr: t_OBrack . Operator nt_LHS_Arguments_List t_CBrack
+
+    t_String  shift, and go to state 18
+
+    Operator  go to state 19
+
+
+State 13
+
+   11 LHSBoolVariable: t_BoolVariable .
+
+    $default  reduce using rule 11 (LHSBoolVariable)
+
+
+State 14
+
+    4 Rule: t_Integer nt_LHSExpr . t_Arrow nt_RHSExpr
+
+    t_Arrow  shift, and go to state 20
+
+
+State 15
+
+    6 nt_LHSExpr: LHSVariable .
+
+    $default  reduce using rule 6 (nt_LHSExpr)
+
+
+State 16
+
+    8 nt_LHSExpr: LHSBoolVariable .
+
+    $default  reduce using rule 8 (nt_LHSExpr)
+
+
+State 17
+
+    7 nt_LHSExpr: LHSConstant .
+
+    $default  reduce using rule 7 (nt_LHSExpr)
+
+
+State 18
+
+   31 Operator: t_String .
+
+    $default  reduce using rule 31 (Operator)
+
+
+State 19
+
+    5 nt_LHSExpr: t_OBrack Operator . nt_LHS_Arguments_List t_CBrack
+
+    t_String        shift, and go to state 6
+    t_True          shift, and go to state 7
+    t_False         shift, and go to state 8
+    t_Constant      shift, and go to state 9
+    t_Integer       shift, and go to state 10
+    t_Variable      shift, and go to state 11
+    t_OBrack        shift, and go to state 12
+    t_BoolVariable  shift, and go to state 13
+
+    nt_LHSExpr             go to state 21
+    LHSVariable            go to state 15
+    LHSBoolVariable        go to state 16
+    LHSConstant            go to state 17
+    nt_LHS_Arguments_List  go to state 22
+
+
+State 20
+
+    4 Rule: t_Integer nt_LHSExpr t_Arrow . nt_RHSExpr
+
+    t_String        shift, and go to state 23
+    t_True          shift, and go to state 24
+    t_False         shift, and go to state 25
+    t_Constant      shift, and go to state 26
+    t_Integer       shift, and go to state 27
+    t_Variable      shift, and go to state 28
+    t_OBrack        shift, and go to state 29
+    t_BoolVariable  shift, and go to state 30
+
+    nt_RHSExpr       go to state 31
+    RHSVariable      go to state 32
+    RHSBoolVariable  go to state 33
+    RHSConstant      go to state 34
+
+
+State 21
+
+   28 nt_LHS_Arguments_List: nt_LHSExpr .
+
+    $default  reduce using rule 28 (nt_LHS_Arguments_List)
+
+
+State 22
+
+    5 nt_LHSExpr: t_OBrack Operator nt_LHS_Arguments_List . t_CBrack
+   27 nt_LHS_Arguments_List: nt_LHS_Arguments_List . nt_LHSExpr
+
+    t_String        shift, and go to state 6
+    t_True          shift, and go to state 7
+    t_False         shift, and go to state 8
+    t_Constant      shift, and go to state 9
+    t_Integer       shift, and go to state 10
+    t_Variable      shift, and go to state 11
+    t_OBrack        shift, and go to state 12
+    t_CBrack        shift, and go to state 35
+    t_BoolVariable  shift, and go to state 13
+
+    nt_LHSExpr       go to state 36
+    LHSVariable      go to state 15
+    LHSBoolVariable  go to state 16
+    LHSConstant      go to state 17
+
+
+State 23
+
+   20 nt_RHSExpr: t_String .
+
+    $default  reduce using rule 20 (nt_RHSExpr)
+
+
+State 24
+
+   23 RHSConstant: t_True .
+
+    $default  reduce using rule 23 (RHSConstant)
+
+
+State 25
+
+   24 RHSConstant: t_False .
+
+    $default  reduce using rule 24 (RHSConstant)
+
+
+State 26
+
+   25 RHSConstant: t_Constant .
+
+    $default  reduce using rule 25 (RHSConstant)
+
+
+State 27
+
+   26 RHSConstant: t_Integer .
+
+    $default  reduce using rule 26 (RHSConstant)
+
+
+State 28
+
+   21 RHSVariable: t_Variable .
+
+    $default  reduce using rule 21 (RHSVariable)
+
+
+State 29
+
+   16 nt_RHSExpr: t_OBrack . Operator nt_RHS_Arguments_List t_CBrack
+
+    t_String  shift, and go to state 18
+
+    Operator  go to state 37
+
+
+State 30
+
+   22 RHSBoolVariable: t_BoolVariable .
+
+    $default  reduce using rule 22 (RHSBoolVariable)
+
+
+State 31
+
+    4 Rule: t_Integer nt_LHSExpr t_Arrow nt_RHSExpr .
+
+    $default  reduce using rule 4 (Rule)
+
+
+State 32
+
+   17 nt_RHSExpr: RHSVariable .
+
+    $default  reduce using rule 17 (nt_RHSExpr)
+
+
+State 33
+
+   19 nt_RHSExpr: RHSBoolVariable .
+
+    $default  reduce using rule 19 (nt_RHSExpr)
+
+
+State 34
+
+   18 nt_RHSExpr: RHSConstant .
+
+    $default  reduce using rule 18 (nt_RHSExpr)
+
+
+State 35
+
+    5 nt_LHSExpr: t_OBrack Operator nt_LHS_Arguments_List t_CBrack .
+
+    $default  reduce using rule 5 (nt_LHSExpr)
+
+
+State 36
+
+   27 nt_LHS_Arguments_List: nt_LHS_Arguments_List nt_LHSExpr .
+
+    $default  reduce using rule 27 (nt_LHS_Arguments_List)
+
+
+State 37
+
+   16 nt_RHSExpr: t_OBrack Operator . nt_RHS_Arguments_List t_CBrack
+
+    t_String        shift, and go to state 23
+    t_True          shift, and go to state 24
+    t_False         shift, and go to state 25
+    t_Constant      shift, and go to state 26
+    t_Integer       shift, and go to state 27
+    t_Variable      shift, and go to state 28
+    t_OBrack        shift, and go to state 29
+    t_BoolVariable  shift, and go to state 30
+
+    nt_RHSExpr             go to state 38
+    RHSVariable            go to state 32
+    RHSBoolVariable        go to state 33
+    RHSConstant            go to state 34
+    nt_RHS_Arguments_List  go to state 39
+
+
+State 38
+
+   30 nt_RHS_Arguments_List: nt_RHSExpr .
+
+    $default  reduce using rule 30 (nt_RHS_Arguments_List)
+
+
+State 39
+
+   16 nt_RHSExpr: t_OBrack Operator nt_RHS_Arguments_List . t_CBrack
+   29 nt_RHS_Arguments_List: nt_RHS_Arguments_List . nt_RHSExpr
+
+    t_String        shift, and go to state 23
+    t_True          shift, and go to state 24
+    t_False         shift, and go to state 25
+    t_Constant      shift, and go to state 26
+    t_Integer       shift, and go to state 27
+    t_Variable      shift, and go to state 28
+    t_OBrack        shift, and go to state 29
+    t_CBrack        shift, and go to state 40
+    t_BoolVariable  shift, and go to state 30
+
+    nt_RHSExpr       go to state 41
+    RHSVariable      go to state 32
+    RHSBoolVariable  go to state 33
+    RHSConstant      go to state 34
+
+
+State 40
+
+   16 nt_RHSExpr: t_OBrack Operator nt_RHS_Arguments_List t_CBrack .
+
+    $default  reduce using rule 16 (nt_RHSExpr)
+
+
+State 41
+
+   29 nt_RHS_Arguments_List: nt_RHS_Arguments_List nt_RHSExpr .
+
+    $default  reduce using rule 29 (nt_RHS_Arguments_List)

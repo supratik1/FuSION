@@ -1,0 +1,113 @@
+add
+  -- sint sint (D)
+  -- int int (D) 
+  -- real real (D)
+  -- bv bv (D)
+  -- bvs bvs (D)
+sub
+  -- sint sint (D)
+  -- int int (D) 
+  -- real real (D)
+  -- bv bv (D)
+  -- bvs bvs (D)
+
+multiply
+  -- bv bv (D)
+  -- bvs bvs (D)
+divide
+  -- bv bv (D)
+  -- bvs bvs (D)
+mod
+gt
+  -- sint sint 
+  -- int int  
+  -- real real 
+  -- bv bv (D)
+  -- bvs bvs (D)
+ge
+  -- sint sint 
+  -- int int  
+  -- real real 
+  -- bv bv (D)
+  -- bvs bvs (D)
+
+lt
+  -- sint sint 
+  -- int int  
+  -- real real 
+  -- bv bv (D)
+  -- bvs bvs (D)
+
+le
+  -- sint sint 
+  -- int int  
+  -- real real 
+  -- bv bv (D)
+  -- bvs bvs (D)
+lognot
+  -- bool [D]
+logand
+  --bool bool [D] 
+logor
+  --bool bool [D] 
+logeq
+  -- bv bv [D]
+  -- bvs bvs [D]
+  -- bool bool 
+diseq
+  -- bv bv [D]	
+  -- bvs bvs [D]
+  -- bv bool [D]
+  -- bool bv [D]
+  -- bool bool[D]
+bitand
+  -- bv bv [D] 
+  -- bvs bvs [D]
+bitor
+  -- bv bv [D] 
+  -- bvs bvs [D]
+
+bitxor
+  -- bv bv [D] 
+  -- bvs bvs [D]
+bitxnor
+  -- bv bv [D] 
+  -- bvs bvs [D]
+bitneg
+  -- bv bv [D] 
+  -- bvs bvs [D]
+select
+  -- bv sint sint [D]
+  -- bvs sint sint [D]
+concat
+  -- bv bv [D] 
+  -- bvs bvs [D]
+leftshift
+  -- bv sint [D]
+rightshift
+  -- bv sint [D]
+redand
+  -- bv [D]
+redor
+  -- bv [D]
+rednor
+  -- bv [D]
+redxor
+  -- bv [D]
+redxnor
+  -- bv [D]
+ite
+  -- bv bv [D] 
+  -- bvs bvs [D]
+replic
+ -- sint bv [D]
+zeroextn
+--bv sint
+countones
+-- sbv
+-- bv [D]
+
+typeref
+exp
+cast
+tri

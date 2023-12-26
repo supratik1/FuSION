@@ -1,0 +1,47 @@
+concat = //Handled Internally (concat $$)
+leftToRightStream = //Handled Internally
+RightToLeftStream = //Handled Internally
+
+add    = (bvadd $0 $1)
+sub    = (bvsub $0 $1)
+multiply= (bvmul $0 $1)
+divide  = (bvudiv $0 $1)
+mod     = (bvurem $0 $1)
+
+bitneg = (bvnot $0)
+bitand = (bvand $0 $1)
+bitor  = (bvor $0 $1)
+bitxor = (bvxor $0 $1)
+bitxnor = (bvxnor $0 $1)
+bitnor  = (bvnor $0 $1)
+bitnand = (bvnand $0 $1)
+
+lognot = (not $0)
+logand = (and $0 $1)
+logor  = (or $0 $1)
+#logeq  = (ite (= $0 $1) #b1 #b0)
+logeq = (= $0 $1)
+#diseq  = (not (ite (= $0 $1) #b1 #b0))
+diseq = (not (= $0 $1))
+wildeq  = (ite (= $0 $1) #b1 #b0)
+casexeq  = (ite (= $0 $1) #b1 #b0)
+casezeq  = (ite (= $0 $1) #b1 #b0)
+wilddiseq  = (not (ite (= $0 $1) #b1 #b0))
+
+lt     = (bvult $0 $1)
+le     = (bvule $0 $1)
+gt     = (bvugt $0 $1)
+ge     = (bvuge $0 $1)
+
+ite    = (ite $0 $1 $2)
+zeroextn = //Handled Internally
+signextn = //Handled Internally
+select = ((_ extract $i2 $i1) $0)
+
+leftshift  = (bvshl $0 $1)
+rightshift = (bvlshr $0 $1)
+
+read   = (select $0 $1)
+update = (store $0 $1 $2)
+
+genInv = (gen-inv $0)
