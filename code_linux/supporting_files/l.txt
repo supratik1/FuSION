@@ -1,3 +1,0 @@
-../data/kegg_graphs_new/hsa04010.xml
-../data/kegg_graphs_new/hsa04020.xml
-../data/kegg_graphs_new/hsa04062.xml
