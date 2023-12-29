@@ -1,8 +1,9 @@
 ## FuSION: Functional Significance In nOisy Networks
 
-**FuSION** was developed at IIT Bombay jointly by S. Akshay, Sukanya Basu and Supratik Chakraborty (IIT Bombay), 
-Rangapriya Sundararajan and Prasanna Venkatraman (ACTREC, Tata Memorial Centre), 
-with help from Jahnabi Roy (IIT Delhi).
+**FuSION** was developed at IIT Bombay jointly by 
+* S. Akshay, Sukanya Basu and Supratik Chakraborty (IIT Bombay), 
+* Rangapriya Sundararajan and Prasanna Venkatraman (ACTREC, Tata Memorial Centre), 
+* With help from Jahnabi Roy (IIT Delhi).
 
 ## What is it about?
 Given a collection of gene regulatory networks (currently KEGG networks), microarray data from wet-lab experiments, 
