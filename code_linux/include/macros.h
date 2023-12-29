@@ -27,15 +27,12 @@
 //#define PATHWAY_ID_LENGTH 64
 #define PATHWAY_ID_LENGTH 514
 
-#define SUPPORTING_FILES_DIR "/home/sukanya/sukanya-cse-git-desktop/network_tool/supporting_files"
+#define SUPPORTING_FILES_DIR "./supporting_files"
 #define OUTPUT_FILES_DIR_PREFIX ""
-//#define Z3_PATH_NAME "/home/sysbio/bin/newZ3/z3-master/build/z3"
 #define Z3_PATH_NAME "/usr/bin/z3"
 #define DOT_PATH_NAME "/usr/bin/dot "
-//#define DOT_PATH_NAME "/usr/local/bin/sfdp "
 #define PDF_VIEWER_PATH_NAME "/usr/bin/evince "
 #define XDOT_PATH_NAME "/usr/bin/xdot "
-//#define APPROXMC_PATH_NAME "/home/sysbio/ApproxMC_modified/ApproxMC.py"
 #define APPROXMC_PATH_NAME "ApproxMC.py"
 #define NODE_DISTANCE_BIT_SEQ_LENGTH 8 // harshit
 //#define NODE_DISTANCE_VALUE_BIT_LENGTH 12 //16 // sukanya
