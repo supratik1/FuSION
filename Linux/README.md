@@ -1,4 +1,4 @@
-# LINUX COMPILATION
+# Installing FuSION on Linux (tested on Ubuntu 22.04)
 
 1. Download libxml2 and libxml++-2.6 to run the program. Download files in WSL (Debian) or Linux (Ubuntu) environment using the following commands :
 
