@@ -26,7 +26,7 @@ the code and installation instructions.
 We should soon have a version for Windows 11.  So watch out for updates!
 
 ## License and citation
-FuSION is provided under a GPL 3 license.
+FuSION is provided under MIT license.
 
 In case you use the tool, please cite it as follows:
 
