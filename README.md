@@ -1,6 +1,6 @@
 ## FuSION: Functional Significance In nOisy Networks
 
-**FuSiON** was developed at IIT Bombay jointly by S. Akshay, Sukanya Basu and Supratik Chakraborty (IIT Bombay), 
+**FuSION** was developed at IIT Bombay jointly by S. Akshay, Sukanya Basu and Supratik Chakraborty (IIT Bombay), 
 Rangapriya Sundararajan and Prasanna Venkatraman from ACTREC (Tata Memorial Centre), 
 with help from Jahnabi Roy (IIT Delhi).
 
