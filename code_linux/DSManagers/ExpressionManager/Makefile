@@ -10,10 +10,14 @@ YACC_UTILS = yacc_utils
 
 BVLIB_DIR = .
 
-
 PREFIX = inferencerule_parser
 
-build :  $(EXPRESSIONASDAG).o $(EXPRESSION).o   $(EXPRESSION_MANAGER).o  $(INFERTYPE_EXPRESSION).o $(EXPRESSION_EVALUATOR).o $(EXPRESSION_VALUE).o $(INVALID_BIT_MANAGER).o $(BVFNS).o $(INFERENCERULE_PARSER).tab.o $(INFERENCERULE_LEXER).yy.o
+.PHONY: create_hfile
+
+build :  create_hfile $(EXPRESSIONASDAG).o $(EXPRESSION).o   $(EXPRESSION_MANAGER).o  $(INFERTYPE_EXPRESSION).o $(EXPRESSION_EVALUATOR).o $(EXPRESSION_VALUE).o $(INVALID_BIT_MANAGER).o $(BVFNS).o $(INFERENCERULE_PARSER).tab.o $(INFERENCERULE_LEXER).yy.o
+
+create_hfile:
+	echo "#define CWD \"`pwd`\"" > CWD.h
 
 $(EXPRESSION_VALUE).o: $(EXPRESSION_VALUE).cc
 	$(CC) $(CFLAGS)  $(EXPRESSION_VALUE).cc $(EXPRESSION_VALUE).h  -I $(DAG_MANAGER_DIR) -I $(HASHTABLE_MANAGER_DIR) -I $(COMMON_DIR) -I $(LOGMANAGER_DIR) -I $(COMMAND_OPTIONS_DIR)
@@ -53,4 +57,4 @@ $(BVFNS).o : $(BVFNS).cc
 	$(CC) $(CFLAGS) $(BVFNS).cc -I $(COMMON_DIR)
 
 clean:
-	rm -f *.o *.gch *.tab.* *.h.gch
+	rm -f *.o *.gch *.tab.* *.h.gch CWD.h

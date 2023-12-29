@@ -538,17 +538,19 @@ t_ExpressionManager::t_ExpressionManager(t_ConfigurationOptions config_options)
         //TODO: Uncomment this line to call createExpression instead of createDagNode in DAG Simplifier.
         //Commented because create expression not able to infer type.
         ds->setNodeCreationCallBack(&t_ExpressionManager::createDagNodeLevelExpression);
-        string envName = "SS";
-        char *name = getenv(envName.c_str());
+        // string envName = "SS";
+        // char *name = getenv(envName.c_str());
 
-	//assert(name != NULL); //line added by Ajith John on 9 June 2013
+	// //assert(name != NULL); //line added by Ajith John on 9 June 2013
 
-        string filename(name);
-        filename += "/new_rules.txt";
+        // string filename(name);
+        // filename += "/new_rules.txt";
+	string filename = CWD;
+	filename += "/new_rules.txt";
         FILE *fp = fopen((char*) filename.c_str(), "r");
         if (fp == NULL)
         {
-            cerr << "ERROR : " << filename << " Doesnot Exists " << endl;
+            cerr << "ERROR : " << filename << " Does not exist " << endl;
             exit(-1);
         }
         extern FILE *rules_parserin;
@@ -699,17 +701,19 @@ t_ExpressionManager::t_ExpressionManager(bool recursion_recompute_signatures)
         //TODO: Uncomment this line to call createExpression instead of createDagNode in DAG Simplifier.
         //Commented because create expression not able to infer type.
         ds->setNodeCreationCallBack(&t_ExpressionManager::createDagNodeLevelExpression);
-        string envName = "SS";
-        char *name = getenv(envName.c_str());
+        // string envName = "SS";
+        // char *name = getenv(envName.c_str());
 
-	assert(name != NULL); //line added by Ajith John on 9 June 2013
+	// assert(name != NULL); //line added by Ajith John on 9 June 2013
 
-        string filename(name);
-        filename += "/new_rules.txt";
+        // string filename(name);
+        // filename += "/new_rules.txt";
+	string filename = CWD;
+	filename += "/new_rules.txt";
         FILE *fp = fopen((char*) filename.c_str(), "r");
         if (fp == NULL)
         {
-            cerr << "ERROR : " << filename << " Doesnot Exists " << endl;
+            cerr << "ERROR : " << filename << " Does not exist " << endl;
             exit(-1);
         }
         extern FILE *rules_parserin;
@@ -1205,7 +1209,7 @@ TypeOfExpressionTuple *t_ExpressionManager::inferTypeOfExpression(string operato
                 }
                 else
                 {
-                    logManager->LOG("Operator:" + operatorSymbol + " Doesnot have infinte operands", m_logFile, c_DebugLevelVerbosity);
+                    logManager->LOG("Operator:" + operatorSymbol + " Does not have infinte operands", m_logFile, c_DebugLevelVerbosity);
                 }
             }
             else
@@ -6609,18 +6613,20 @@ ostream& t_ExpressionManager::printExpressions(ostream&output, ostream&declarati
     static map<string, string> operatorMap;
     if (operatorMap.empty())
     {
-        string envVar = "SS";
-        char *envPath = getenv(envVar.c_str());
+        // string envVar = "SS";
+        // char *envPath = getenv(envVar.c_str());
 
-	assert(envPath != NULL); //line added by Ajith John on 9 June 2013
+	// assert(envPath != NULL); //line added by Ajith John on 9 June 2013
 
-        string filePath(envPath);
-        filePath += "/SMT_OperatorMap";
-        ifstream mapFile((char*) filePath.c_str());
-        cout << "Generating operator Map from file:" << filePath << endl;
-        generateMap(mapFile, operatorMap);
-        cout << "Size of operator map:" << operatorMap.size() << endl;
-        //getchar();
+        // string filePath(envPath);
+        // filePath += "/SMT_OperatorMap";
+      string filePath = CWD;
+      filePath += "/SMT_OperatorMap";
+      ifstream mapFile((char*) filePath.c_str());
+      cout << "Generating operator Map from file:" << filePath << endl;
+      generateMap(mapFile, operatorMap);
+      cout << "Size of operator map:" << operatorMap.size() << endl;
+      //getchar();
     }
     clearPrintingSets();
     for_each(exprs.begin(), exprs.end(), mem_fun(&t_Expression::clearVisitedFlagsUnderThisExpression));
@@ -6719,16 +6725,18 @@ void t_ExpressionManager::printExpressionsToFileInSMT(const T1 &exprs,
     {
         if (operatorMap.empty())
         {
-            string envVar = "SS";
-            char *envPath = getenv(envVar.c_str());
+            // string envVar = "SS";
+            // char *envPath = getenv(envVar.c_str());
 
-	    assert(envPath != NULL); //line added by Ajith John on 9 June 2013
+	    // assert(envPath != NULL); //line added by Ajith John on 9 June 2013
 
-            string filePath(envPath);
-            filePath += "/SMT_OperatorMap";
-            ifstream mapFile((char*) filePath.c_str());
-
-            generateMap(mapFile, operatorMap);
+            // string filePath(envPath);
+            // filePath += "/SMT_OperatorMap";
+	  string filePath = CWD;
+	  filePath += "/SMT_OperatorMap";
+	  ifstream mapFile((char*) filePath.c_str());
+	  
+	  generateMap(mapFile, operatorMap);
         }
         //createdIntermediateExpressions.clear();
         //printedSet.clear();
@@ -6908,16 +6916,18 @@ void t_ExpressionManager::mod_printExpressionsToFileInSMT(const T1 &exprs, const
     static map<string, string> operatorMap;
     {
         if (operatorMap.empty()) {
-            string envVar = "SS";
-            char *envPath = getenv(envVar.c_str());
+            // string envVar = "SS";
+            // char *envPath = getenv(envVar.c_str());
 
-	    assert(envPath != NULL); //line added by Ajith John on 9 June 2013
+	    // assert(envPath != NULL); //line added by Ajith John on 9 June 2013
 
-            string filePath(envPath);
-            filePath += "/SMT_OperatorMap";
-            ifstream mapFile((char*) filePath.c_str());
-
-            generateMap(mapFile, operatorMap);
+            // string filePath(envPath);
+            // filePath += "/SMT_OperatorMap";
+	  string filePath = CWD;
+	  filePath += "/SMT_OperatorMap";
+	  ifstream mapFile((char*) filePath.c_str());
+	  
+	  generateMap(mapFile, operatorMap);
         }
         //createdIntermediateExpressions.clear();
         //printedSet.clear();
