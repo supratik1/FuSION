@@ -1,6 +1,6 @@
 ## FuSION: Functional Significance In nOisy Networks
 
-**FuSiON** has been developed jointly by S. Akshay, Sukanya Basu and Supratik Chakraborty from IIT Bombay, 
+**FuSiON** was developed at IIT Bombay jointly by S. Akshay, Sukanya Basu and Supratik Chakraborty (IIT Bombay), 
 Rangapriya Sundararajan and Prasanna Venkatraman from ACTREC (Tata Memorial Centre), 
 with help from Jahnabi Roy (IIT Delhi).
 
@@ -32,3 +32,6 @@ In case you use the tool, please cite it as follows:
 
 S. Akshay, S. Basu, S. Chakraborty, R. Sundararajan and P. Venkataraman, *Functional Significance Checking in Noisy Gene Regulatory Networks*, 
 in Proc. of International Conference on Principles and Practice of Constraint Programming (CP), pages 767-785, Oct 2019
+
+S. Basu, *Functional Significance Checking in Biological Networks: Theory and Implementation*, Ph.D. Dissertation, Department of Computer 
+Science and Engineering, IIT Bombay, 2019
