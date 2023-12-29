@@ -57,11 +57,13 @@ all: ds_build $(TARGET)
 
 ds_build: $(DS_SRC) $(DS_DIR)/Makefile.include $(foreach dsdir, $(DS_SUBDIRS), $(dsdir)/Makefile)
 	$(foreach dsdir, $(DS_SUBDIRS), $(MAKE) -C $(dsdir) &&)\
-	echo "Build of data structure libraries done!"
+	echo "***************************************" &&\
+	echo "Build of data structure libraries done!" &&\
+	echo "***************************************"
 
 $(TARGET) : $(BUILD_DIR)/main.o  $(BUILD_DIR)/NewBV.o  $(BUILD_DIR)/Graph.o  $(BUILD_DIR)/GraphManager.o  $(BUILD_DIR)/GraphManagerNew.o $(BUILD_DIR)/XMLParser.o $(BUILD_DIR)/Z3Solver.o $(BUILD_DIR)/lex.yy.o $(BUILD_DIR)/rules_parser.tab.o $(BUILD_DIR)/rule_tuple_store.o $(DS_OBJ)
 	$(CC) -g $(OPTFLAGS) $(BUILD_DIR)/main.o  $(BUILD_DIR)/NewBV.o  $(BUILD_DIR)/Graph.o  $(BUILD_DIR)/GraphManager.o  $(BUILD_DIR)/GraphManagerNew.o $(BUILD_DIR)/XMLParser.o  $(BUILD_DIR)/Z3Solver.o $(BUILD_DIR)/lex.yy.o $(BUILD_DIR)/rules_parser.tab.o $(BUILD_DIR)/rule_tuple_store.o $(DS_OBJ) $(XMLFLAGS) $(DSFLAGS) $(Z3PP_FLAGS) -o $(TARGET) &&\
-	rm $(SOURCE_DIR)/rules_parser.tab.h
+	rm -f $(SOURCE_DIR)/rules_parser.tab.h
 
 $(BUILD_DIR)/main.o: $(SOURCE_DIR)/main.cc  $(INCLUDE_DIR)/GraphManager.h $(INCLUDE_DIR)/GraphManagerNew.h $(INCLUDE_DIR)/XMLParser.h $(INCLUDE_DIR)/Z3Solver.h $(INCLUDE_DIR)/macros.h $(INCLUDE_DIR)/rules_parser_datatypes.h $(INCLUDE_DIR)/rules_parser.tab.h $(SOURCE_DIR)/rule_tuple_store.cc $(INCLUDE_DIR)/rule_tuple_store.h
 	$(CC) -g -c $(CFLAGS) $(OPTFLAGS) $(SOURCE_DIR)/main.cc $(XMLFLAGS) $(DSFLAGS) $(Z3PP_FLAGS) -o $(BUILD_DIR)/main.o 
@@ -108,8 +110,9 @@ $(SOURCE_DIR)/lex.yy.c : $(SOURCE_DIR)/rules_parser.l $(INCLUDE_DIR)/rules_parse
 	flex $(SOURCE_DIR)/rules_parser.l && mv lex.yy.c $(SOURCE_DIR)
 
 clean:
-	rm -rf $(BUILD_DIR)/*.o $(SOURCE_DIR)/*gch $(TARGET) $(SOURCE_DIR)/*.tab.* $(SOURCE_DIR)/*.yy.c $(INCLUDE_DIR)/*.tab.* $(INCLUDE_DIR)/*.yy.c && \
-	$(foreach dsdir, $(shell find $(DS_DIR) -path '$(DS_DIR)/*' -prune -type d), $(MAKE) -C $(dsdir) clean &&)\
+	rm -rf $(BUILD_DIR)/*.o $(SOURCE_DIR)/*gch $(TARGET) $(SOURCE_DIR)/*.tab.* $(SOURCE_DIR)/*.yy.c $(INCLUDE_DIR)/*.tab.* $(INCLUDE_DIR)/*.yy.c &&\
+	for dsdir in $(DS_SUBDIRS); do $(MAKE) -C $$dsdir clean; done &&\
 	echo "********************" &&\
 	echo "Cleaned the build..." &&\
 	echo "********************"
+
