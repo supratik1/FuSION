@@ -1099,10 +1099,14 @@ int main(int argc, char *argv[])
     bool b_mode = false;
     int cmdCount = inf, cnt_cmd = 0;
     vector<string> commands;
+    string argv_0(argv[0]);
+
     if (argc > 1)
     {
-        string argv_1(argv[1]);
-        string bmode = "-b";
+      string argv_1(argv[1]);
+      string bmode = "-b";
+      string dmode = "-d";
+      string hmode = "-h";
 
         if (argv_1.compare(bmode) == 0)
         {
@@ -1127,10 +1131,32 @@ int main(int argc, char *argv[])
                 b_mode = true;
             }
         }
-        else
+        else if (argv_1.compare(dmode) == 0)
         {
-            cout << "Entering Normal mode" << endl;
+	  cout << "Interactive debug mode not supported in this version" << endl;
+	  cout << "Run in batch mode as \"" << argv_0 << " -b <batch_command_file_name>\"" << endl;
+	  cout << endl << "Partial listing of commands that can be used in batch_command_file:" << endl;
+	  display_commands();
+	}
+        else if (argv_1.compare(hmode) == 0)
+        {
+	  cout << "Run as \"" << argv_0 << " -b <batch_command_file_name>\"" << endl;
+	  cout << endl << "Partial listing of commands that can be used in batch_command_file:" << endl;
+	  display_commands();
+	  exit(0);
+	}
+	else {
+	  cout << "Run the tool as \"" << argv_0 << " -b <batch_command_file_name>\"" << endl;
+	  cout << endl << "Partial listing of commands that can be used in batch_command_file:" << endl;
+	  display_commands();
+	  exit(-1);
         }
+    }
+    else {
+      cout << "Run the tool as \"" << argv_0 << " -b <batch_command_file_name>\"" << endl;
+      cout << endl << "Partial listing of commands that can be used in batch_command_file:" << endl;
+      display_commands();
+      exit(-1);
     }
 
     if (b_mode)
@@ -1142,10 +1168,9 @@ int main(int argc, char *argv[])
     // display_commands();
     const string prompt = "sysbio> ";
 
-    string config_file_path(SUPPORTING_FILES_DIR);
-    config_file_path += "/config.txt";
-    t_ConfigurationOptions config_options(config_file_path);
-    // t_ConfigurationOptions config_options("../../supporting_files/config.txt");
+    // string config_file_path(SUPPORTING_FILES_DIR);
+    // config_file_path += "/config.txt";
+    t_ConfigurationOptions config_options("");
     t_ExpressionManager *em = new t_ExpressionManager(config_options);
 
     Z3Solver *zs = new Z3Solver();
