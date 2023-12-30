@@ -8,17 +8,25 @@
 ## What is it about?
 Given a collection of gene regulatory networks (currently KEGG networks), microarray data from wet-lab experiments, 
 and source (stimulus), target (observation) and implicated (potentially functionally significant) actors in the
-regulatory networks, **FuSION** uses SMT solving and Pareto theory to help determine if the implicated actors play a 
-functionally signficant role in triggering the observation through a signaling chain from the stimulus. The tool 
-reasons about functional significance of the implicated actors in the presence of bounded noise (aka errors or relaxations) 
-in regulatory network edges and in microarray data. Thus, one can specify a bounded number of edges in the networks being 
+regulatory networks, **FuSION** uses a fusion of biological domain knowledge encoded in gene regulatory networks,
+state-of-the-art SMT solving and Pareto theory to help determine if the implicated actors play a functionally 
+signficant role in triggering the observation through one or more signaling chains starting from the stimulus. 
+Since microarray data is susceptible to bounded noise, and since publicly available gene regulatory networks 
+may have errors or imprecisely captured relations, it is important that such noise/errors are factored in before
+we implicate a candidate actor as playing a functionally significant role.  **FuSION** allows the user to do this 
+by reasoning about functional significance of implicated actors in the presence of bounded noise (aka errors or relaxations) 
+in network edges and/or in microarray data. Thus, one can specify a bounded number of edges in the networks being 
 in error.  Similarly, a bounded number of microarray data points can also be specified to be in error.  
 
-The tool generates a pair of Pareto curves, one with and one without the implicated actors present in the regulatory network, 
-where each curve describes how noise affects the construction of a stimulus-to-observation explanation as a signaling chain
-in the gene regulatory networks.  In case the two curves are separated, the implicated actor is deemed to be functionally 
-significant for the noise bounds provided.  In case the curves coincide, one cannot infer the functional significance of the 
-implicated actor for the given noise bounds.
+The tool generates a pair of Pareto curves, one with and one without the implicated actors in the regulatory networks, 
+where each curve describes how noise affects the signaling chain from stimulus-to-observation in the gene regulatory 
+networks.  If the generated pair of curves don't overlap or intersect, one infers that the absence of the implicated 
+actors changes the source-to-stimulus signaling in significant enough ways.  In such a case, the implicated actor 
+is likely to be functionally significant in the signaling chain from stimulus to observation, given the noise bounds 
+provided.  In case the curves coincide or intersect, one cannot infer the functional significance of the implicated 
+actor for the given noise bounds.
+
+For more details of the process, please go through the citations at the end of this page.
 
 ## Tool version 
 Currently, FuSION runs on Linux (tested on Ubuntu 22.04).  Please check out the ```Linux``` sub-directory of the repository for 
