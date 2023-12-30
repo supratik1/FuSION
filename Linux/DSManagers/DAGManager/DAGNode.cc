@@ -212,6 +212,8 @@ bool t_DAGNode::assignVisitedFlagRecursively(bool value, t_HashTable<unsigned lo
         if( visitedSet.hashtable_search( (*it)->m_node_id).success() == false)
             (*it)->assignVisitedFlagRecursively(value, visitedSet);
     }
+
+    return true;
 }
 
 /**
@@ -260,6 +262,7 @@ bool t_DAGNode ::setValue(void *value_to_set)
 bool t_DAGNode :: assignVisitedFlag(bool assign_to)
 {
   m_visited = assign_to;
+  return true;
 }
 
 
@@ -309,6 +312,7 @@ return this->m_node_id;
 bool t_DAGNode ::addAbstractSignature(string label_to_add)
 {
   this->m_abstract_signatures.insert(label_to_add);
+  return true;
 }
 set<string> t_DAGNode :: getAbstractSignatures()
 {
@@ -331,6 +335,7 @@ bool t_DAGNode:: isPresentAsAbstractSignature(string label_to_test)
 bool t_DAGNode :: setDataType(int type_to_set)
 {
   this->m_data_type = type_to_set;
+  return true;
 }
   int t_DAGNode :: getDataType()
   {

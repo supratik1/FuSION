@@ -10,10 +10,10 @@
 #include "helping_functions.h"
   using namespace std;
   int yylex(void);
-  void yyerror(char *);
+  void yyerror(char const *);
   extern ofstream *outfile;
   int rules_parserlex(void);
-  void rules_parsererror(char *);
+  void rules_parsererror(char const *);
   vector<t_RewriteRuleExpression *> assign_arguments_of_simplification_expressions
     (
      class t_VectorOfRewriteRuleExpressions *v_exprs_in
@@ -23,7 +23,8 @@
 %}
 
 
-
+%define parse.error verbose
+%start RulesFile
 
 
 /*This is the union used to define YYSTYPE*/
@@ -380,7 +381,7 @@ Operator : t_String
 
 
 
-void yyerror(char *s) 
+void yyerror(char const *s) 
 {
   fprintf(stderr, "%s\n", s);
   fprintf(stderr, "ERROR!! In Parsing the simplification rules file \n");

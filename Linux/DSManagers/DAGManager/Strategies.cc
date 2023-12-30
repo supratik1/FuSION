@@ -272,6 +272,7 @@ bool t_DAGSimplifier::removeEdgesCorrespondingToLHSOfRule(t_RewriteRuleExpressio
 
     return remove_edges_result;
      */
+  return true; // Added to prevent compiler warning
 }
 
 /**
@@ -609,6 +610,7 @@ bool t_DAGSimplifier::runPriorityStrategy(t_DAGNode *&root)
         }
     }
     m_logManager->LOG("Finished Running PRIO Strategy\n", m_dag_simplifier_log, c_DebugLevelVerbosity);
+    return true;
 }
 
 /**

@@ -547,7 +547,7 @@ t_Expression* t_Expression::extendExpr(t_Expression* expr, int width, int exprIm
     t_Expression* wdExpr;
     {
         std::string strWidth = "0b" + integerToBinaryString(width);
-        TypeOfExpressionTuple typeInfo = {TYPE_UNSIGNED_BITVECTOR, strWidth.length()};
+        TypeOfExpressionTuple typeInfo = {TYPE_UNSIGNED_BITVECTOR, (int) strWidth.length()};
 
         wdExpr = createExpression(strWidth, typeInfo, type, exprImplType, eimInstance);
     }
@@ -657,7 +657,7 @@ pair<bool, t_Expression*> t_Expression::getArrayExprForUpdate(t_Expression* arra
 {
     if (array_expr == NULL)
     {
-        cout << "ERROR::"__FILE__":" << __LINE__ << ":Array Expression of update expression cannot be null." << endl;
+      cout << "ERROR::" << __FILE__ << ":" << __LINE__ << ":Array Expression of update expression cannot be null." << endl;
         return make_pair(false, array_expr);
     }
     string label = array_expr->getLabelOfExpression(expressionImplementationType, eimInstance);
@@ -822,7 +822,7 @@ t_Expression* t_Expression::createUnknownMemoryArraySimilarTo(string label, t_Ty
     t_ExpressionValue* value = uValueExpression->getValue(exprImplType, eimInstance);
     if (value == NULL)
     {
-        cout << "************"__FILE__":" << __LINE__ << ": expression value not set for memory." << endl;
+      cout << "************" << __FILE__ << ":" << __LINE__ << ": expression value not set for memory." << endl;
         return uValueExpression;
     }
     if (value->m_typeInfo.m_type != TYPE_MEMORY_ARRAY)
@@ -1131,7 +1131,7 @@ t_Expression* t_Expression::modifyExpressionForSelectOfRead(string &label, vecto
         for (int i = 0; i < indices.size(); ++i)
         {
             string index = integerToBinaryString(indices[i]);
-            TypeOfExpressionTuple typeForIndex = {TYPE_UNSIGNED_BITVECTOR, index.length()};
+            TypeOfExpressionTuple typeForIndex = {TYPE_UNSIGNED_BITVECTOR, (int)index.length()};
             t_TypeOfValueStoredInExpressionLabel type = CONSTANT;
             index = "0b" + index;
             t_Expression* idx = createExpression(index, typeForIndex, type, Expressionimplementationtype, expressionImplementationManagerInstance);
@@ -1200,7 +1200,7 @@ t_Expression* t_Expression::resizeIndex(t_Expression* array_expr, t_Expression* 
         t_Expression* reqdWidthExpr;
         {
             string label = integerToBinaryString(reqdWidth);
-            TypeOfExpressionTuple typeInfo = {TYPE_UNSIGNED_BITVECTOR, label.length()};
+            TypeOfExpressionTuple typeInfo = {TYPE_UNSIGNED_BITVECTOR, (int) label.length()};
             label = "0b" + label;
             t_TypeOfValueStoredInExpressionLabel labelType = CONSTANT;
             reqdWidthExpr = createExpression(label, typeInfo, labelType, exprImplType, eimInstance);
@@ -1218,7 +1218,7 @@ t_Expression* t_Expression::resizeIndex(t_Expression* array_expr, t_Expression* 
         t_Expression* lbExpr;
         {
             string label = integerToBinaryString(0);
-            TypeOfExpressionTuple typeInfo = {TYPE_UNSIGNED_BITVECTOR, label.length()};
+            TypeOfExpressionTuple typeInfo = {TYPE_UNSIGNED_BITVECTOR, (int) label.length()};
             label = "0b" + label;
             t_TypeOfValueStoredInExpressionLabel labelType = CONSTANT;
             lbExpr = createExpression(label, typeInfo, labelType, exprImplType, eimInstance);
@@ -1226,7 +1226,7 @@ t_Expression* t_Expression::resizeIndex(t_Expression* array_expr, t_Expression* 
         t_Expression* ubExpr;
         {
             string label = integerToBinaryString(reqdWidth - 1);
-            TypeOfExpressionTuple typeInfo = {TYPE_UNSIGNED_BITVECTOR, label.length()};
+            TypeOfExpressionTuple typeInfo = {TYPE_UNSIGNED_BITVECTOR, (int) label.length()};
             label = "0b" + label;
             t_TypeOfValueStoredInExpressionLabel labelType = CONSTANT;
             ubExpr = createExpression(label, typeInfo, labelType, exprImplType, eimInstance);
@@ -3667,6 +3667,8 @@ bool t_Expression::printExpressionWithSet(
             it++;
         }
     }
+
+    return true;
 }
 
 bool t_Expression::printExpressionWithSetRecursively(t_Expression *expr_to_print, set<unsigned int>& expressions_set,

@@ -203,6 +203,8 @@ bool t_DAGManager :: computeDifferenceOfGlobalSetOfGarbageNodesAndNonGarbageNode
 	  return false;
 	}
     }
+
+  return true;
 }
 
 bool t_DAGManager :: removeEdgesFromNonGarbageNodesThatPointToGarbage(t_DAGNode *node, set<t_DAGNode *> &global_set_of_garbage_nodes)
@@ -310,6 +312,8 @@ bool t_DAGManager::deleteGarbageNodesAndFreeMemory(set<t_DAGNode *> &global_set_
       this->m_dagnode_count--;
       delete(node_to_delete);
     }
+
+  return true;
 }
 
 

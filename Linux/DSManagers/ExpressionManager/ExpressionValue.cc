@@ -64,6 +64,7 @@ bool t_ExpressionValue::setActualValueBasedOnType(string val)
     else if (m_typeInfo.m_type == TYPE_BOOL)
     {
         m_actualExpressionValueStored.exprvalueBool = stringToBoolean(val);
+	return true;
     }
     else if (m_typeInfo.m_type == TYPE_MEMORY_ARRAY)
     {
@@ -600,6 +601,7 @@ bool t_ExpressionValue::setActualValueInExpressionValue(bool val)
     if (m_typeInfo.m_type == TYPE_BOOL)
     {
         m_actualExpressionValueStored.exprvalueBool = val;
+	return true;
     }
     else
     {
@@ -910,6 +912,7 @@ t_FourValuedBitVector t_ExpressionValue::convertMemoryToFourValuedBV(int width)
     {
         t_ListOfMemoryEntries* list = (t_ListOfMemoryEntries*) currentValue;
         t_FourValuedBitVector bvResult = list->convertListOfEntriesIntoABitVector(width);
+	return bvResult; // Adding to avoid compiler warning: Supratik, 30 Dec 2023
     }
 }
 

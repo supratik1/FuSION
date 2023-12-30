@@ -13,7 +13,8 @@ using namespace std;
 
 //comment this out in the integrated version
 int yylex(void);
-void yyerror(const char *);
+//void yyerror(const char *);
+void yyerror(char const *);
 //to be commented ends
 
 list<rule_t*> list_of_rules;
@@ -21,7 +22,8 @@ list<rule_t*> list_of_rules;
 
 //add code requires code here when when integration has to be done
 
-%error-verbose
+//%error-verbose
+%define parse.error verbose
 %start list_rules
 
 %union{

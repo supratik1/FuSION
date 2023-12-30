@@ -843,7 +843,7 @@ t_Expression* t_ExpressionManager::extendExpr(t_Expression* expr, int newWidth)
 t_Expression* t_ExpressionManager::createIntegerConstant(int value)
 {
     string label = integerToBinaryString(value);
-    TypeOfExpressionTuple typeInfo = {TYPE_UNSIGNED_BITVECTOR, label.length()};
+    TypeOfExpressionTuple typeInfo = {TYPE_UNSIGNED_BITVECTOR, (int) label.length()};
     return createConstant(label, typeInfo);
 }
 
@@ -2147,6 +2147,7 @@ bool t_ExpressionManager::setValue(t_Expression *expr, unsigned int usiVal)
                     m_expressionImplementationType,
                     m_expressionImplementationManagerInstance,
                     m_evaluator);
+	    return true;
         }
         else
         {
@@ -2173,6 +2174,7 @@ bool t_ExpressionManager::setValue(t_Expression *expr, float fval)
                     m_expressionImplementationType,
                     m_expressionImplementationManagerInstance,
                     m_evaluator);
+	    return true;
         }
         else
         {
@@ -3876,7 +3878,7 @@ t_Expression* t_ExpressionManager::createExpressionToEquateAllValuesForUpdateOnl
             t_ExpressionValue* value = allArrayValue->getValue(m_expressionImplementationType, m_expressionImplementationManagerInstance);
             if (value == NULL)
             {
-                cout << "************"__FILE__":" << __LINE__ << ": expression value not set for memory." << endl;
+	      cout << "************" << __FILE__ << ":" << __LINE__ << ": expression value not set for memory." << endl;
                 break;
             }
             assert(value != NULL && value->m_typeInfo.m_type == TYPE_MEMORY_ARRAY);
@@ -4372,7 +4374,7 @@ vector<t_Expression*> t_ExpressionManager::getAtomsBetweenUbAndLb(t_Expression* 
             expr_width = 32; //32 bit integer
         if (false && expr_width < ub)
         {
-            cout << "Patch Activated..."__FILE__":" << __LINE__ << ":" << __FUNCTION__ << endl;
+	  cout << "Patch Activated..." << __FILE__ << ":" << __LINE__ << ":" << __FUNCTION__ << endl;
             if (isALeafExpression(expr))
                 v_atoms.push_back(expr);
             else if (expr_label == m_operatorLabelConcat || expr_label == m_operatorLabelLefttoRightStream)
@@ -4394,7 +4396,7 @@ vector<t_Expression*> t_ExpressionManager::getAtomsBetweenUbAndLb(t_Expression* 
         {
             if (expr_width <= lb)
             {
-                cout << "Patch Activated:"__FILE__":" << __LINE__ << endl;
+	      cout << "Patch Activated:" << __FILE__ << ":" << __LINE__ << endl;
                 string label(ub - lb + 1, '0');
                 TypeOfExpressionTuple type = {TYPE_UNSIGNED_BITVECTOR, ub - lb + 1};
                 v_atoms.push_back(createConstant(label, type));
@@ -4403,7 +4405,7 @@ vector<t_Expression*> t_ExpressionManager::getAtomsBetweenUbAndLb(t_Expression* 
             }
             if (expr_width <= ub)
             {
-                cout << "Patch2 Activated..."__FILE__":" << __LINE__ << endl;
+	      cout << "Patch2 Activated..." << __FILE__ << ":" << __LINE__ << endl;
                 ub = min(expr_width - 1, ub);
                 lb = min(ub, lb);
             }
@@ -4474,14 +4476,14 @@ t_Expression* t_ExpressionManager::createASelectExpressionOnExpression(t_Express
         if (wd != -1 && lb >= wd)
         {
             //Return a constant 0 of length ub-lb+1
-            cout << "Patch "__FILE__":" << __LINE__ << ": activated" << endl;
+	  cout << "Patch " << __FILE__ << ":" << __LINE__ << ": activated" << endl;
             TypeOfExpressionTuple type = {TYPE_UNSIGNED_BITVECTOR, ub - lb + 1};
             string label(ub - lb + 1, '0');
             return createConstant(label, type);
         }
         else if (wd != -1 && ub >= wd)
         {
-            cout << "Patch "__FILE__":" << __LINE__ << ": activated" << endl;
+	  cout << "Patch " << __FILE__ << ":" << __LINE__ << ": activated" << endl;
             ub = max(min(ub, wd - 1), 0);
             lb = min(ub, lb);
         }
@@ -4492,11 +4494,11 @@ t_Expression* t_ExpressionManager::createASelectExpressionOnExpression(t_Express
     //t_Expression* ub_expr = createConstant(ub_label, type_int);
     //t_Expression* lb_expr = createConstant(lb_label, type_int);
     string ub_label = integerToBinaryString(ub);
-    TypeOfExpressionTuple ub_type = {TYPE_UNSIGNED_BITVECTOR, ub_label.length()};
+    TypeOfExpressionTuple ub_type = {TYPE_UNSIGNED_BITVECTOR, (int) ub_label.length()};
     t_Expression* ub_expr = createConstant(ub_label, ub_type);
 
     string lb_label = integerToBinaryString(lb);
-    TypeOfExpressionTuple lb_type = {TYPE_UNSIGNED_BITVECTOR, lb_label.length()};
+    TypeOfExpressionTuple lb_type = {TYPE_UNSIGNED_BITVECTOR, (int) lb_label.length()};
     t_Expression* lb_expr = createConstant(lb_label, lb_type);
 
     vector<t_Expression*> v_operands(3, NULL);

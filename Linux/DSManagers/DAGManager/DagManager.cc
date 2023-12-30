@@ -1679,6 +1679,7 @@ bool t_DAGManager::removeIthOutgoingEdgeOfANode(t_DAGNode *node, int i)
 
     m_logManager->LOG("Successfully removed " + integerToString(i) + "th edge of a node\n", m_dagmanager_log, c_DebugLevelVerbosity);
 
+    return true;
 }
 
 /**
@@ -2380,6 +2381,7 @@ bool t_DAGManager::addNodeAsIthChild(t_DAGNode *parent, t_DAGNode *child, int i)
 
         }
         //No signatures change!!
+	return true;
     }
 }
 

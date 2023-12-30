@@ -8,9 +8,9 @@
 
   using namespace std;
   int yylex(void);
-  void yyerror(char *);
+  void yyerror(char const *);
   int dag_parserlex(void);
-  void dag_parsererror(char *);
+  void dag_parsererror(char const *);
 
   
   t_DAGManager dm(true, false);
@@ -18,8 +18,8 @@
 %}
 
 
-
-
+%define parse.error verbose
+%start DAGFile
 
 /*This is the union used to define YYSTYPE*/
 %union{
@@ -170,7 +170,7 @@ Operator : t_String { cout<<"Matching an operator "<<$1<<endl; /*ifvalidoperator
 
 
 
-void yyerror(char *s) 
+void yyerror(char const *s) 
 {
   fprintf(stderr, "%s\n", s);
   fprintf(stderr, "ERROR!! In reading the DAG from file \n");

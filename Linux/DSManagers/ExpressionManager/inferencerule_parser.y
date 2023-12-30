@@ -17,7 +17,7 @@
     using namespace std;
 
     int yylex(void);
-    void yyerror(char *);
+    void yyerror(char const *);
 
     string getTypeValue(string type) 
     {
@@ -287,7 +287,11 @@ InferenceRule:		t_OperatorString Operator t_MinArgs Integer t_MaxArgs Integer t_
 			    {
         			if ($6 != 2) 
 				{
-			            yyerror("Error while parsing file (Minargs != Maxargs or Maxargs  not 2)");
+				  string str;
+				  str = "Error while parsing file (Minargs != Maxargs or Maxargs  not 2)";
+				  char * msg = new char[str.length() + 1];
+				  strcpy(msg, str.c_str());
+				  yyerror(msg);
 			        }
 				//cout<<"Inference rule of 2 operands:";
 			        
@@ -323,7 +327,11 @@ InferenceRule:		t_OperatorString Operator t_MinArgs Integer t_MaxArgs Integer t_
 			    string signature;
 			    if ($6 != $4 || $4 != 1) 
 			    {
-			        yyerror("Error while parsing file (Minargs != Maxargs or Maxargs  not 1)");
+			      string str;
+			      str = "Error while parsing file (Minargs != Maxargs or Maxargs  not 1)";
+			      char * msg = new char[str.length() + 1];
+			      strcpy(msg, str.c_str());
+			      yyerror(msg);
     			    }
 			    t_InferTypeOfExpression *inferenceRule = new t_InferTypeOfExpression();
 
@@ -555,13 +563,21 @@ ParameterOfPrintWord:
 			}
 OnceOrEvery:		t_Once
 			{
-			    $$ = "$once";
-			    //cout<<"Once"<<endl;
+			  string str("$once");
+			  char *res = new char[str.length() + 1];
+			  strcpy(res, str.c_str());
+			  $$ = res;
+			  // $$ = "$once";
+			  //cout<<"Once"<<endl;
 			}
 			| t_Every
 			{
-			    $$ = "$every";
-			    //cout<<"Every"<<endl;
+			  string str("$every");
+			  char *res = new char[str.length() + 1];
+			  strcpy(res, str.c_str());
+			  $$ = res;
+			  // $$ = "$every";
+			  //cout<<"Every"<<endl;
 			}
 
 TypeCastOperands:      t_CastString OperandsNumbers
@@ -591,7 +607,7 @@ OperandsNumbers        : INT_NUMBER t_Comma OperandsNumbers
 %%
 
 
-void yyerror(char *s) 
+void yyerror(char const *s) 
 {
     fprintf(stderr, "%s\n", s);
     abort();

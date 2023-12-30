@@ -607,6 +607,7 @@ bool t_ExpressionAsDag::printExpressionToFileAsDAG(t_DAGNode *dagnode, ostream &
 {
     assert(dagnode != NULL);
     dagnode->printExpressionToFile(outfile);
+    return true;
 }
 
 /**

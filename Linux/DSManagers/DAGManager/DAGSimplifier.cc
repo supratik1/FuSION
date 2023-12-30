@@ -6,7 +6,7 @@ using namespace std;
 
 t_DAGNode* t_DAGSimplifier::defaultCallBack(const std::string& label, const vector<t_DAGNode*>& children)
 {
-    t_DAGManager::getSingleton()->createNode(label, children, NULL, false, false);
+  return(t_DAGManager::getSingleton()->createNode(label, children, NULL, false, false));
 }
     
 /**
@@ -386,6 +386,7 @@ bool t_DAGSimplifier :: printAllValidStringsOfLHSOfRules(ofstream *outfile)
   *outfile<<endl;
   *outfile<<"END Set of strings of rules\n";
 
+  return true;
 }
 
 
@@ -411,6 +412,8 @@ bool t_DAGSimplifier :: printAllRewriteRules(ofstream *outfile)
       rule_to_print->printRewriteRule(outfile);
     }
   *outfile<<"Finished printing all rewrite rules \n";
+
+  return true;
 }
 
 
@@ -435,6 +438,8 @@ bool t_DAGSimplifier :: printSortedRules(ofstream *outfile)
       rule_to_print->printRewriteRule(outfile);
     }
   *outfile<<"Finished printing all rewrite rules \n";
+
+  return true;
 }
 
 
@@ -809,6 +814,8 @@ bool t_DAGSimplifier :: clearAbstractRuleSignaturesOfDAG(t_DAGNode *root)
     {
       this->clearAbstractRuleSignaturesOfDAG(*it);
     }
+
+  return true;
 } /***
 bool t_DAGSimplifier::m_logManager->LOG(string message)
 {
