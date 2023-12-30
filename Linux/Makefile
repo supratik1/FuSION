@@ -4,7 +4,7 @@ SOURCE_DIR = src
 DS_DIR = DSManagers
 BUILD_DIR = build
 INCLUDE_DIR = include
-TARGET = fusionn 
+TARGET = fusion
 SUPPORTING_FILES_DIR = supporting_files
 
 CFLAGS =  -c -g -DQE -DDUP_CHECK_FLAG_SET -DDUMMY_EDGE_FLAG -DCOMPUTE_MINCUT_EDGES_FLAG -DONLY_INTERAC_EDGES_FOR_MINCUT -DOPT_GAP_HEUR_FLAG -DASSERT_FLAG -DDEBUG_FLAG -DUSE_FLOAT_EDGE_WEIGHTS_FOR_MINCUT -std=c++0x -Wall -Wno-deprecated -w
@@ -51,15 +51,18 @@ XMLFLAGS=-I/usr/include/libxml++-2.6 -I/usr/lib/x86_64-linux-gnu/libxml++-2.6/in
 
 Z3PP_FLAGS=-I/usr/include -L/usr/lib -lz3
 
-.PHONY: all clean ds_build
+.PHONY: all clean ds_build create_build
 
-all: ds_build $(TARGET) 
+all: ds_build create_build $(TARGET) 
 
 ds_build: $(DS_SRC) $(DS_DIR)/Makefile.include $(foreach dsdir, $(DS_SUBDIRS), $(dsdir)/Makefile)
-	$(foreach dsdir, $(DS_SUBDIRS), $(MAKE) -C $(dsdir) &&)\
-	echo "***************************************" &&\
-	echo "Build of data structure libraries done!" &&\
-	echo "***************************************"
+	for dsdir in $(DS_SUBDIRS); do $(MAKE) -C $$dsdir; done
+
+#	$(foreach dsdir, $(DS_SUBDIRS), $(MAKE) -C $(dsdir) &&)\
+#	echo "***************************************"
+
+create_build:
+	/bin/rm -rf build && mkdir build
 
 $(TARGET) : $(BUILD_DIR)/main.o  $(BUILD_DIR)/NewBV.o  $(BUILD_DIR)/Graph.o  $(BUILD_DIR)/GraphManager.o  $(BUILD_DIR)/GraphManagerNew.o $(BUILD_DIR)/XMLParser.o $(BUILD_DIR)/Z3Solver.o $(BUILD_DIR)/lex.yy.o $(BUILD_DIR)/rules_parser.tab.o $(BUILD_DIR)/rule_tuple_store.o $(DS_OBJ)
 	$(CC) -g $(OPTFLAGS) $(BUILD_DIR)/main.o  $(BUILD_DIR)/NewBV.o  $(BUILD_DIR)/Graph.o  $(BUILD_DIR)/GraphManager.o  $(BUILD_DIR)/GraphManagerNew.o $(BUILD_DIR)/XMLParser.o  $(BUILD_DIR)/Z3Solver.o $(BUILD_DIR)/lex.yy.o $(BUILD_DIR)/rules_parser.tab.o $(BUILD_DIR)/rule_tuple_store.o $(DS_OBJ) $(XMLFLAGS) $(DSFLAGS) $(Z3PP_FLAGS) -o $(TARGET) &&\
