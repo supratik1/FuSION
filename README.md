@@ -11,6 +11,7 @@ wet-lab experiment that she/he/they just conducted.  The classical and most conc
 out the actor and repeat the wet-lab experiment.  If the outcomes of interest differ significantly in the two experiments, 
 the suspected actor can be reasonably presumed to play a significant role in the stimulus-to-observation signaling circuits 
 active in the experiment.  Unfortunately, repeating wet-lab experiments incurs non-trivial cost, both time and resource-wise.  
+
 **FuSION** is an attempt to use computational techniques to help the biologist zoom down on likely actors (or filter out 
 unlikely actors) that play functionally significant roles in a wet-lab experiment.  Since running a computational experiment 
 is typically much cheaper (time and resource-wise) than conducting a wet-lab experiment, we hope **FuSION** will provide
