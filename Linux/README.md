@@ -26,8 +26,6 @@
 
    ​ `bison --version` // verify installation
 
-4. Navigate to the directory where Makefile exists. Run `make` to compile the program and generate the executable.
-
-   ​ `mkdir build`
+4. Navigate to the `Linux` directory and run the following command to build the tool.  The executable called `fusion` is generated in the build sub-directory created under `Linux`.
 
    ​ `make`
