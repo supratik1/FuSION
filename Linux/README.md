@@ -26,6 +26,8 @@
 
    ​ `bison --version` // verify installation
 
-4. Navigate to the `Linux` directory and run the following command to build the tool.  The executable called `fusion` is generated in the build sub-directory created under `Linux`.
+4. Navigate to the `Linux` directory and run the following command to build the tool.  
 
    ​ `make`
+
+  The executable called `fusion` is generated in the `Linux` directory.
