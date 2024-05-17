@@ -14,7 +14,7 @@
 
    ​ `pkg-config --modversion libxml++-2.6` // verify installation
 
-2. After successful installation, you can either download z3 from the website [Z3](https://github.com/Z3Prover/z3/releases). We have used the version 4.8.12.0 for the project. Z3 can also be downloaded from the WSL (Debian) or Linux environment using the following command:
+2. After successful installation, you can either download the SMT solver z3 from its github home [Z3](https://github.com/Z3Prover/z3/releases). We have used the version 4.8.12.0 for the project. Z3 can also be downloaded from the WSL (Debian) or Linux environment using the following command:
 
    ​ `sudo apt install z3` // installation.
 
