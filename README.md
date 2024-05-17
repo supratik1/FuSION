@@ -51,7 +51,7 @@ of this, **FuSION** allows the user to specify two kinds of bounded relaxations:
 **FuSION** tries to determine whether stimulus-to-observation signaling circuits can be extracted from the provided gene regulatory 
 networks, while being consistent with the microarray reads (modulo bounded relaxations, as discussed above). For example, **FuSION**
 may find that removing an suspected actor from the regulatory networks makes it impossible to extract stimulus-to-observation 
-signaling circuits unless larger bounds of relaxations are used for network edges and/or microarray reads.  In such a case, the
+signaling circuits unless very large (and unlikely) bounds of relaxations are used for network edges and/or microarray reads.  In such a case, the
 implicated actor is likely to play a functionally significant *positive* role in the stimulus-to-observation signaling.  Similarly,
 if removing the actor makes it possible to extract stimulus-to-observation signaling circuits with smaller bounds of relaxations
 than those necessary when the actor was present, the actor potentially plays a functionally significant *negative* role in the
@@ -61,10 +61,10 @@ stimulus-to-observation signaling.
 **FuSION** presents the results of its reasoning as a pair of Pareto curves to the user.  One of these curves is constructed with 
 the suspect actor present in the regulatory networks, while the other is constructed without the suspect actor. Each curve describes the
 minimum relaxations necessary to allow the discovery of signaling circuits from stimulus to observation.  If the generated pair of 
-curves don't overlap or intersect, it is reasonable to infers that the suspect actor plays a functionally significant role in the 
-signaling from stimulus to observation, given the noise bounds provided.  In case the curves coincide or intersect, one cannot 
-infer the functional significance of the implicated actor within the given noise bounds.  In such cases, it is possible that the
-suspect actor plays no significant role in the signaling circuits, or the actor may play a significant role in some signaling circuits,
+curves don't overlap or intersect, it is reasonable to infer that the suspect actor plays a functionally significant role in the 
+signaling from stimulus to observation, given the noise/relaxation bounds provided.  In case the curves coincide or intersect, one cannot 
+infer the functional significance of the implicated actor within the given noise/relaxation bounds.  In such cases, it is possible that the
+suspect actor plays no significant role in the signaling circuits, or that the actor plays a significant role in some signaling circuits,
 although compensatory signaling circuits may be operational in the absence of the actor. To probe further in such cases, we may need
 to specify that certain other actors/signaling edges must/must not be present in the stimulus-to-observation signaling circuits
 (**FuSION** allows such specification) and the computational experiments repeated with and without the suspected actor being present.
