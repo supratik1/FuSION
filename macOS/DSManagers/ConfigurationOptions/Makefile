@@ -1,0 +1,15 @@
+SS = ..
+include $(SS)/Makefile.include
+
+
+build : $(COMMAND_OPTIONS).o
+#${COMMAND_OPTIONS}.o : ${COMMAND_OPTIONS}.cc 
+#	${CC} ${CFLAGS}  ${COMMAND_OPTIONS}.cc $(INCLUDE)
+
+${COMMAND_OPTIONS}.o : ${COMMAND_OPTIONS}.cc 
+	${CC} ${CFLAGS}  ${COMMAND_OPTIONS}.cc -I $(COMMON_DIR)
+clean: 
+	rm -f *.o *.gch *.*.gch
+distclean:
+	make clean; \
+	rm -f gmon.out *~ tags .gdb_history *.log *.LOG *.Log
