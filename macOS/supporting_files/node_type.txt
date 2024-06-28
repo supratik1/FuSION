@@ -1,0 +1,6 @@
+undefined => 0
+gene => 1
+compound => 2
+map => 3
+group => 4
+other => 5
