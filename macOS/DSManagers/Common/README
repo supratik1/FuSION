@@ -1,0 +1,14 @@
+This directory contains the common code used by several modules. None of the code here stands by itself, thus can not be tested independently.
+
+
+Making the code:
+
+If you will run simply "make", the default target "build" is executed and object files for this module are created. Use this for compiling the code.
+
+Following targets are available in the top makefile
+
+clean: Removes log files, object files, debug files.
+
+
+distclean: Removes everything except source code, makefiles and config files
+
