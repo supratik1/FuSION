@@ -3,7 +3,7 @@
 **FuSION** was developed at IIT Bombay jointly by 
 * S. Akshay, Sukanya Basu and Supratik Chakraborty (IIT Bombay), 
 * Rangapriya Sundararajan and Prasanna Venkatraman (ACTREC, Tata Memorial Centre), 
-* With help from Jahnabi Roy (IIT Delhi).
+* With help from Jahnabi Roy (IIT Delhi) and Neelavo Sen (IIT Madras).
 
 ## Why FuSION?
 An experimental molecular cell biologist often has to decide if a suspected actor plays a functionally significant role in a
