@@ -72,8 +72,8 @@ to specify that certain other actors/signaling edges must/must not be present in
 For more details of the theory, please go through the citations at the end of this page.
 
 ## Tool version 
-Currently, FuSION runs on Linux (tested on Ubuntu 22.04) and MacOS.  Please check out the ```Linux``` or ```macOS`` sub-directory of the repository for 
-the code and installation instructions. 
+Currently, FuSION runs on Linux (tested on Ubuntu 22.04) and MacOS.  Please check out the ```Linux``` or ```macOS``` sub-directory of the repository for 
+code and installation instructions. 
 
 We should soon have a version for Windows 11.  So watch out for updates!
 
