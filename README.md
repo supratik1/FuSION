@@ -82,8 +82,9 @@ FuSION is provided under MIT license.
 
 In case you use the tool, please cite as follows:
 
-S. Akshay, S. Basu, S. Chakraborty, R. Sundararajan and P. Venkataraman, *Functional Significance Checking in Noisy Gene Regulatory Networks*, 
-in Proc. of International Conference on Principles and Practice of Constraint Programming (CP), pages 767-785, Oct 2019
+S. Akshay, S. Basu, S. Chakraborty, R. Sundararajan and P. Venkataraman, [*Functional Significance Checking in Noisy Gene Regulatory Networks*](https://rdcu.be/d0F3z), 
+in Proc. of International Conference on Principles and Practice of Constraint Programming (CP), pages 767-785, Oct 2019 [Slides](./docs/CP2019_slides.pdf)
 
-S. Basu, *Functional Significance Checking in Biological Networks: Theory and Implementation*, Ph.D. Dissertation, Department of Computer 
+
+S. Basu, [*Functional Significance Checking in Biological Networks: Theory and Implementation*](./docs/sukanya_thesis_2020.pdf), Ph.D. Dissertation, Department of Computer [Slides](./docs/sukanya_phd_slides.pdf)
 Science and Engineering, IIT Bombay, 2020
