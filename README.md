@@ -86,5 +86,4 @@ S. Akshay, S. Basu, S. Chakraborty, R. Sundararajan and P. Venkataraman, [*Funct
 in Proc. of International Conference on Principles and Practice of Constraint Programming (CP), pages 767-785, Oct 2019 [Slides](./docs/CP2019_slides.pdf)
 
 
-S. Basu, [*Functional Significance Checking in Biological Networks: Theory and Implementation*](./docs/sukanya_thesis_2020.pdf), Ph.D. Dissertation, Department of Computer [Slides](./docs/sukanya_phd_slides.pdf)
-Science and Engineering, IIT Bombay, 2020
+S. Basu, [*Functional Significance Checking in Biological Networks: Theory and Implementation*](./docs/sukanya_thesis_2020.pdf), Ph.D. Dissertation, Department of Computer Science and Engineering, IIT Bombay, 2020  [Slides](./docs/sukanya_phd_slides.pdf)
