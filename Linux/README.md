@@ -14,11 +14,11 @@
 
    ​ `pkg-config --modversion libxml++-2.6` // verify installation
 
-2. After successful installation, you can either download the SMT solver z3 from its github home [Z3](https://github.com/Z3Prover/z3/releases). We have used version 4.8.12.0 of z3 for FuSION. Z3 can also be downloaded from the WSL (Debian) or Linux environment using the following command:
+2. Download the Z3 SMT solver and relevant header files for WSL (Debian) or Linux environment using the following command:
 
-   ​ `sudo apt install z3` // installation.
+   ​ `sudo apt install z3 libz3-dev` // installation.
 
-   ​ `pkg-config --modversion z3` or `z3 --version` // verify installation
+   ​ `z3 --version` // verify installation
 
 3. Check if bison is installed in the computer by running `bison --version` . If it is shown not to be found then run the following command for installation and verification :
 
@@ -31,3 +31,7 @@
    ​ `make`
 
   The executable called `fusion` is generated in the `Linux` directory.
+
+5. To remove the installation of `fusion`, simply run the following command in the `Linux` directory.
+
+     `make clean`
