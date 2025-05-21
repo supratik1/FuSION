@@ -32,6 +32,29 @@
 
   The executable called `fusion` is generated in the `Linux` directory.
 
-5. To remove the installation of `fusion`, simply run the following command in the `Linux` directory.
 
+# Running FuSION on Linux (tested on Ubuntu 22.04)
+
+1. Compile the Java-based front end in the `Linux` directory using the following command
+
+     `javac GUIForExecutable.java` // you must have JDK installed on your machine3. 
+
+2. Next run the front end as follows
+
+      `java GUIForExecutable.class`
+   
+
+# Un-installing FuSION 
+
+1. Run the following command in the `Linux` directory to uninstall `fusion`
+   
      `make clean`
+   
+2. If you also want to un-install the other libraries installed above, you can optionally run the following commands
+
+     `sudo apt remove libxml2 libxml2-dev libxml++2.6-dev z3 libz3-dev bison`
+
+   
+
+
+   
