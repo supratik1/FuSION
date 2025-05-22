@@ -50,7 +50,7 @@
    
      `make clean`
    
-2. If you also want to un-install the other libraries installed above, you can optionally run the following commands
+2. If you also want to un-install the other libraries installed above (while installing `fusion`), you can optionally run the following command
 
      `sudo apt remove libxml2 libxml2-dev libxml++2.6-dev z3 libz3-dev bison`
 
