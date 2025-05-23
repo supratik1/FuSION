@@ -20,13 +20,19 @@
 
    ​ `z3 --version` // verify installation
 
-3. Check if bison is installed in the computer by running `bison --version` . If it is shown not to be found then run the following command for installation and verification :
+3. Check if `bison` is installed on your computer by running `bison --version` . If `bison` cannot be found, then run the following command for installation and verification :
 
    ​ `sudo apt install bison` // installation
 
    ​ `bison --version` // verify installation
 
-4. Navigate to the `Linux` directory and run the following command to build the tool.  
+4. Check if `flex` is installed on your computer by running `flex --version`.  If `flex` cannot be found, then run the following command for installation and verification:
+
+   `sudo apt install flex` // installation
+
+   `flex --version` // verify installation
+   
+5. Navigate to the `Linux` directory and run the following command to build the tool.  
 
    ​ `make`
 
