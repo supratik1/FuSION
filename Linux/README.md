@@ -47,7 +47,7 @@
 
 2. Next run the front end as follows
 
-      `java GUIForExecutable.class`
+      `java GUIForExecutable`
    
 
 # Un-installing FuSION 
