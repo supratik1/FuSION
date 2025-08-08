@@ -1,0 +1,162 @@
+<?xml version="1.0"?>
+<!DOCTYPE pathway SYSTEM "http://www.kegg.jp/kegg/xml/KGML_v0.7.1_.dtd">
+<pathway name="KEGG">
+    <entry id="1" name="hsa1" type="gene">
+		<graphics name="TNFRSF11A, CD265, FEO, LOH18CR1, ODFR, OFE, OPTB7, OSTS, PDB2, RANK, TRANCER"/>
+	</entry>
+    <entry id="2" name="hsa2" type="gene">
+		<graphics name="SYK, p72-Syk"/>
+	</entry>
+    <entry id="3" name="hsa3" type="gene">
+		<graphics name="TYROBP, DAP12, KARAP, PLOSL"/>
+	</entry>
+	<entry id="4" name="hsa4" type="gene">
+		<graphics name="ANFRSF11A, CD265, FEO, LOH18CR1, ODFR, OFE, OPTB7, OSTS, PDB2, RANK, TRANCER"/>
+	</entry>
+    <entry id="5" name="hsa5" type="gene">
+		<graphics name="BYK, p72-Syk"/>
+	</entry>
+    <entry id="6" name="hsa6" type="gene">
+		<graphics name="CYROBP, DAP12, KARAP, PLOSL"/>
+	</entry>
+	<entry id="7" name="hsa7" type="gene">
+		<graphics name="DNFRSF11A, CD265, FEO, LOH18CR1, ODFR, OFE, OPTB7, OSTS, PDB2, RANK, TRANCER"/>
+	</entry>
+    <entry id="8" name="hsa8" type="gene">
+		<graphics name="EYK, p72-Syk"/>
+	</entry>
+    <entry id="9" name="hsa9" type="gene">
+		<graphics name="FYROBP, DAP12, KARAP, PLOSL"/>
+	</entry>
+	<entry id="10" name="hsa10" type="gene">
+		<graphics name="GNFRSF11A, CD265, FEO, LOH18CR1, ODFR, OFE, OPTB7, OSTS, PDB2, RANK, TRANCER"/>
+	</entry>
+    <entry id="11" name="hsa11" type="gene">
+		<graphics name="HYK, p72-Syk"/>
+	</entry>
+    <entry id="12" name="hsa12" type="gene">
+		<graphics name="IYROBP, DAP12, KARAP, PLOSL"/>
+	</entry>
+	<entry id="13" name="hsa13" type="gene">
+		<graphics name="TNFRSF11A, AD265, FEO, LOH18CR1, ODFR, OFE, OPTB7, OSTS, PDB2, RANK, TRANCER"/>
+	</entry>
+    <entry id="14" name="hsa14" type="gene">
+		<graphics name="SYK, p72-Syka"/>
+	</entry>
+    <entry id="15" name="hsa15" type="gene">
+		<graphics name="TYROBP, DAP12a, KARAP, PLOSL"/>
+	</entry>
+	<entry id="16" name="hsa16" type="gene">
+		<graphics name="ANFRSF11A, CD2a65, FEO, LOH18CR1, ODFR, OFE, OPTB7, OSTS, PDB2, RANK, TRANCER"/>
+	</entry>
+    <entry id="17" name="hsa17" type="gene">
+		<graphics name="BYK, p72-Syka"/>
+	</entry>
+    <entry id="18" name="hsa18" type="gene">
+		<graphics name="CYROBP, DAP12a, KARAP, PLOSL"/>
+	</entry>
+	<entry id="19" name="hsa19" type="gene">
+		<graphics name="DNFRSF11A, CD2a65, FEO, LOH18CR1, ODFR, OFE, OPTB7, OSTS, PDB2, RANK, TRANCER"/>
+	</entry>
+    <entry id="20" name="hsa20" type="gene">
+		<graphics name="EYK, p72-Syka"/>
+	</entry>
+    <entry id="21" name="hsa21" type="gene">
+		<graphics name="FYROBP, DAP12a, KARAP, PLOSL"/>
+	</entry>
+	<entry id="22" name="hsa22" type="gene">
+		<graphics name="GNFRSF11A, CD2a65, FEO, LOH18CR1, ODFR, OFE, OPTB7, OSTS, PDB2, RANK, TRANCER"/>
+	</entry>
+
+    <relation entry1="1" entry2="2" type="PPrel" pathways="path:1">
+		<subtype name="activation"/>
+	</relation>
+
+    <relation entry1="1" entry2="3" type="PPrel" pathways="path:hsa2">
+		<subtype name="activation"/>
+	</relation>
+	<relation entry1="1" entry2="4" type="PPrel" pathways="path:1">
+		<subtype name="activation"/>
+	</relation>
+
+    <relation entry1="2" entry2="5" type="PPrel" pathways="path:hsa2">
+		<subtype name="inhibition"/>
+	</relation>
+	<relation entry1="3" entry2="6" type="PPrel" pathways="path:1">
+		<subtype name="activation"/>
+	</relation>
+
+    <relation entry1="4" entry2="7" type="PPrel" pathways="path:hsa2">
+		<subtype name="inhibition"/>
+	</relation>
+	<relation entry1="5" entry2="8" type="PPrel" pathways="path:1">
+		<subtype name="activation"/>
+	</relation>
+
+    <relation entry1="6" entry2="9" type="PPrel" pathways="path:hsa2">
+		<subtype name="activation"/>
+	</relation>
+
+	<relation entry1="7" entry2="16" type="PPrel" pathways="path:1">
+		<subtype name="activation"/>
+	</relation>
+
+    <relation entry1="8" entry2="11" type="PPrel" pathways="path:hsa2">
+		<subtype name="inhibition"/>
+	</relation>
+	<relation entry1="8" entry2="12" type="PPrel" pathways="path:1">
+		<subtype name="activation"/>
+	</relation>
+
+    <relation entry1="9" entry2="12" type="PPrel" pathways="path:hsa2">
+		<subtype name="activation"/>
+	</relation>
+	<relation entry1="10" entry2="13" type="PPrel" pathways="path:1">
+		<subtype name="inhibition"/>
+	</relation>
+	<relation entry1="10" entry2="12" type="PPrel" pathways="path:hsa2">
+		<subtype name="activation"/>
+	</relation>
+    <relation entry1="11" entry2="14" type="PPrel" pathways="path:hsa2">
+		<subtype name="activation"/>
+	</relation>
+	<relation entry1="12" entry2="15" type="PPrel" pathways="path:1">
+		<subtype name="activation"/>
+	</relation>
+
+    <relation entry1="13" entry2="16" type="PPrel" pathways="path:hsa2">
+		<subtype name="activation"/>
+	</relation>
+
+	<relation entry1="14" entry2="17" type="PPrel" pathways="path:hsa2">
+		<subtype name="inhibition"/>
+	</relation>
+	<relation entry1="15" entry2="18" type="PPrel" pathways="path:1">
+		<subtype name="inhibition"/>
+	</relation>
+
+    <relation entry1="16" entry2="19" type="PPrel" pathways="path:hsa2">
+		<subtype name="inhibition"/>
+	</relation>
+
+	<relation entry1="17" entry2="20" type="PPrel" pathways="path:hsa2">
+		<subtype name="activation"/>
+	</relation>
+	<relation entry1="18" entry2="21" type="PPrel" pathways="path:1">
+		<subtype name="inhibition"/>
+	</relation>
+
+    <relation entry1="19" entry2="22" type="PPrel" pathways="path:hsa2">
+		<subtype name="activation"/>
+	</relation>
+	<relation entry1="20" entry2="21" type="PPrel" pathways="path:hsa2">
+		<subtype name="activation"/>
+	</relation>
+	<relation entry1="21" entry2="22" type="PPrel" pathways="path:1">
+		<subtype name="activation"/>
+	</relation>
+
+    
+
+
+</pathway>
