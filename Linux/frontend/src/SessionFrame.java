@@ -145,7 +145,7 @@ public class SessionFrame extends JFrame {
                     JOptionPane.showMessageDialog(this, "Kindly Select a Session");
                     return;
                 }
-                String fileName = "sessions/" + username + ".json";
+                String fileName = "frontend/sessions/" + username + ".json";
                 user = new UserInput(fileName, index);
                 user.setUsername(username);
                 MainPanel main = new MainPanel(username, user, cardLayout, mainPanel);
@@ -168,7 +168,7 @@ public class SessionFrame extends JFrame {
                 );
                 if (result == JOptionPane.OK_OPTION) {
                     try {
-                        String file = "sessions/" + username + ".json";
+                        String file = "frontend/sessions/" + username + ".json";
                         String json = Files.readString(Path.of(file));
                         JSONArray array = new JSONArray(json);
                         JSONArray newArray = new JSONArray();
@@ -194,7 +194,7 @@ public class SessionFrame extends JFrame {
                 if (newSessionName != null && !newSessionName.trim().isEmpty()) {
                     index = addNewSession(username, newSessionName.trim());
                 }
-                String fileName = "sessions/" + username + ".json";
+                String fileName = "frontend/sessions/" + username + ".json";
                 user = new UserInput(fileName, index);
                 user.setUsername(username);
                 MainPanel main = new MainPanel(username, user, cardLayout, mainPanel);
@@ -212,7 +212,7 @@ public class SessionFrame extends JFrame {
             listModel.clear();
             sessionMap.clear();
             try {
-                String file = "sessions/" + username + ".json";
+                String file = "frontend/sessions/" + username + ".json";
                 String json = Files.readString(Path.of(file));
                 JSONArray array = new JSONArray(json);
                 for (int i = 0; i < array.length(); i++) {
@@ -236,7 +236,7 @@ public class SessionFrame extends JFrame {
             //     sessionMap.remove(firstKey);
             //     listModel.removeElement(firstKey);
             // }
-            String folderName = "sessions";
+            String folderName = "frontend/sessions";
             File directory = new File(folderName);
             if (!directory.exists()) {
                 directory.mkdirs();
@@ -270,3 +270,4 @@ public class SessionFrame extends JFrame {
         return btn;
     }
 }
+
