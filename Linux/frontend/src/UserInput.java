@@ -305,7 +305,7 @@ public class UserInput {
     }
 
     public void saveData(){
-        String fileName = "sessions/" + getUsername() + ".json";
+        String fileName = "frontend/sessions/" + getUsername() + ".json";
             
             try {
                 String json = Files.readString(Path.of(fileName));
@@ -364,10 +364,8 @@ public class UserInput {
             }
     }
 
-    @Override
-    // public String toString() {
-    //     return "" + userName + " " + workingDirectory + " " + logFoldChangesFile + " " + downThreshold + " " + upThreshold + " " + nodeLBound + " " + nodeUBound + " " + edgeLBound + " " + " " + edgeUBound + " ";
-    // }
+    
 
 }
+
 
