@@ -468,7 +468,7 @@ public class IdEntryPanel extends RoundedPanel {
     private void runTool() {
         try {
             ProcessBuilder processBuilder = new ProcessBuilder("./fusion", "-b",
-                    "script.txt");
+                    "output_script.txt");
             processBuilder.redirectErrorStream(true);
             Process process = processBuilder.start();
 
@@ -506,4 +506,5 @@ public class IdEntryPanel extends RoundedPanel {
         }
     }
 }
+
 
