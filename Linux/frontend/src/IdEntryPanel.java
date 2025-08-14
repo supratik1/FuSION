@@ -319,12 +319,12 @@ public class IdEntryPanel extends RoundedPanel {
             dialog.setVisible(true);
         });
 
-        RoundedButton nextButton = new RoundedButton("Submit", 20, new Dimension(100, 40));
+        RoundedButton submitButton = new RoundedButton("Submit", 20, new Dimension(100, 40));
         
-        nextButton.setBackground(new Color(100, 149, 237));
-        nextButton.setForeground(Color.WHITE);
-        nextButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        nextButton.setFocusPainted(false);
+        submitButton.setBackground(new Color(100, 149, 237));
+        submitButton.setForeground(Color.WHITE);
+        submitButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        submitButton.setFocusPainted(false);
 
         RoundedButton goToSessions = new RoundedButton("Go to Sessions", 20, new Dimension(170, 40));
         goToSessions.setBackground(new Color(222, 129, 7));
@@ -352,10 +352,12 @@ public class IdEntryPanel extends RoundedPanel {
         });
 
         
-        nextButton.addActionListener(e -> {
+        submitButton.addActionListener(e -> {
             user.setMappingFile(mappingFile);
             try {
                 new ScriptFile(user);
+
+                runTool();
             } catch (Exception et) {
                 et.printStackTrace();
             }
@@ -376,7 +378,7 @@ public class IdEntryPanel extends RoundedPanel {
         }});
         buttonPanel.add(new JPanel(new BorderLayout()) {{
             setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-            add(nextButton, BorderLayout.WEST);
+            add(submitButton, BorderLayout.WEST);
             add(saveButton, BorderLayout.EAST);
             setOpaque(false);
             setBackground(Color.WHITE);
@@ -463,4 +465,45 @@ public class IdEntryPanel extends RoundedPanel {
             for (String match : partialMatches) box.addItem(match);
         }
     }
+    private void runTool() {
+        try {
+            ProcessBuilder processBuilder = new ProcessBuilder("./fusion", "-b",
+                    "script.txt");
+            processBuilder.redirectErrorStream(true);
+            Process process = processBuilder.start();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            StringBuilder ans = new StringBuilder();
+
+            JTextArea showTerminalOutput = new JTextArea();
+            showTerminalOutput.setEditable(false); // To make it read-only
+
+            // Create Swing components on the EDT
+            SwingUtilities.invokeLater(() -> {
+                JFrame showProcessOutput = new JFrame();
+                showProcessOutput.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                showProcessOutput.setResizable(true);
+                showProcessOutput.setTitle("Tool Running");
+                showProcessOutput.setSize(1100, 500);
+                showProcessOutput.add(new JScrollPane(showTerminalOutput));
+                showProcessOutput.setVisible(true);
+            });
+
+            // Read output from the process and update the JTextArea on the EDT
+            String line;
+            while ((line = reader.readLine()) != null) {
+                ans.append(line).append("\n");
+                final String lineToAppend = line;
+                SwingUtilities.invokeLater(() -> {
+                    showTerminalOutput.append(lineToAppend + "\n");
+                });
+            }
+
+            process.waitFor();
+
+        } catch (IOException | InterruptedException ex) {
+            ex.printStackTrace();
+        }
+    }
 }
+
