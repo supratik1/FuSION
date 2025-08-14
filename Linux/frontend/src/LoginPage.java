@@ -134,10 +134,17 @@ public class LoginPage extends JFrame {
 
             if (authenticateUser(username, password)) {
                 dispose();
-                File userFile = new File("sessions/" + username + ".json");
+                File sessionsDir = new File("frontend/sessions");
+
+                if (!sessionsDir.exists()) {
+                    sessionsDir.mkdirs();
+                }
+
+                // Create the user file
+                File userFile = new File(sessionsDir, username + ".json");
                 if (!userFile.exists()) {
-                    try {
-                        userFile.createNewFile();
+                    try (FileWriter fw = new FileWriter(userFile)) {
+                        fw.write("[]"); // valid empty JSON array
                     } catch (IOException err) {
                         err.printStackTrace();
                     }
@@ -300,14 +307,20 @@ public class LoginPage extends JFrame {
             newUser.setEmail(email);
             newUser.setPasswordHash(hashPassword(password));
 
-            File userFile = new File("sessions/" + username + ".json");
-            if (userFile.exists()) {
-                userFile.delete();
+            File sessionsDir = new File("frontend/sessions");
+
+            if (!sessionsDir.exists()) {
+                sessionsDir.mkdirs();
             }
-            try {
-                userFile.createNewFile();
-            } catch (IOException err) {
-                err.printStackTrace();
+
+            // Create the user file
+            File userFile = new File(sessionsDir, username + ".json");
+            if (!userFile.exists()) {
+                try (FileWriter fw = new FileWriter(userFile)) {
+                    fw.write("[]"); //  valid empty JSON array
+                } catch (IOException err) {
+                    err.printStackTrace();
+                }
             }
 
             userDatabase.put(username, newUser);
@@ -447,3 +460,4 @@ public class LoginPage extends JFrame {
         SwingUtilities.invokeLater(() -> new LoginPage().setVisible(true));
     }
 }
+
