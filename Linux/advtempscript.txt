@@ -1,4 +1,4 @@
-;; 
+                                                                                  ;; 
 ;; To display SVG file on browser, use "dre 0 t 0 0 0 0 0 0 graph"
 ;; To display on xdot (searchable), use "exec xdot t_graph.dot" after
 ;; "dre 0 t 0 0 0 0 0 0 graph"
@@ -161,10 +161,10 @@ start $INTER_DB_MAP_FILE $EXCEPTION_TO_NODE_MERGE_FILE $HSA_TO_GENE_SYMBOL_MAP_F
 ;; If no new edges are being added, skip this step
 ;; **********************************************************************
 
-exec add $ADDITIONAL_EDGES_FILE $ADDITIONAL_EDGES_XML_FILE
+%__c__%exec add $ADDITIONAL_EDGES_FILE $ADDITIONAL_EDGES_XML_FILE
 exec if [ -f $NEW_LIST_OF_MERGED_XML_FILE ] ; then /bin/rm $NEW_LIST_OF_MERGED_XML_FILE; fi
 exec echo $MERGED_KEGG_PATHWAYS_XML_FILE | cat > $NEW_LIST_OF_MERGED_XML_FILE
-exec echo $ADDITIONAL_EDGES_XML_FILE | cat >>  $NEW_LIST_OF_MERGED_XML_FILE
+%__c__%exec echo $ADDITIONAL_EDGES_XML_FILE | cat >>  $NEW_LIST_OF_MERGED_XML_FILE
 
 ;; **********************************************************************
 ;; Merging KEGG pathways and user provided additional edges to obtain
