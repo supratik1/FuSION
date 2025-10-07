@@ -242,7 +242,7 @@ public class SessionFrame extends JFrame {
                 directory.mkdirs();
             }
             try {
-                String file = "sessions/" + username + ".json";
+                String file = "frontend/sessions/" + username + ".json";
                 String json = Files.readString(Path.of(file));
                 JSONArray array = new JSONArray(json);
                 JSONObject obj = new JSONObject();
@@ -270,4 +270,5 @@ public class SessionFrame extends JFrame {
         return btn;
     }
 }
+
 
