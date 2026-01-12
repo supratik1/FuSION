@@ -375,7 +375,7 @@ public class gui4 extends JFrame {
             }
         }
     }
-
+    
     private boolean isValidValue(String value, String type) {
         switch (type) {
             case "float":
@@ -396,10 +396,8 @@ public class gui4 extends JFrame {
             case "char":
                 return value != null && value.length() <= 1;
             case "string":
-                // Accept any value for string, but reject if value is null
                 return value != null;
             case "file":
-                // Accept empty or strings that look like file paths (basic check)
                 return value == null || value.trim().isEmpty() || (value.contains(".") || value.contains("/") || value.contains("\\"));
             case "graph":
             case "Status":
@@ -470,7 +468,7 @@ public class gui4 extends JFrame {
         addTemplate(new BlockTemplate("start", 4, 1, new String[]{"file", "file","file","file"}, new String[]{"Status"}));
         addTemplate(new BlockTemplate("wgx", 2, 1, new String[]{"string", "string"}, new String[]{"string"}));
         addTemplate(new BlockTemplate("mff", 1, 1, new String[]{"float"}, new String[]{"graph"}));
-        addTemplate(new BlockTemplate("result", 4, 3, new String[]{"float","string","file","graph"}, new String[]{"graph","string","float"}));
+        addTemplate(new BlockTemplate("result", 4, 3, new String[]{"float","string","file","graph"}, new String[]{"graph","string","file"}));
 
         // Add to dropdown
         for (String blockName : blockLibrary.keySet()) {
@@ -1357,19 +1355,41 @@ public class gui4 extends JFrame {
                     if (newCount >= 0 && newCount != template.inputCount) {
                         // Remove existing connections to this block
                         connections.removeIf(conn -> conn.to == FunctionBlock.this);
-                        
+
                         // Update template
                         String[] newInputTypes = new String[newCount];
                         for (int i = 0; i < newCount && i < template.inputTypes.length; i++) {
                             newInputTypes[i] = template.inputTypes[i];
                         }
-                        for (int i = template.inputTypes.length; i < newCount; i++) {
-                            newInputTypes[i] = "float"; // default type
+
+                        // If adding new inputs, prompt for their types
+                        if (newCount > template.inputCount) {
+                            String[] types = {"float", "string", "file", "graph","int", "Status", "char"};
+                            JPanel typePanel = new JPanel(new GridLayout(newCount - template.inputCount, 2));
+                            @SuppressWarnings("unchecked")
+                            JComboBox<String>[] newTypeComboBoxes = new JComboBox[newCount - template.inputCount];
+
+                            for (int i = template.inputTypes.length; i < newCount; i++) {
+                                typePanel.add(new JLabel("Input " + (i + 1) + ":"));
+                                JComboBox<String> cb = new JComboBox<>(types);
+                                newTypeComboBoxes[i - template.inputTypes.length] = cb;
+                                typePanel.add(cb);
+                                newInputTypes[i] = types[0]; // default to first type
+                            }
+
+                            int typeRes = JOptionPane.showConfirmDialog(gui4.this, typePanel, "Select Types for New Inputs", JOptionPane.OK_CANCEL_OPTION);
+                            if (typeRes == JOptionPane.OK_OPTION) {
+                                for (int i = template.inputTypes.length; i < newCount; i++) {
+                                    newInputTypes[i] = (String) newTypeComboBoxes[i - template.inputTypes.length].getSelectedItem();
+                                }
+                            } else {
+                                return; // Cancelled, do not change
+                            }
                         }
-                        
+
                         template.inputCount = newCount;
                         template.inputTypes = newInputTypes;
-                        
+
                         // Rebuild the UI
                         rebuildUI();
                     }
@@ -1520,7 +1540,7 @@ public class gui4 extends JFrame {
                         // Account for current zoom factor when dragging
                         int newX = parent.x - offset[0].x;
                         int newY = parent.y - offset[0].y;
-                        
+                            
                         comp.setLocation(newX, newY);
                         updateCanvasSize();
                         drawingPanel.repaint();
