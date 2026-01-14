@@ -1,9 +1,12 @@
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -18,11 +21,8 @@ public class IdEntryPanel extends RoundedPanel {
         setLayout(new BorderLayout());
         setBackground(Color.WHITE);
 
-
         HeaderPanel header = new HeaderPanel(user.getUsername());
         add(header, BorderLayout.NORTH);
-
-        
 
         String[] mappingFile = user.getMappingFile();
 
@@ -32,15 +32,14 @@ public class IdEntryPanel extends RoundedPanel {
         center.setBackground(Color.WHITE);
         center.setOpaque(true);
 
-
         JLabel title = new JLabel("Add HSA IDs", JLabel.CENTER);
         title.setFont(new Font("Arial", Font.BOLD, 30));
         title.setForeground(Color.BLACK);
         title.setBackground(Color.WHITE);
-        title.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+        title.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         center.add(title);
 
-// ---- First row: Source hsa ID ----
+        // ---- First row: Source hsa ID ----
         JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 5));
         row1.setBackground(Color.WHITE);
         JLabel label1 = new JLabel("Source hsa ID");
@@ -57,10 +56,10 @@ public class IdEntryPanel extends RoundedPanel {
         row1.add(label1);
         row1.add(inputField1);
         row1.add(suggestions1);
-        
+
         center.add(row1);
 
-// ---- Second row: Target hsa ID ----
+        // ---- Second row: Target hsa ID ----
         JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 5));
         row2.setBackground(Color.WHITE);
         JLabel label2 = new JLabel("Target hsa ID");
@@ -79,7 +78,7 @@ public class IdEntryPanel extends RoundedPanel {
         row2.add(suggestions2);
         center.add(row2);
 
-// ---- Third row: Candidate hsa ID ----
+        // ---- Third row: Candidate hsa ID ----
         JPanel row3 = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 5));
         row3.setBackground(Color.WHITE);
         JLabel label3 = new JLabel("Candidate Implicated Node hsa ID");
@@ -98,7 +97,7 @@ public class IdEntryPanel extends RoundedPanel {
         row3.add(suggestions3);
         center.add(row3);
 
-// ---- Fourth row: HSA not merged panel ----
+        // ---- Fourth row: HSA not merged panel ----
         JPanel hsaNot = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 5));
         hsaNot.setBackground(Color.WHITE);
         JLabel hsaJLabel = new JLabel("HSA IDs not to be merged:");
@@ -117,7 +116,7 @@ public class IdEntryPanel extends RoundedPanel {
         hsaNot.add(ans);
         center.add(hsaNot);
 
-// ---- Fifth row: Mapping file change ----
+        // ---- Fifth row: Mapping file change ----
         JPanel mappingPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 5));
         mappingPanel.setBackground(Color.WHITE);
         JLabel ques = new JLabel("Would you like to change the Mapping Files?");
@@ -130,9 +129,6 @@ public class IdEntryPanel extends RoundedPanel {
         center.add(mappingPanel);
 
         add(center, BorderLayout.CENTER);
-
-
-        
 
         // Listeners unchanged
         inputField1.addKeyListener(new KeyAdapter() {
@@ -197,11 +193,6 @@ public class IdEntryPanel extends RoundedPanel {
             }
         });
 
-        
-
-
-        
-
         hsaButton.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser();
             int result = chooser.showOpenDialog(this);
@@ -211,9 +202,6 @@ public class IdEntryPanel extends RoundedPanel {
                 ans.setText(hsaNotmerged.getName());
             }
         });
-        
-
-        
 
         // Default load
         idMappingFile = new File(mappingFile[0]);
@@ -236,15 +224,15 @@ public class IdEntryPanel extends RoundedPanel {
             panel.setBackground(Color.WHITE);
 
             JButton hsaToGeneBtn = new JButton("Choose");
-            hsaToGeneBtn.setBackground(new Color(100,149,237));
+            hsaToGeneBtn.setBackground(new Color(100, 149, 237));
             hsaToGeneBtn.setForeground(Color.WHITE);
 
             JButton hsaToPathBtn = new JButton("Choose");
-            hsaToPathBtn.setBackground(new Color(100,149,237));
+            hsaToPathBtn.setBackground(new Color(100, 149, 237));
             hsaToPathBtn.setForeground(Color.WHITE);
 
             JButton interDBBtn = new JButton("Choose");
-            interDBBtn.setBackground(new Color(100,149,237));
+            interDBBtn.setBackground(new Color(100, 149, 237));
             interDBBtn.setForeground(Color.WHITE);
 
             JLabel geneField = new JLabel();
@@ -254,29 +242,35 @@ public class IdEntryPanel extends RoundedPanel {
             JLabel dbField = new JLabel();
             dbField.setText(!mappingFile[2].equals("") ? mappingFile[2] : "No file selected");
 
-            panel.add(new JPanel(new BorderLayout()) {{
-                setBackground(Color.WHITE);
-                add(new JLabel("HSA to Gene Symbol Map", SwingConstants.CENTER), BorderLayout.NORTH);
-                add(geneField, BorderLayout.CENTER);
-                add(hsaToGeneBtn, BorderLayout.SOUTH);
-            }});
-            panel.add(new JPanel(new BorderLayout()) {{
-                setBackground(Color.WHITE);
-                add(new JLabel("HSA path to Path Name Map", SwingConstants.CENTER), BorderLayout.NORTH);
-                add(pathField, BorderLayout.CENTER);
-                add(hsaToPathBtn, BorderLayout.SOUTH);
-            }});
-            panel.add(new JPanel(new BorderLayout()) {{
-                setBackground(Color.WHITE);
-                add(new JLabel("Cross Database Map", SwingConstants.CENTER), BorderLayout.NORTH);
-                add(dbField, BorderLayout.CENTER);
-                add(interDBBtn, BorderLayout.SOUTH);
-            }});
+            panel.add(new JPanel(new BorderLayout()) {
+                {
+                    setBackground(Color.WHITE);
+                    add(new JLabel("HSA to Gene Symbol Map", SwingConstants.CENTER), BorderLayout.NORTH);
+                    add(geneField, BorderLayout.CENTER);
+                    add(hsaToGeneBtn, BorderLayout.SOUTH);
+                }
+            });
+            panel.add(new JPanel(new BorderLayout()) {
+                {
+                    setBackground(Color.WHITE);
+                    add(new JLabel("HSA path to Path Name Map", SwingConstants.CENTER), BorderLayout.NORTH);
+                    add(pathField, BorderLayout.CENTER);
+                    add(hsaToPathBtn, BorderLayout.SOUTH);
+                }
+            });
+            panel.add(new JPanel(new BorderLayout()) {
+                {
+                    setBackground(Color.WHITE);
+                    add(new JLabel("Cross Database Map", SwingConstants.CENTER), BorderLayout.NORTH);
+                    add(dbField, BorderLayout.CENTER);
+                    add(interDBBtn, BorderLayout.SOUTH);
+                }
+            });
             dialog.add(panel, BorderLayout.CENTER);
 
             // OK button at bottom
             JButton okButton = new JButton("OK");
-            okButton.setBackground(new Color(100,149,237));
+            okButton.setBackground(new Color(100, 149, 237));
             okButton.setForeground(Color.WHITE);
             JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
             bottomPanel.setBackground(Color.WHITE);
@@ -319,12 +313,12 @@ public class IdEntryPanel extends RoundedPanel {
             dialog.setVisible(true);
         });
 
-        RoundedButton submitButton = new RoundedButton("Submit", 20, new Dimension(100, 40));
-        
-        submitButton.setBackground(new Color(100, 149, 237));
-        submitButton.setForeground(Color.WHITE);
-        submitButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        submitButton.setFocusPainted(false);
+        RoundedButton nextButton = new RoundedButton("Submit", 20, new Dimension(100, 40));
+
+        nextButton.setBackground(new Color(100, 149, 237));
+        nextButton.setForeground(Color.WHITE);
+        nextButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        nextButton.setFocusPainted(false);
 
         RoundedButton goToSessions = new RoundedButton("Go to Sessions", 20, new Dimension(170, 40));
         goToSessions.setBackground(new Color(222, 129, 7));
@@ -337,27 +331,25 @@ public class IdEntryPanel extends RoundedPanel {
         prevButton.setForeground(Color.WHITE);
         prevButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
         prevButton.setFocusPainted(false);
-        
-        RoundedButton saveButton = new RoundedButton("Save", 20, new Dimension(100,40));
+
+        RoundedButton saveButton = new RoundedButton("Save", 20, new Dimension(100, 40));
         saveButton.setBackground(new Color(5, 161, 59));
         saveButton.setForeground(Color.WHITE);
         saveButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
         saveButton.setFocusPainted(false);
 
-        
         prevButton.addActionListener(e -> cardLayout.show(cardPanel, "edgeEntry"));
         saveButton.addActionListener(e -> {
             user.setMappingFile(mappingFile);
             user.saveData();
         });
 
-        
-        submitButton.addActionListener(e -> {
+        nextButton.addActionListener(e -> {
             user.setMappingFile(mappingFile);
             try {
                 new ScriptFile(user);
 
-                runTool();
+                runTool(user.getUsername());
             } catch (Exception et) {
                 et.printStackTrace();
             }
@@ -369,20 +361,24 @@ public class IdEntryPanel extends RoundedPanel {
         buttonPanel.setLayout(new GridLayout(1, 2));
         buttonPanel.setBackground(Color.WHITE);
 
-        buttonPanel.add(new JPanel(new BorderLayout()) {{
-            setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-            add(prevButton, BorderLayout.EAST);
-            add(goToSessions, BorderLayout.WEST);
-            setOpaque(false);
-            setBackground(Color.WHITE);
-        }});
-        buttonPanel.add(new JPanel(new BorderLayout()) {{
-            setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-            add(submitButton, BorderLayout.WEST);
-            add(saveButton, BorderLayout.EAST);
-            setOpaque(false);
-            setBackground(Color.WHITE);
-        }});
+        buttonPanel.add(new JPanel(new BorderLayout()) {
+            {
+                setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+                add(prevButton, BorderLayout.EAST);
+                add(goToSessions, BorderLayout.WEST);
+                setOpaque(false);
+                setBackground(Color.WHITE);
+            }
+        });
+        buttonPanel.add(new JPanel(new BorderLayout()) {
+            {
+                setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+                add(nextButton, BorderLayout.WEST);
+                add(saveButton, BorderLayout.EAST);
+                setOpaque(false);
+                setBackground(Color.WHITE);
+            }
+        });
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
@@ -407,7 +403,8 @@ public class IdEntryPanel extends RoundedPanel {
             String line;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
-                if (line.isEmpty()) continue;
+                if (line.isEmpty())
+                    continue;
                 String[] parts = line.split("\\s+");
                 if (parts.length >= 2) {
                     String id = parts[0].trim();
@@ -442,12 +439,15 @@ public class IdEntryPanel extends RoundedPanel {
         }
 
         @Override
-        public void changedUpdate(DocumentEvent e) {}
+        public void changedUpdate(DocumentEvent e) {
+        }
+
 
         private void updateSuggestions() {
             String input = field.getText().toLowerCase();
             box.removeAllItems();
-            if (input.isEmpty()) return;
+            if (input.isEmpty())
+                return;
             List<String> exactMatches = new ArrayList<>();
             List<String> partialMatches = new ArrayList<>();
             for (Map.Entry<String, String> entry : idMap.entrySet()) {
@@ -456,55 +456,207 @@ public class IdEntryPanel extends RoundedPanel {
                 String display = entry.getValue() + " - " + commonName;
                 if (commonName.equals(input) || id.equals(input)) {
                     exactMatches.add(display);
-                }
-                else if (commonName.contains(input) || id.contains(input)) {
+                } else if (commonName.contains(input) || id.contains(input)) {
                     partialMatches.add(display);
                 }
             }
-            for (String match : exactMatches) box.addItem(match);
-            for (String match : partialMatches) box.addItem(match);
+            for (String match : exactMatches)
+                box.addItem(match);
+            for (String match : partialMatches)
+                box.addItem(match);
         }
     }
-    private void runTool() {
-        try {
-            ProcessBuilder processBuilder = new ProcessBuilder("./fusion", "-b",
-                    "output_script.txt");
-            processBuilder.redirectErrorStream(true);
-            Process process = processBuilder.start();
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            StringBuilder ans = new StringBuilder();
+    
+    private static final DateTimeFormatter TIME_FMT =
+            DateTimeFormatter.ofPattern("HH:mm:ss");
 
-            JTextArea showTerminalOutput = new JTextArea();
-            showTerminalOutput.setEditable(false); // To make it read-only
+    Icon runningIcon = createDotIcon(new Color(0, 180, 0));   // green
+    Icon idleIcon    = createDotIcon(new Color(100, 100, 100));
+    Icon errorIcon   = createDotIcon(new Color(200, 50, 50));
 
-            // Create Swing components on the EDT
-            SwingUtilities.invokeLater(() -> {
-                JFrame showProcessOutput = new JFrame();
-                showProcessOutput.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                showProcessOutput.setResizable(true);
-                showProcessOutput.setTitle("Tool Running");
-                showProcessOutput.setSize(1100, 500);
-                showProcessOutput.add(new JScrollPane(showTerminalOutput));
-                showProcessOutput.setVisible(true);
-            });
 
-            // Read output from the process and update the JTextArea on the EDT
-            String line;
-            while ((line = reader.readLine()) != null) {
-                ans.append(line).append("\n");
-                final String lineToAppend = line;
+    private void runTool(String username) {
+
+        JTextArea terminal = new JTextArea();
+        terminal.setEditable(false);
+
+        JLabel stageLabel = new JLabel("Initializing…");
+        JLabel statusLabel = new JLabel("Request under process...");
+
+        stageLabel.setIcon(runningIcon);
+        statusLabel.setIcon(runningIcon);
+
+        JFrame frame = createModernOutputWindow(
+                terminal, stageLabel, statusLabel
+        );
+
+        frame.setVisible(true);
+
+
+        new Thread(() -> {
+            try {
+                ProcessBuilder pb =
+                        new ProcessBuilder("./fusion", "-b", "output_script.txt");
+                pb.redirectErrorStream(true);
+                Process process = pb.start();
+
+                BufferedReader reader =
+                        new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+                String line;
+                
+                while ((line = reader.readLine()) != null) {
+
+                    final String lineCopy = line;   
+                    final String timestamp =
+                            "[" + LocalTime.now().format(TIME_FMT) + "] ";
+
+                    final String stage = detectStage(lineCopy);
+
+                    SwingUtilities.invokeLater(() -> {
+                        terminal.append(timestamp + lineCopy + "\n");
+                        terminal.setCaretPosition(
+                                terminal.getDocument().getLength()
+                        );
+
+                        if (stage != null) {
+                            stageLabel.setText(stage);
+                            frame.setTitle("FuSION - " + stage);
+                            statusLabel.setText( stage + "...");
+
+                            stageLabel.setIcon(runningIcon);
+                            
+
+                            statusLabel.setIcon(runningIcon);
+                            
+
+                        }
+
+                    });
+                }
+
+
+                process.waitFor();
+
                 SwingUtilities.invokeLater(() -> {
-                    showTerminalOutput.append(lineToAppend + "\n");
+                    stageLabel.setText(" Execution Completed");
+                    statusLabel.setText("✔ Done");
+                    stageLabel.setIcon(idleIcon);
+                    statusLabel.setIcon(idleIcon);
+
+                    frame.setTitle("FuSION - Completed");
+
+
+                    int choice = JOptionPane.showConfirmDialog(
+                            frame,
+                            "Do you want to run another experiment?",
+                            "Run Another?",
+                            JOptionPane.YES_NO_OPTION
+                    );
+
+                    if (choice == JOptionPane.YES_OPTION) {
+                        new SessionFrame(username);
+                    }
                 });
+
+            } catch (Exception e) {
+                stageLabel.setIcon(errorIcon);
+                stageLabel.setText("Execution Failed");
+
+                SwingUtilities.invokeLater(() ->
+                        JOptionPane.showMessageDialog(frame,
+                                e.getMessage(),
+                                "Execution Error",
+                                JOptionPane.ERROR_MESSAGE));
             }
-
-            process.waitFor();
-
-        } catch (IOException | InterruptedException ex) {
-            ex.printStackTrace();
-        }
+        }).start();
     }
+
+    /**
+     * Maps backend output lines to execution stages
+     */
+    private String detectStage(String line) {
+
+        line = line.trim();
+
+        if (line.startsWith("exec mkdir")) return "Initializing workspace";
+        if (line.startsWith("cudf")) return "Processing fold-change data";
+        if (line.startsWith("start")) return "Loading mappings & metadata";
+        if (line.startsWith("mff")) return "Merging pathways";
+        if (line.startsWith("wgx")) return "Writing merged graph";
+        if (line.startsWith("rgx")) return "Reading graph XML";
+        if (line.startsWith("fb_rch")) return "Reachability pruning";
+        if (line.startsWith("pathz3")) return "Constraint solving (Z3)";
+        if (line.contains("gnuplot")) return "Generating plots";
+        if (line.equals("exit")) return "Finalizing";
+
+        return null; // no title change
+    }
+
+    private JFrame createModernOutputWindow(
+        JTextArea terminal,
+        JLabel stageLabel,
+        JLabel statusLabel
+    ) {
+        JFrame frame = new JFrame("FuSION - Initializing");
+        frame.setSize(1100, 550);
+        frame.setLocationRelativeTo(null);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        // ---- Header ----
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(new Color(30, 30, 30));
+        header.setBorder(BorderFactory.createEmptyBorder(8, 12, 8, 12));
+
+        stageLabel.setForeground(Color.WHITE);
+        stageLabel.setFont(new Font("Segoe UI", Font.BOLD, 15));
+
+        header.add(stageLabel, BorderLayout.WEST);
+
+        // ---- Terminal ----
+        terminal.setBackground(new Color(18, 18, 18));
+        terminal.setForeground(new Color(220, 220, 220));
+        terminal.setCaretColor(Color.WHITE);
+        terminal.setFont(new Font("JetBrains Mono", Font.PLAIN, 13));
+        terminal.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+
+        JScrollPane scrollPane = new JScrollPane(terminal);
+        scrollPane.setBorder(null);
+
+        // ---- Status Bar ----
+        JPanel statusBar = new JPanel(new BorderLayout());
+        statusBar.setBackground(new Color(30, 30, 30));
+        statusBar.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
+
+        statusLabel.setForeground(new Color(180, 180, 180));
+        statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+
+        statusBar.add(statusLabel, BorderLayout.WEST);
+
+        // ---- Layout ----
+        frame.setLayout(new BorderLayout());
+        frame.add(header, BorderLayout.NORTH);
+        frame.add(scrollPane, BorderLayout.CENTER);
+        frame.add(statusBar, BorderLayout.SOUTH);
+
+        return frame;
+    }
+
+    private Icon createDotIcon(Color color) {
+        return new Icon() {
+            @Override public int getIconWidth() { return 10; }
+            @Override public int getIconHeight() { return 10; }
+
+            @Override
+            public void paintIcon(Component c, Graphics g, int x, int y) {
+                g.setColor(color);
+                g.fillOval(x, y, 10, 10);
+            }
+        };
+    }
+
+
+
+
 }
-
-
