@@ -33,8 +33,41 @@ public class gui4 extends JFrame {
     List<FunctionBlock> blockInstances = new ArrayList<>();
     private double prevZoomFactor = 1.0;
     private double zoomFactor = 1.0;
+    private FunctionBlock clipboardBlock = null; // For copy/paste functionality
 
-    private JButton hamburgerButton; // Hamburger icon button added
+    private JButton hamburgerButton;
+
+    // Block descriptions map - Full forms and descriptions
+    private static final Map<String, String[]> BLOCK_DESCRIPTIONS = new HashMap<>();
+    
+    static {
+        // Format: {Full Name, Description, Category}
+        BLOCK_DESCRIPTIONS.put("cudf", new String[]{
+            "Create Up Down File",
+            "Processes package dependency files and generates upgrade plans. Used for managing software package dependencies and conflicts.",
+            "Package Management"
+        });
+        BLOCK_DESCRIPTIONS.put("start", new String[]{
+            "Start/Initialize Process",
+            "Entry point block that initializes the workflow. Takes multiple file inputs and outputs a Status indicating success or failure.",
+            "Control Flow"
+        });
+        BLOCK_DESCRIPTIONS.put("wgx", new String[]{
+            "write Graph Xml",
+            "Processes weighted graph data and performs graph transformations. Combines two string inputs into a processed output.",
+            "Graph Processing"
+        });
+        BLOCK_DESCRIPTIONS.put("mff", new String[]{
+            "Merge From File",
+            "Computes maximum flow in a network graph. Takes a float parameter and outputs a graph structure.",
+            "Graph Algorithms"
+        });
+        BLOCK_DESCRIPTIONS.put("result", new String[]{
+            "Result",
+            "Aggregates multiple inputs (float, string, file, graph) and produces consolidated outputs. Final processing block for workflows.",
+            "Output/Aggregation"
+        });
+    }
 
     private static String getDefaultValue(String type) {
         switch (type) {
@@ -51,13 +84,24 @@ public class gui4 extends JFrame {
         }
     }
 
+    // Get block description
+    public static String[] getBlockDescription(String blockName) {
+        // Extract base name (remove _1, _2 suffix)
+        String baseName = blockName.replaceAll("_\\d+$", "");
+        return BLOCK_DESCRIPTIONS.getOrDefault(baseName, new String[]{
+            blockName.toUpperCase(),
+            "Custom block - No description available",
+            "Custom"
+        });
+    }
+
     public gui4() {
         initializeGUI();
     }
     
     private void initializeGUI() {
-        setTitle("Visual Function Graph");
-        setSize(1200, 800);
+        setTitle("Visual Function Graph Editor");
+        setSize(1400, 900);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
@@ -68,24 +112,34 @@ public class gui4 extends JFrame {
         JPanel controlsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         // === Hamburger Icon Button ===
-        hamburgerButton = new JButton("\u2630"); // Unicode for hamburger icon ☰
+        hamburgerButton = new JButton("\u2630");
         hamburgerButton.setFont(new Font("SansSerif", Font.BOLD, 18));
-        hamburgerButton.setToolTipText("Show Block Names");
+        hamburgerButton.setToolTipText("Menu Options");
         hamburgerButton.setMargin(new Insets(2, 8, 2, 8));
         hamburgerButton.addActionListener(e -> {
             JPopupMenu menu = new JPopupMenu();
+            
             JMenuItem editInputs = new JMenuItem("Edit Block Inputs");
             editInputs.addActionListener(ev -> showBlockNamesDialog());
             menu.add(editInputs);
+            
             JMenuItem viewNamingHistory = new JMenuItem("View Naming History");
             viewNamingHistory.addActionListener(ev -> showNamingHistoryDialog());
             menu.add(viewNamingHistory);
+            
+            menu.addSeparator();
+            
+            JMenuItem viewBlockInfo = new JMenuItem("View All Block Descriptions");
+            viewBlockInfo.addActionListener(ev -> showAllBlockDescriptions());
+            menu.add(viewBlockInfo);
+            
             menu.show(hamburgerButton, 0, hamburgerButton.getHeight());
         });
         controlsPanel.add(hamburgerButton);
 
         // === Block Selector Dropdown ===
         blockSelector = new JComboBox<String>();
+        blockSelector.setRenderer(new BlockSelectorRenderer());
         controlsPanel.add(new JLabel("Select Block:"));
         controlsPanel.add(blockSelector);
 
@@ -95,7 +149,9 @@ public class gui4 extends JFrame {
         controlsPanel.add(addBlockBtn);
 
         // === Add New Block Template Button ===
-        JButton addTemplateBtn = new JButton("Add New Block Template");
+        JButton addTemplateBtn = new JButton("+ New Template");
+        addTemplateBtn.setBackground(new Color(138, 43, 226));
+        // addTemplateBtn.setForeground(Color.WHITE);
         addTemplateBtn.addActionListener(e -> showNewBlockTemplateDialog());
         controlsPanel.add(addTemplateBtn);
 
@@ -103,33 +159,42 @@ public class gui4 extends JFrame {
         JTextField searchField = new JTextField(15);
         JButton searchButton = new JButton("Search");
         searchButton.addActionListener(e -> searchFunctionBlock(searchField.getText().toLowerCase()));
+        searchField.addKeyListener(new KeyAdapter() {
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    searchFunctionBlock(searchField.getText().toLowerCase());
+                }
+            }
+        });
         controlsPanel.add(new JLabel("Search:"));
         controlsPanel.add(searchField);
         controlsPanel.add(searchButton);
 
         // === Zoom In/Out Buttons ===
-        JButton zoomInButton = new JButton("Zoom In");
-        zoomInButton.addActionListener(e -> drawingPanel.zoom(1.1));
-        JButton zoomOutButton = new JButton("Zoom Out");
-        zoomOutButton.addActionListener(e -> drawingPanel.zoom(0.9));
+        JButton zoomInButton = new JButton("🔍+");
+        zoomInButton.addActionListener(e -> drawingPanel.zoom(1.2));
+        JButton zoomOutButton = new JButton("🔍−");
+        zoomOutButton.addActionListener(e -> drawingPanel.zoom(0.8));
         controlsPanel.add(zoomInButton);
         controlsPanel.add(zoomOutButton);
 
         // === Execute Button ===
-        JButton executeBtn = new JButton("Execute");
+        JButton executeBtn = new JButton("▶ Execute");
+        executeBtn.setBackground(new Color(34, 139, 34));
         executeBtn.addActionListener(e -> executeGraph());
         controlsPanel.add(executeBtn);
 
         topPanel.add(controlsPanel);
-
-        // === Vertical Scrollable Block Library Panel ===
+        
         blockListPanel = new JPanel();
-        blockListPanel.setLayout(new BoxLayout(blockListPanel, BoxLayout.Y_AXIS));
+        blockListPanel.setLayout(new BoxLayout(blockListPanel, BoxLayout.X_AXIS));
         JScrollPane blockScrollPane = new JScrollPane(blockListPanel);
-        blockScrollPane.setPreferredSize(new Dimension(250, 100));
+        blockScrollPane.setPreferredSize(new Dimension(250, 80));
+        blockScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        blockScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         topPanel.add(blockScrollPane);
 
-        // Initialize block library after all components are created
+        // Initialize block library
         populateBlockLibrary();
 
         add(topPanel, BorderLayout.NORTH);
@@ -149,9 +214,207 @@ public class gui4 extends JFrame {
         JScrollPane resultScroll = new JScrollPane(resultArea);
         tabbedPane.addTab("Results", resultScroll);
         
+        // Block Reference Tab
+        JTextArea referenceArea = new JTextArea();
+        // referenceArea.setEditable(false);
+        // referenceArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        // StringBuilder refText = new StringBuilder("=== BLOCK REFERENCE GUIDE ===\n\n");
+        // for (Map.Entry<String, String[]> entry : BLOCK_DESCRIPTIONS.entrySet()) {
+            // String[] desc = entry.getValue();
+            // refText.append("📦 ").append(entry.getKey().toUpperCase()).append("\n");
+            // refText.append("   Full Name: ").append(desc[0]).append("\n");
+            // refText.append("   Category: ").append(desc[2]).append("\n");
+            // refText.append("   Description: ").append(desc[1]).append("\n\n");
+        // }
+        // referenceArea.setText(refText.toString());
+        JScrollPane refScroll = new JScrollPane(referenceArea);
+        // tabbedPane.addTab("Block Reference", refScroll);
+
+        // History tab
+        JTextArea historyArea = new JTextArea();
+        historyArea.setEditable(false);
+        JScrollPane historyScroll = new JScrollPane(historyArea);
+        tabbedPane.addTab("History", historyScroll);
+        
+        
         add(tabbedPane, BorderLayout.CENTER);
 
+        // === Keyboard shortcuts ===
+        setupKeyboardShortcuts();
+
         setVisible(true);
+    }
+
+    // Custom renderer for block selector dropdown
+    class BlockSelectorRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            
+            if (value != null) {
+                String blockName = value.toString();
+                if (!blockName.equals("Add New Block Template...")) {
+                    String[] desc = getBlockDescription(blockName);
+                    setText(blockName + " - " + desc[0]);
+                    setToolTipText("<html><b>" + desc[0] + "</b><br>" + desc[1] + "</html>");
+                }
+            }
+            return this;
+        }
+    }
+
+    // Setup keyboard shortcuts
+    private void setupKeyboardShortcuts() {
+        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(e -> {
+            if (e.getID() == KeyEvent.KEY_PRESSED) {
+                if (e.isControlDown()) {
+                    switch (e.getKeyCode()) {
+                        case KeyEvent.VK_C:
+                            copySelectedBlock();
+                            return true;
+                        case KeyEvent.VK_V:
+                            pasteBlock();
+                            return true;
+                        case KeyEvent.VK_D:
+                            DelSelectedBlock();
+                            return true;
+                    }
+                }
+            }
+            return false;
+        });
+    }
+
+    // Copy selected block
+    private void copySelectedBlock() {
+        for (FunctionBlock fb : functionBlocks) {
+            if (fb.isSelected) {
+                clipboardBlock = fb;
+
+                return;
+            }
+        }
+        JOptionPane.showMessageDialog(this, 
+            "No block selected. Click on a block first, then press Ctrl+C.", 
+            "No Selection", 
+            JOptionPane.WARNING_MESSAGE);
+    }
+
+    // Paste block from clipboard
+    private void pasteBlock() {
+        if (clipboardBlock == null) {
+            JOptionPane.showMessageDialog(this, 
+                "Nothing to paste. Copy a block first (Ctrl+C).", 
+                "Clipboard Empty", 
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        BlockTemplate template = clipboardBlock.template;
+        int count = instanceCounter.getOrDefault(template.name, 0) + 1;
+        instanceCounter.put(template.name, count);
+
+        String instanceName = template.name + "_" + count;
+        FunctionBlock newBlock = new FunctionBlock(instanceName, template);
+        
+        // Offset position from original
+        int x = clipboardBlock.getX() + 50;
+        int y = clipboardBlock.getY() + 50;
+        
+        int scaledWidth = (int)(newBlock.getPreferredSize().width * zoomFactor);
+        int scaledHeight = (int)(newBlock.getPreferredSize().height * zoomFactor);
+        newBlock.setBounds(x, y, scaledWidth, scaledHeight);
+
+        // Copy input values
+        for (int i = 0; i < template.inputCount && i < clipboardBlock.inputValues.length; i++) {
+            newBlock.inputValues[i] = clipboardBlock.inputValues[i];
+        }
+
+        functionCounter++;
+        functionBlocks.add(newBlock);
+        drawingPanel.add(newBlock);
+        updateCanvasSize();
+        drawingPanel.repaint();
+    }
+
+    // Delete selected block
+    private void DelSelectedBlock() {
+        for (FunctionBlock fb : functionBlocks) {
+            if (fb.isSelected) {
+                functionBlocks.remove(fb);
+                drawingPanel.remove(fb);
+                drawingPanel.repaint();
+                return;
+            }
+        }
+    }
+
+    // Clear all blocks
+    private void clearAllBlocks() {
+        int confirm = JOptionPane.showConfirmDialog(this, 
+            "Are you sure you want to clear all blocks and connections?", 
+            "Confirm Clear", 
+            JOptionPane.YES_NO_OPTION);
+        
+        if (confirm == JOptionPane.YES_OPTION) {
+            for (FunctionBlock fb : functionBlocks) {
+                drawingPanel.remove(fb);
+            }
+            functionBlocks.clear();
+            connections.clear();
+            functionCounter = 1;
+            for (String key : instanceCounter.keySet()) {
+                instanceCounter.put(key, 0);
+            }
+            updateCanvasSize();
+            drawingPanel.repaint();
+        }
+    }
+
+    // Show all block descriptions dialog
+    private void showAllBlockDescriptions() {
+        JPanel panel = new JPanel();
+        // panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        
+        for (Map.Entry<String, String[]> entry : BLOCK_DESCRIPTIONS.entrySet()) {
+            String[] desc = entry.getValue();
+            
+            JPanel blockPanel = new JPanel(new BorderLayout());
+            blockPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(100, 100, 200), 2),
+                BorderFactory.createEmptyBorder(10, 10, 10, 10)
+            )
+            );
+            blockPanel.setBackground(new Color(240, 240, 255));
+            
+            JLabel titleLabel = new JLabel("<html><b style='font-size:14px;color:#4040A0;'>" + 
+                entry.getKey().toUpperCase() + "</b> - " + desc[0] + "</html>");
+            
+            // JLabel categoryLabel = new JLabel("Category: " + desc[2]);
+            // categoryLabel.setForeground(new Color(100, 100, 100));
+            
+            JTextArea descArea = new JTextArea(desc[1]);
+            descArea.setLineWrap(true);
+            descArea.setWrapStyleWord(true);
+            descArea.setEditable(false);
+            descArea.setBackground(new Color(240, 240, 255));
+            descArea.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
+            
+            JPanel textPanel = new JPanel(new BorderLayout());
+            textPanel.setBackground(new Color(240, 240, 255));
+            textPanel.add(titleLabel, BorderLayout.NORTH);
+            // textPanel.add(categoryLabel, BorderLayout.CENTER);
+            textPanel.add(descArea, BorderLayout.SOUTH);
+            
+            blockPanel.add(textPanel, BorderLayout.CENTER);
+            panel.add(blockPanel);
+            panel.add(Box.createVerticalStrut(10));
+        }
+        
+        JScrollPane scrollPane = new JScrollPane(panel);
+        scrollPane.setPreferredSize(new Dimension(500, 400));
+        
+        JOptionPane.showMessageDialog(this, scrollPane, "Block Descriptions & Full Forms", JOptionPane.INFORMATION_MESSAGE);
     }
 
     // Placeholder JTextField class
@@ -203,15 +466,13 @@ public class gui4 extends JFrame {
         }
     }
 
-    // New method to show dialog with editable input values for all blocks
+    // Show dialog with editable input values for all blocks
     private void showBlockNamesDialog() {
-        // Calculate total inputs
         int totalInputs = 0;
         for (FunctionBlock fb : functionBlocks) {
             totalInputs += fb.template.inputCount;
         }
 
-        // Create table model with columns: Block Name, Input, Type, Value
         String[] columnNames = {"Block Name", "Input", "Type", "Value"};
         Object[][] data = new Object[totalInputs][4];
 
@@ -221,7 +482,6 @@ public class gui4 extends JFrame {
                 data[row][0] = fb.name;
                 data[row][1] = "Input " + (i + 1);
                 data[row][2] = fb.template.inputTypes[i];
-                // Check if connected
                 boolean connected = false;
                 String value = fb.inputValues[i];
                 for (Connection c : connections) {
@@ -236,11 +496,9 @@ public class gui4 extends JFrame {
             }
         }
 
-        // Create oldData for reverting invalid changes
         Object[][] oldData = new Object[totalInputs][4];
         for(int i=0; i<data.length; i++) oldData[i] = data[i].clone();
 
-        // Custom table model to make only Value column editable for unconnected inputs
         class InputTableModel extends javax.swing.table.DefaultTableModel {
             public InputTableModel(Object[][] data, Object[] columnNames) {
                 super(data, columnNames);
@@ -249,7 +507,6 @@ public class gui4 extends JFrame {
             @Override
             public boolean isCellEditable(int row, int column) {
                 if (column == 3) {
-                    // Determine if this row's input is connected
                     int currentRow = 0;
                     for (FunctionBlock fb : functionBlocks) {
                         for (int i = 0; i < fb.template.inputCount; i++) {
@@ -274,16 +531,12 @@ public class gui4 extends JFrame {
         JTable table = new JTable(new InputTableModel(data, columnNames));
         table.setPreferredScrollableViewportSize(new Dimension(600, 400));
         table.setFillsViewportHeight(true);
-
-        // Set custom editor for Value column
         table.getColumnModel().getColumn(3).setCellEditor(new TypeAwareCellEditor());
 
         JScrollPane scrollPane = new JScrollPane(table);
 
-        // Create custom dialog
         JDialog dialog = new JDialog(this, "Edit Block Input Values", true);
 
-        // Add real-time validation listener
         table.getModel().addTableModelListener(e -> {
             if (e.getType() == TableModelEvent.UPDATE && e.getColumn() == 3) {
                 int r = e.getFirstRow();
@@ -291,10 +544,8 @@ public class gui4 extends JFrame {
                 String type = (String) table.getValueAt(r, 2);
                 if (!isValidValue(value, type)) {
                     JOptionPane.showMessageDialog(dialog, "Invalid value for type " + type + ": '" + value + "'", "Validation Error", JOptionPane.ERROR_MESSAGE);
-                    // Revert to old value
                     table.setValueAt(oldData[r][3], r, 3);
                 } else {
-                    // Update oldData
                     oldData[r][3] = value;
                 }
             }
@@ -309,10 +560,9 @@ public class gui4 extends JFrame {
         buttonPanel.add(cancelButton);
         dialog.add(buttonPanel, BorderLayout.SOUTH);
 
-        final int[] result = {JOptionPane.CANCEL_OPTION}; // Default to cancel
+        final int[] result = {JOptionPane.CANCEL_OPTION};
 
         okButton.addActionListener(e -> {
-            // Validate values for unconnected inputs only
             boolean allValid = true;
             StringBuilder errorMsg = new StringBuilder("Invalid values:\n");
             int r = 0;
@@ -339,7 +589,6 @@ public class gui4 extends JFrame {
             }
             if (!allValid) {
                 JOptionPane.showMessageDialog(dialog, errorMsg.toString(), "Validation Error", JOptionPane.ERROR_MESSAGE);
-                // Do not dispose, keep dialog open
             } else {
                 result[0] = JOptionPane.OK_OPTION;
                 dialog.dispose();
@@ -356,7 +605,6 @@ public class gui4 extends JFrame {
         dialog.setVisible(true);
 
         if (result[0] == JOptionPane.OK_OPTION) {
-            // Update inputValues if all valid
             row = 0;
             for (FunctionBlock fb : functionBlocks) {
                 for (int i = 0; i < fb.template.inputCount; i++) {
@@ -375,7 +623,7 @@ public class gui4 extends JFrame {
             }
         }
     }
-    
+
     private boolean isValidValue(String value, String type) {
         switch (type) {
             case "float":
@@ -403,11 +651,11 @@ public class gui4 extends JFrame {
             case "Status":
             case "character":
             default:
-                return true; // Accept any value for these types
+                return true;
         }
     }
 
-    // New method to show dialog for viewing naming history
+    // Show naming history dialog
     private void showNamingHistoryDialog() {
         StringBuilder historyText = new StringBuilder();
         for (FunctionBlock fb : functionBlocks) {
@@ -431,7 +679,6 @@ public class gui4 extends JFrame {
         for (FunctionBlock block : functionBlocks) {
             if (block.name != null && block.name.toLowerCase().contains(query)) {
                 drawingPanel.searchResults.add(block);
-                // Highlight and scroll to the first match
                 if (!found) {
                     highlightAndScrollToBlock(block);
                     found = true;
@@ -447,7 +694,6 @@ public class gui4 extends JFrame {
     private void highlightAndScrollToBlock(FunctionBlock block) {
         Rectangle bounds = block.getBounds();
 
-        // Convert to zoomed coordinates
         int x = (int) (bounds.x * drawingPanel.zoomFactor + drawingPanel.translateX);
         int y = (int) (bounds.y * drawingPanel.zoomFactor + drawingPanel.translateY);
         int w = (int) (bounds.width * drawingPanel.zoomFactor);
@@ -458,7 +704,7 @@ public class gui4 extends JFrame {
         block.setBorder(BorderFactory.createLineBorder(Color.RED, 3));
 
         new javax.swing.Timer(3000, e -> {
-            block.setBorder(BorderFactory.createTitledBorder(block.name));
+            block.updateBorder();
             drawingPanel.repaint();
         }).start();
     }
@@ -468,9 +714,8 @@ public class gui4 extends JFrame {
         addTemplate(new BlockTemplate("start", 4, 1, new String[]{"file", "file","file","file"}, new String[]{"Status"}));
         addTemplate(new BlockTemplate("wgx", 2, 1, new String[]{"string", "string"}, new String[]{"string"}));
         addTemplate(new BlockTemplate("mff", 1, 1, new String[]{"float"}, new String[]{"graph"}));
-        addTemplate(new BlockTemplate("result", 4, 3, new String[]{"float","string","file","graph"}, new String[]{"graph","string","file"}));
+        addTemplate(new BlockTemplate("result", 4, 3, new String[]{"float","string","file","graph"}, new String[]{"graph","string","float"}));
 
-        // Add to dropdown
         for (String blockName : blockLibrary.keySet()) {
             blockSelector.addItem(blockName);
         }
@@ -497,13 +742,27 @@ public class gui4 extends JFrame {
     private void addTemplate(BlockTemplate template) {
         blockLibrary.put(template.name, template);
         instanceCounter.put(template.name, 0);
+        
+        // Add description if not exists
+        if (!BLOCK_DESCRIPTIONS.containsKey(template.name)) {
+            BLOCK_DESCRIPTIONS.put(template.name, new String[]{
+                template.name.toUpperCase() + " Block",
+                "Custom block with " + template.inputCount + " inputs and " + template.outputCount + " outputs.",
+                "Custom"
+            });
+        }
 
-        JButton blockBtn = new JButton(template.name);
+        JButton blockBtn = new JButton("<html><center><b>" + template.name + "</b><br><font size='2'>" + 
+            getBlockDescription(template.name)[0] + "</font></center></html>");
         blockBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
-        blockBtn.setMaximumSize(new Dimension(180, 30));
+        blockBtn.setPreferredSize(new Dimension(150, 50));
+        blockBtn.setMaximumSize(new Dimension(150, 50));
+        blockBtn.setToolTipText("<html><b>" + getBlockDescription(template.name)[0] + "</b><br>" + 
+            getBlockDescription(template.name)[1] + "</html>");
         blockBtn.addActionListener(e -> addBlockInstance(template.name));
 
         blockListPanel.add(blockBtn);
+        blockListPanel.add(Box.createHorizontalStrut(5));
         blockListPanel.revalidate();
         blockListPanel.repaint();
     }
@@ -520,7 +779,6 @@ public class gui4 extends JFrame {
         int x = 100 + functionCounter * 60;
         int y = 100 + functionCounter * 40;
         
-        // Apply current zoom factor to new blocks
         int scaledWidth = (int)(block.getPreferredSize().width * zoomFactor);
         int scaledHeight = (int)(block.getPreferredSize().height * zoomFactor);
         block.setBounds(x, y, scaledWidth, scaledHeight);
@@ -541,81 +799,118 @@ public class gui4 extends JFrame {
         addBlockInstance(selected);
     }
 
-        private void showNewBlockTemplateDialog() {
-            JTextField nameField = new JTextField(10);
-            JSpinner inputSpinner = new JSpinner(new SpinnerNumberModel(1, 0, 10, 1));
-            JSpinner outputSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 5, 1));
-    
-            JPanel panel = new JPanel(new GridLayout(0, 2));
-            panel.add(new JLabel("Function Name:"));
-            panel.add(nameField);
-            panel.add(new JLabel("# Inputs:"));
-            panel.add(inputSpinner);
-            panel.add(new JLabel("# Outputs:"));
-            panel.add(outputSpinner);
-    
-            int res = JOptionPane.showConfirmDialog(this, panel, "New Block Template", JOptionPane.OK_CANCEL_OPTION);
-            if (res != JOptionPane.OK_OPTION) return;
-    
-            int inCount = (int) inputSpinner.getValue();
-            int outCount = (int) outputSpinner.getValue();
-    
-            String name = nameField.getText().trim();
-            if (name.isEmpty() || blockLibrary.containsKey(name)) {
-                JOptionPane.showMessageDialog(this, "Invalid or duplicate name");
-                return;
-            }
-    
-            String[] types = {"float", "string", "file", "graph","int", "Status", "char"};
-            String[] inTypes = new String[inCount];
-            String[] outTypes = new String[outCount];
-    
-            JPanel typePanel = new JPanel(new GridLayout(inCount + outCount, 2));
-            @SuppressWarnings("unchecked")
-            JComboBox<String>[] inComboBoxes = new JComboBox[inCount];
-            @SuppressWarnings("unchecked")
-            JComboBox<String>[] outComboBoxes = new JComboBox[outCount];
-            
+    private void showNewBlockTemplateDialog() {
+        JTextField nameField = new JTextField(10);
+        JTextField fullNameField = new JTextField(20);
+        JTextArea descriptionArea = new JTextArea(3, 20);
+        descriptionArea.setLineWrap(true);
+        descriptionArea.setWrapStyleWord(true);
+        // JTextField categoryField = new JTextField(15);
+        JSpinner inputSpinner = new JSpinner(new SpinnerNumberModel(1, 0, 10, 1));
+        JSpinner outputSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 5, 1));
+
+        JPanel panel = new JPanel(new GridLayout(0, 2, 5, 5));
+        panel.add(new JLabel("Function Name (short):"));
+        panel.add(nameField);
+        panel.add(new JLabel("Full Name:"));
+        panel.add(fullNameField);
+        // panel.add(new JLabel("Category:"));
+        // panel.add(categoryField);
+        panel.add(new JLabel("Description:"));
+        panel.add(new JScrollPane(descriptionArea));
+        panel.add(new JLabel("# Inputs:"));
+        panel.add(inputSpinner);
+        panel.add(new JLabel("# Outputs:"));
+        panel.add(outputSpinner);
+
+        int res = JOptionPane.showConfirmDialog(this, panel, "New Block Template", JOptionPane.OK_CANCEL_OPTION);
+        if (res != JOptionPane.OK_OPTION) return;
+
+        int inCount = (int) inputSpinner.getValue();
+        int outCount = (int) outputSpinner.getValue();
+
+        String name = nameField.getText().trim();
+        if (name.isEmpty() || blockLibrary.containsKey(name)) {
+            JOptionPane.showMessageDialog(this, "Invalid or duplicate name");
+            return;
+        }
+
+        // Add description
+        String fullName = fullNameField.getText().trim().isEmpty() ? name.toUpperCase() + " Block" : fullNameField.getText().trim();
+        String description = descriptionArea.getText().trim().isEmpty() ? "Custom block" : descriptionArea.getText().trim();
+        // String category = categoryField.getText().trim().isEmpty() ? "Custom" : categoryField.getText().trim();
+        
+        // BLOCK_DESCRIPTIONS.put(name, new String[]{fullName, description, category});
+
+        String[] types = {"float", "string", "file", "graph","int", "Status", "char"};
+        String[] inTypes = new String[inCount];
+        String[] outTypes = new String[outCount];
+
+        JPanel typePanel = new JPanel(new GridLayout(inCount + outCount, 2));
+        @SuppressWarnings("unchecked")
+        JComboBox<String>[] inComboBoxes = new JComboBox[inCount];
+        @SuppressWarnings("unchecked")
+        JComboBox<String>[] outComboBoxes = new JComboBox[outCount];
+        
+        for (int i = 0; i < inCount; i++) {
+            typePanel.add(new JLabel("Input " + (i + 1) + ":"));
+            JComboBox<String> cb = new JComboBox<>(types);
+            inComboBoxes[i] = cb;
+            typePanel.add(cb);
+            inTypes[i] = types[0];
+        }
+        for (int i = 0; i < outCount; i++) {
+            typePanel.add(new JLabel("Output " + (i + 1) + ":"));
+            JComboBox<String> cb = new JComboBox<>(types);
+            outComboBoxes[i] = cb;
+            typePanel.add(cb);
+            outTypes[i] = types[0];
+        }
+
+        int typeRes = JOptionPane.showConfirmDialog(this, typePanel, "Select Types", JOptionPane.OK_CANCEL_OPTION);
+        if (typeRes == JOptionPane.OK_OPTION) {
             for (int i = 0; i < inCount; i++) {
-                typePanel.add(new JLabel("Input " + (i + 1) + ":"));
-                JComboBox<String> cb = new JComboBox<>(types);
-                inComboBoxes[i] = cb;
-                typePanel.add(cb);
-                inTypes[i] = types[0];
+                inTypes[i] = (String) inComboBoxes[i].getSelectedItem();
             }
             for (int i = 0; i < outCount; i++) {
-                typePanel.add(new JLabel("Output " + (i + 1) + ":"));
-                JComboBox<String> cb = new JComboBox<>(types);
-                outComboBoxes[i] = cb;
-                typePanel.add(cb);
-                outTypes[i] = types[0];
+                outTypes[i] = (String) outComboBoxes[i].getSelectedItem();
             }
-    
-            int typeRes = JOptionPane.showConfirmDialog(this, typePanel, "Select Types", JOptionPane.OK_CANCEL_OPTION);
-            if (typeRes == JOptionPane.OK_OPTION) {
-                // Get selected types
-                for (int i = 0; i < inCount; i++) {
-                    inTypes[i] = (String) inComboBoxes[i].getSelectedItem();
-                }
-                for (int i = 0; i < outCount; i++) {
-                    outTypes[i] = (String) outComboBoxes[i].getSelectedItem();
-                }
-                
-                addTemplate(new BlockTemplate(name, inCount, outCount, inTypes, outTypes));
-                blockSelector.removeAllItems();
-                for (String blockName : blockLibrary.keySet()) {
-                    blockSelector.addItem(blockName);
-                }
-                blockSelector.addItem("Add New Block Template...");
+            
+            addTemplate(new BlockTemplate(name, inCount, outCount, inTypes, outTypes));
+            blockSelector.removeAllItems();
+            for (String blockName : blockLibrary.keySet()) {
+                blockSelector.addItem(blockName);
             }
+            blockSelector.addItem("Add New Block Template...");
         }
+    }
 
     private void executeGraph() {
         List<FunctionBlock> order = getTopologicalOrder();
         if (order == null) return;
 
         saveExecutionPlan(order);
-        resultArea.setText("Execution plan saved to execution_plan.txt\n");
+        
+        StringBuilder resultText = new StringBuilder();
+        resultText.append("=== EXECUTION PLAN ===\n\n");
+        resultText.append("Execution plan saved to execution.txt\n\n");
+        resultText.append("=== TOPOLOGICAL ORDER ===\n");
+        for (int i = 0; i < order.size(); i++) {
+            FunctionBlock fb = order.get(i);
+            String[] desc = getBlockDescription(fb.name);
+            resultText.append((i + 1) + ". " + fb.originalName + " (" + desc[0] + ")\n");
+        }
+        resultText.append("\n=== CONNECTIONS ===\n");
+        for (Connection c : connections) {
+            if (c.toIdx == -1) {
+                resultText.append("$" + c.from.originalName + ".output" + (c.fromIdx + 1) + " -> $" + c.to.originalName + " (status)\n");
+            } else {
+                resultText.append("$" + c.from.originalName + ".output" + (c.fromIdx + 1) + " -> $" + c.to.originalName + ".input" + (c.toIdx + 1) + "\n");
+            }
+        }
+        
+        resultArea.setText(resultText.toString());
+        tabbedPane.setSelectedIndex(1); // Switch to Results tab
     }
 
     class BlockTemplate {
@@ -658,7 +953,7 @@ public class gui4 extends JFrame {
 
         DrawingPanel() {
             setPreferredSize(new Dimension(2000, 1200));
-            setLayout(null); // Using absolute positioning for blocks
+            setLayout(null);
 
             addMouseListener(new MouseAdapter() {
                 public void mousePressed(MouseEvent e) {
@@ -712,7 +1007,6 @@ public class gui4 extends JFrame {
                 }
             });
 
-
             addMouseMotionListener(new MouseMotionAdapter() {
                 public void mouseMoved(MouseEvent e) {
                     mousePoint = e.getPoint();
@@ -720,16 +1014,15 @@ public class gui4 extends JFrame {
                     repaint();
                 }
             });
+            
             addMouseWheelListener(e -> {
                 if (e.isControlDown()) {
                     double factor = e.getWheelRotation() < 0 ? 1.1 : 0.9;
-                    Point focus = e.getPoint(); // Mouse position as zoom center
+                    Point focus = e.getPoint();
                     zoom(factor, focus);
-                    e.consume(); // Prevent it from scrolling when zooming
+                    e.consume();
                 }
             });
-
-
 
             setFocusable(true);
             addKeyListener(new KeyAdapter() {
@@ -742,20 +1035,19 @@ public class gui4 extends JFrame {
                     }
                 }
             });
-
         }
 
         private Color getConnectionColor(String type) {
             switch (type) {
-                case "float": return new Color(139, 0, 0); // Dark Red
-                case "integer": return new Color(0, 0, 139); // Dark Blue
-                case "int": return new Color(0, 0, 139); // Dark Blue
-                case "string": return new Color(255, 140, 0); // Dark Orange
-                case "file": return new Color(199, 21, 133); // Medium Violet Red (darker pink)
-                case "graph": return new Color(0, 139, 139); // Dark Cyan
-                case "Status": return new Color(0, 100, 0); // Dark Green
-                case "character": return new Color(184, 134, 11); // Dark Goldenrod (darker yellow)
-                case "char": return new Color(184, 134, 11); // Dark Goldenrod (darker yellow)
+                case "float": return new Color(139, 0, 0);
+                case "integer": return new Color(0, 0, 139);
+                case "int": return new Color(0, 0, 139);
+                case "string": return new Color(255, 140, 0);
+                case "file": return new Color(199, 21, 133);
+                case "graph": return new Color(0, 139, 139);
+                case "Status": return new Color(0, 100, 0);
+                case "character": return new Color(184, 134, 11);
+                case "char": return new Color(184, 134, 11);
                 default: return Color.DARK_GRAY;
             }
         }
@@ -763,10 +1055,9 @@ public class gui4 extends JFrame {
         public void zoom(double factor, Point focusPoint) {
             double oldZoom = zoomFactor;
             zoomFactor *= factor;
-            zoomFactor = Math.max(0.1, Math.min(5.0, zoomFactor));
+            zoomFactor = Math.max(0.3, Math.min(3.0, zoomFactor));
             gui4.this.zoomFactor = zoomFactor;
 
-            // Scale all blocks
             for (FunctionBlock block : functionBlocks) {
                 Point loc = block.getLocation();
                 Dimension size = block.getPreferredSize();
@@ -779,40 +1070,32 @@ public class gui4 extends JFrame {
                 block.setBounds(newX, newY, newWidth, newHeight);
             }
 
-            // Resize canvas to fit new content
             updateCanvasSize();
 
-            // Reposition view to keep focus point at same logical location
-            Container parent = getParent(); // should be the JViewport
+            Container parent = getParent();
             if (parent instanceof JViewport) {
                 JViewport viewport = (JViewport) parent;
-
                 Point viewPos = viewport.getViewPosition();
                 double dx = (focusPoint.x - viewPos.x) / oldZoom;
                 double dy = (focusPoint.y - viewPos.y) / oldZoom;
-
                 int newX = (int)(dx * zoomFactor - focusPoint.x);
                 int newY = (int)(dy * zoomFactor - focusPoint.y);
-
                 viewport.setViewPosition(new Point(viewPos.x + newX, viewPos.y + newY));
             }
 
             repaint();
         }
 
-
         public void zoom(double factor) {
             double oldZoomFactor = zoomFactor;
             zoomFactor *= factor;
-            zoomFactor = Math.max(0.1, Math.min(5.0, zoomFactor));
+            zoomFactor = Math.max(0.3, Math.min(3.0, zoomFactor));
             gui4.this.zoomFactor = zoomFactor;
             
-            // Scale all blocks with zoom
             for (FunctionBlock block : functionBlocks) {
                 Point loc = block.getLocation();
                 Dimension pref = block.getPreferredSize();
                 
-                // Scale position and size
                 int newX = (int)(loc.x * zoomFactor / oldZoomFactor);
                 int newY = (int)(loc.y * zoomFactor / oldZoomFactor);
                 int newWidth = (int)(pref.width * zoomFactor);
@@ -825,95 +1108,44 @@ public class gui4 extends JFrame {
             repaint();
         }
 
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            Graphics2D g2 = (Graphics2D) g.create();
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        // @Override
+        // protected void paintComponent(Graphics g) {
+        //     super.paintComponent(g);
+        //     Graphics2D g2 = (Graphics2D) g.create();
+        //     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            // Apply transformations for arrows only
-            g2.translate(translateX, translateY);
-            g2.scale(zoomFactor, zoomFactor);
+        //     // Draw grid
+        //     g2.setColor(new Color(230, 230, 230));
+        //     int gridSize = 20;
+        //     for (int x = 0; x < getWidth(); x += gridSize) {
+        //         g2.drawLine(x, 0, x, getHeight());
+        //     }
+        //     for (int y = 0; y < getHeight(); y += gridSize) {
+        //         g2.drawLine(0, y, getWidth(), y);
+        //     }
 
-            // Draw connections
-            for (Connection conn : connections) {
-                Point from = getOutputPoint(conn.from, conn.fromIdx);
-                Point to = getInputPoint(conn.to, conn.toIdx);
-                drawCurvedArrow(g2, from, to, conn.type, conn == selectedConnection);
-            }
+        //     g2.translate(translateX, translateY);
+        //     g2.scale(zoomFactor, zoomFactor);
 
-            g2.dispose();
+        //     for (Connection conn : connections) {
+        //         Point from = getOutputPoint(conn.from, conn.fromIdx);
+        //         Point to = getInputPoint(conn.to, conn.toIdx);
+        //         drawCurvedArrow(g2, from, to, conn.type, conn == selectedConnection);
+        //     }
 
-            // Draw magnifier
-            // if (showMagnifier && mousePoint != null && zoomFactor < 1.0) {
-            //     drawMagnifier(g);
-            // }
+        //     g2.dispose();
             
-            // Highlight search results
-            if (!searchResults.isEmpty()) {
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setColor(new Color(255, 0, 0, 100)); 
-                g2d.setStroke(new BasicStroke(3));
-                for (FunctionBlock block : searchResults) {
-                    Rectangle bounds = block.getBounds();
-                    g2d.drawRect(bounds.x - 2, bounds.y - 2, bounds.width + 4, bounds.height + 4);
-                }
-                g2d.dispose();
-            }
-        }
-
-        private void drawMagnifier(Graphics g) {
-            int zoomSize = 100;
-            int magnifyScale = 3;
-
-            BufferedImage zoomImage = new BufferedImage(zoomSize, zoomSize, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D gZoom = zoomImage.createGraphics();
-            gZoom.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            // Clear background
-            gZoom.setColor(getBackground());
-            gZoom.fillRect(0, 0, zoomSize, zoomSize);
-
-            gZoom.scale(magnifyScale, magnifyScale);
-
-            double tx = (mousePoint.x / zoomFactor - zoomSize / (2.0 * magnifyScale));
-            double ty = (mousePoint.y / zoomFactor - zoomSize / (2.0 * magnifyScale));
-            gZoom.translate(-tx, -ty);
-
-            // Draw blocks in magnifier
-            for (FunctionBlock block : functionBlocks) {
-                Rectangle bounds = block.getBounds();
-                Rectangle magnifierBounds = new Rectangle(
-                    (int)(bounds.x * zoomFactor), 
-                    (int)(bounds.y * zoomFactor),
-                    (int)(bounds.width * zoomFactor), 
-                    (int)(bounds.height * zoomFactor)
-                );
-                
-                gZoom.setColor(new Color(230, 230, 250));
-                gZoom.fillRect(magnifierBounds.x, magnifierBounds.y, magnifierBounds.width, magnifierBounds.height);
-                gZoom.setColor(Color.BLACK);
-                gZoom.drawRect(magnifierBounds.x, magnifierBounds.y, magnifierBounds.width, magnifierBounds.height);
-                gZoom.drawString(block.name, magnifierBounds.x + 5, magnifierBounds.y + 15);
-            }
-
-            // Draw connections in magnifier
-            Graphics2D contentG = (Graphics2D) gZoom.create();
-            contentG.scale(zoomFactor, zoomFactor);
-            for (Connection conn : connections) {
-                Point from = getOutputPoint(conn.from, conn.fromIdx);
-                Point to = getInputPoint(conn.to, conn.toIdx);
-                drawCurvedArrow(contentG, from, to, conn.type + " connection", conn == selectedConnection);
-            }
-            contentG.dispose();
-            gZoom.dispose();
-
-            int drawX = mousePoint.x + 20;
-            int drawY = mousePoint.y + 20;
-            g.drawImage(zoomImage, drawX, drawY, null);
-            g.setColor(Color.BLACK);
-            g.drawRect(drawX, drawY, zoomSize, zoomSize);
-        }
+        //     if (!searchResults.isEmpty()) {
+        //         Graphics2D g2d = (Graphics2D) g.create();
+        //         g2d.setColor(new Color(255, 0, 0, 100)); 
+        //         g2d.setStroke(new BasicStroke(3));
+        //         for (FunctionBlock block : searchResults) {
+        //             Rectangle bounds = block.getBounds();
+        //             g2d.drawRect(bounds.x - 2, bounds.y - 2, bounds.width + 4, bounds.height + 4);
+        //         }
+        //         g2d.dispose();
+        //     }
+        // }
 
         private void drawCurvedArrow(Graphics2D g2, Point from, Point to, String type, boolean isSelected) {
             int dx = to.x - from.x;
@@ -978,13 +1210,11 @@ public class gui4 extends JFrame {
         }
         JLabel output = fb.outputArrows[outputIndex];
         Point p = SwingUtilities.convertPoint(output, output.getWidth(), output.getHeight() / 2, drawingPanel);
-        // Don't apply zoom transformation here since it's applied in paintComponent
         return new Point((int)(p.x / drawingPanel.zoomFactor), (int)(p.y / drawingPanel.zoomFactor));
     }
 
     Point getInputPoint(FunctionBlock fb, int inputIndex) {
         if (inputIndex == -1) {
-            // Status connection to center of block
             Point p = new Point(fb.getX() + fb.getWidth() / 2, fb.getY() + fb.getHeight() / 2);
             return new Point((int)(p.x / drawingPanel.zoomFactor), (int)(p.y / drawingPanel.zoomFactor));
         }
@@ -993,16 +1223,13 @@ public class gui4 extends JFrame {
         }
         JLabel input = fb.inputArrows[inputIndex];
         Point p = SwingUtilities.convertPoint(input, 0, input.getHeight() / 2, drawingPanel);
-        // Don't apply zoom transformation here since it's applied in paintComponent
         return new Point((int)(p.x / drawingPanel.zoomFactor), (int)(p.y / drawingPanel.zoomFactor));
     }
 
-    // === TOPOLOGICAL SORT METHOD ===
     private List<FunctionBlock> getTopologicalOrder() {
         Map<FunctionBlock, Set<FunctionBlock>> adj = new HashMap<>();
         Map<FunctionBlock, Integer> inDegree = new HashMap<>();
 
-        // Build adjacency list and in-degree map
         for (FunctionBlock fb : functionBlocks) {
             adj.put(fb, new HashSet<>());
             inDegree.put(fb, 0);
@@ -1015,7 +1242,6 @@ public class gui4 extends JFrame {
             }
         }
 
-        // Initialize queue with all nodes having in-degree 0
         Queue<FunctionBlock> q = new LinkedList<>();
         Set<FunctionBlock> visited = new HashSet<>();
 
@@ -1028,7 +1254,6 @@ public class gui4 extends JFrame {
 
         List<FunctionBlock> order = new ArrayList<>();
 
-        // Kahn’s Algorithm (extended for disconnected graphs)
         while (!q.isEmpty()) {
             FunctionBlock curr = q.poll();
             order.add(curr);
@@ -1041,7 +1266,6 @@ public class gui4 extends JFrame {
                 }
             }
 
-            // Handle isolated or disconnected blocks
             if (q.isEmpty()) {
                 for (FunctionBlock fb : functionBlocks) {
                     if (!visited.contains(fb)) {
@@ -1053,7 +1277,6 @@ public class gui4 extends JFrame {
             }
         }
 
-        // === Cycle detection ===
         if (order.size() != functionBlocks.size()) {
             Set<FunctionBlock> visitedC = new HashSet<>();
             Set<FunctionBlock> recStack = new HashSet<>();
@@ -1074,7 +1297,6 @@ public class gui4 extends JFrame {
             }
         }
 
-        // === Fallback: ensure all blocks are included ===
         for (FunctionBlock fb : functionBlocks) {
             if (!order.contains(fb)) {
                 order.add(fb);
@@ -1086,29 +1308,23 @@ public class gui4 extends JFrame {
 
     private boolean detectCycle(FunctionBlock node, Map<FunctionBlock, Set<FunctionBlock>> adj,
                             Set<FunctionBlock> visited, Set<FunctionBlock> recStack, List<String> cyclePath) {
-        System.out.println("detectCycle called on node: " + node.name);
         Map<FunctionBlock, FunctionBlock> parentMap = new HashMap<>();
-        boolean result = dfsCycle(node, adj, visited, recStack, parentMap, cyclePath);
-        System.out.println("detectCycle result for node " + node.name + ": " + result);
-        return result;
+        return dfsCycle(node, adj, visited, recStack, parentMap, cyclePath);
     }
 
     private boolean dfsCycle(FunctionBlock current, Map<FunctionBlock, Set<FunctionBlock>> adj,
                             Set<FunctionBlock> visited, Set<FunctionBlock> recStack,
                             Map<FunctionBlock, FunctionBlock> parentMap, List<String> cyclePath) {
-        //System.out.println("dfsCycle visiting: " + current.name);
         visited.add(current);
         recStack.add(current);
 
         for (FunctionBlock neighbor : adj.get(current)) {
-            //System.out.println("Checking neighbor: " + neighbor.name + " of " + current.name);
             if (!visited.contains(neighbor)) {
                 parentMap.put(neighbor, current);
                 if (dfsCycle(neighbor, adj, visited, recStack, parentMap, cyclePath)) {
                     return true;
                 }
             } else if (recStack.contains(neighbor)) {
-                //System.out.println("Cycle detected at neighbor: " + neighbor.name + " from " + current.name);
                 List<String> tempCycle = new ArrayList<>();
                 FunctionBlock temp = current;
                 tempCycle.add(neighbor.name);
@@ -1121,36 +1337,13 @@ public class gui4 extends JFrame {
 
                 Collections.reverse(tempCycle);
                 cyclePath.addAll(tempCycle);
-                //System.out.println("Cycle path: " + String.join(" -> ", cyclePath));
                 return true;
             }
         }
 
         recStack.remove(current);
-        //System.out.println("dfsCycle leaving: " + current.name);
         return false;
     }
-
-    class StatusBlock extends FunctionBlock {
-        private boolean success;
-
-        public StatusBlock(String name, BlockTemplate template) {
-            super(name, template);  // match the constructor
-        }
-
-        // No @Override, since FunctionBlock has no execute()
-        public void execute() {
-            success = Math.random() > 0.5;
-            System.out.println("StatusBlock " + name + " result: " 
-                            + (success ? "SUCCESS" : "FAILURE"));
-        }
-
-        public boolean isSuccess() {
-            return success;
-        }
-    }
-
-
 
     class Connection {
         FunctionBlock from, to;
@@ -1170,14 +1363,15 @@ public class gui4 extends JFrame {
         private static final long serialVersionUID = 1L;
 
         String name;
-        String originalName; // New field to store original name
-        List<String> nameHistory; // List to store naming history
+        String originalName;
+        List<String> nameHistory;
         String[] inputValues;
         JButton[] outputDots;
         transient BlockTemplate template;
         public JLabel[] inputArrows;
         public JLabel[] outputArrows;
         private Component outputPanel;
+        boolean isSelected = false;
 
         private String getDefaultValue(String type) {
             switch (type) {
@@ -1194,17 +1388,39 @@ public class gui4 extends JFrame {
             }
         }
 
+        // Update border with description
+        void updateBorder() {
+            String[] desc = getBlockDescription(name);
+            setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(isSelected ? Color.BLUE : Color.GRAY, isSelected ? 2 : 1),
+                "<html><b>" + name + "</b><br><font size='2' color='gray'>" + desc[0] + "</font></html>"
+            ));
+        }
+
         FunctionBlock(String name, BlockTemplate template) {
             super();
             this.name = name;
-            this.originalName = name; // Initialize originalName with initial name
+            this.originalName = name;
             this.nameHistory = new ArrayList<>();
             this.nameHistory.add(name);
             this.template = template;
             setLayout(new BorderLayout(10, 10));
-            setBorder(BorderFactory.createTitledBorder(name));
+            
+            // Enhanced border with full name
+            String[] desc = getBlockDescription(name);
+            setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(Color.GRAY, 1),
+                "<html><b>" + name + "</b><br><font size='2' color='gray'>" + desc[0] + "</font></html>"
+            ));
+            
             setBackground(new Color(230, 230, 250));
             setOpaque(true);
+            
+            // Tooltip with full description
+            setToolTipText("<html><b>" + desc[0] + "</b><br><br>" + 
+                desc[1] + "</i><br><br>" +
+                "<b>Inputs:</b> " + template.inputCount + " | <b>Outputs:</b> " + template.outputCount + 
+                "<br><br><font color='blue'>Right-click for options | Ctrl+C to copy</font></html>");
 
             inputValues = new String[template.inputCount];
             JPanel inputPanel = new JPanel();
@@ -1216,10 +1432,11 @@ public class gui4 extends JFrame {
                 inputValues[i] = getDefaultValue(template.inputTypes[i]);
 
                 final int idx = i;
-                JLabel inArrow = new JLabel("→");
-                inArrow.setFont(new Font("SansSerif", Font.BOLD, 16));
+                JLabel inArrow = new JLabel("●→");
+                inArrow.setFont(new Font("SansSerif", Font.BOLD, 14));
+                inArrow.setForeground(getTypeColor(template.inputTypes[i]));
                 inArrow.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                inArrow.setToolTipText("input" + (idx + 1) + " (" + template.inputTypes[idx] + ")");
+                inArrow.setToolTipText("<html><b>Input " + (idx + 1) + "</b><br>Type: " + template.inputTypes[idx] + "</html>");
                 inArrow.setBorder(BorderFactory.createEmptyBorder(6, 5, 6, 20));
                 inArrow.addMouseListener(new MouseAdapter() {
                     public void mouseReleased(MouseEvent e) {
@@ -1236,7 +1453,6 @@ public class gui4 extends JFrame {
                                 return;
                             }
 
-                            // Check if input already connected
                             boolean inputAlreadyConnected = false;
                             for (Connection conn : connections) {
                                 if (conn.to == FunctionBlock.this && conn.toIdx == idx) {
@@ -1261,6 +1477,14 @@ public class gui4 extends JFrame {
                             drawingPanel.repaint();
                         }
                     }
+                    
+                    public void mouseEntered(MouseEvent e) {
+                        inArrow.setFont(new Font("SansSerif", Font.BOLD, 16));
+                    }
+                    
+                    public void mouseExited(MouseEvent e) {
+                        inArrow.setFont(new Font("SansSerif", Font.BOLD, 14));
+                    }
                 });
                 inputArrows[i] = inArrow;
                 inputPanel.add(inArrow);
@@ -1272,14 +1496,24 @@ public class gui4 extends JFrame {
 
             for (int j = 0; j < template.outputCount; j++) {
                 final int oidx = j;
-                JLabel outArrow = new JLabel("→");
-                outArrow.setFont(new Font("SansSerif", Font.BOLD, 16));
+                JLabel outArrow = new JLabel("→●");
+                outArrow.setFont(new Font("SansSerif", Font.BOLD, 14));
+                outArrow.setForeground(getTypeColor(template.outputTypes[j]));
                 outArrow.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                outArrow.setToolTipText("output" + (oidx + 1) + " (" + template.outputTypes[oidx] + ")");
+                outArrow.setToolTipText("<html><b>Output " + (oidx + 1) + "</b><br>Type: " + template.outputTypes[oidx] + "<br><i>Click to start connection</i></html>");
                 outArrow.addMouseListener(new MouseAdapter() {
                     public void mouseClicked(MouseEvent e) {
                         dragSource = FunctionBlock.this;
                         dragSourceOutputIndex = oidx;
+                        drawingPanel.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+                    }
+                    
+                    public void mouseEntered(MouseEvent e) {
+                        outArrow.setFont(new Font("SansSerif", Font.BOLD, 16));
+                    }
+                    
+                    public void mouseExited(MouseEvent e) {
+                        outArrow.setFont(new Font("SansSerif", Font.BOLD, 14));
                     }
                 });
                 outputArrows[j] = outArrow;
@@ -1294,11 +1528,20 @@ public class gui4 extends JFrame {
             this.add(ioWrapper, BorderLayout.CENTER);
             this.add(outputPanel, BorderLayout.EAST);
 
-            // Add mouse listener for status connections (to the entire block)
+            // Status connection listener
             addMouseListener(new MouseAdapter() {
+                public void mousePressed(MouseEvent e) {
+                    // Select this block
+                    for (FunctionBlock fb : functionBlocks) {
+                        fb.isSelected = false;
+                        fb.updateBorder();
+                    }
+                    isSelected = true;
+                    updateBorder();
+                }
+                
                 public void mouseReleased(MouseEvent e) {
                     if (dragSource != null) {
-                        // Check if the drag is from a Status output
                         boolean isStatusOutput = false;
                         if (dragSourceOutputIndex != -1 && dragSource.template != null &&
                             dragSourceOutputIndex < dragSource.template.outputTypes.length) {
@@ -1306,8 +1549,6 @@ public class gui4 extends JFrame {
                         }
 
                         if (isStatusOutput) {
-                            // Create status connection to the entire block
-                            // Check if already connected via status to avoid duplicates
                             boolean alreadyConnected = false;
                             for (Connection conn : connections) {
                                 if (conn.from == dragSource && conn.to == FunctionBlock.this && conn.toIdx == -1) {
@@ -1329,120 +1570,168 @@ public class gui4 extends JFrame {
                 }
             });
 
+            // Context menu
             JPopupMenu menu = new JPopupMenu();
-            JMenuItem rename = new JMenuItem("Rename");
-            JMenuItem changeInputs = new JMenuItem("Change Input Count");
-            JMenuItem delete = new JMenuItem("Delete");
-
+            
+            JMenuItem viewInfo = new JMenuItem("📋 View Block Info");
+            viewInfo.addActionListener(e -> showBlockInfo());
+            menu.add(viewInfo);
+            
+            menu.addSeparator();
+            
+            JMenuItem copy = new JMenuItem("📄 Copy (Ctrl+C)");
+            copy.addActionListener(e -> {
+                clipboardBlock = this;
+                JOptionPane.showMessageDialog(gui4.this, "Block copied to clipboard!");
+            });
+            menu.add(copy);
+            
+            JMenuItem duplicate = new JMenuItem("📋 Duplicate (Ctrl+D)");
+            duplicate.addActionListener(e -> {
+                clipboardBlock = this;
+                pasteBlock();
+            });
+            menu.add(duplicate);
+            
+            menu.addSeparator();
+            
+            JMenuItem rename = new JMenuItem("✏️ Rename");
             rename.addActionListener(e -> {
                 String oldName = FunctionBlock.this.name;
                 String newName = JOptionPane.showInputDialog("Enter new name for " + oldName);
 
                 if (newName != null && !newName.trim().isEmpty() && !newName.equals(oldName)) {
                     newName = newName.trim();
-                    renameFunctionBlock(oldName, newName);
                     FunctionBlock.this.name = newName;
                     FunctionBlock.this.nameHistory.add(newName);
-                    // Keep originalName unchanged to track original
-                    setBorder(BorderFactory.createTitledBorder(newName));
+                    updateBorder();
                     repaint();
                 }
             });
+            menu.add(rename);
 
+            JMenuItem changeInputs = new JMenuItem("🔧 Change Input Count");
             changeInputs.addActionListener(e -> {
                 try {
                     int newCount = Integer.parseInt(JOptionPane.showInputDialog("Enter new input count:"));
                     if (newCount >= 0 && newCount != template.inputCount) {
-                        // Remove existing connections to this block
                         connections.removeIf(conn -> conn.to == FunctionBlock.this);
-
-                        // Update template
+                        
                         String[] newInputTypes = new String[newCount];
                         for (int i = 0; i < newCount && i < template.inputTypes.length; i++) {
                             newInputTypes[i] = template.inputTypes[i];
                         }
-
-                        // If adding new inputs, prompt for their types
-                        if (newCount > template.inputCount) {
-                            String[] types = {"float", "string", "file", "graph","int", "Status", "char"};
-                            JPanel typePanel = new JPanel(new GridLayout(newCount - template.inputCount, 2));
-                            @SuppressWarnings("unchecked")
-                            JComboBox<String>[] newTypeComboBoxes = new JComboBox[newCount - template.inputCount];
-
-                            for (int i = template.inputTypes.length; i < newCount; i++) {
-                                typePanel.add(new JLabel("Input " + (i + 1) + ":"));
-                                JComboBox<String> cb = new JComboBox<>(types);
-                                newTypeComboBoxes[i - template.inputTypes.length] = cb;
-                                typePanel.add(cb);
-                                newInputTypes[i] = types[0]; // default to first type
-                            }
-
-                            int typeRes = JOptionPane.showConfirmDialog(gui4.this, typePanel, "Select Types for New Inputs", JOptionPane.OK_CANCEL_OPTION);
-                            if (typeRes == JOptionPane.OK_OPTION) {
-                                for (int i = template.inputTypes.length; i < newCount; i++) {
-                                    newInputTypes[i] = (String) newTypeComboBoxes[i - template.inputTypes.length].getSelectedItem();
-                                }
-                            } else {
-                                return; // Cancelled, do not change
-                            }
+                        for (int i = template.inputTypes.length; i < newCount; i++) {
+                            newInputTypes[i] = "float";
                         }
-
+                        
                         template.inputCount = newCount;
                         template.inputTypes = newInputTypes;
-
-                        // Rebuild the UI
+                        
                         rebuildUI();
                     }
                 } catch (Exception ignored) {}
             });
-
-            delete.addActionListener(e -> {
-                functionBlocks.remove(FunctionBlock.this);
-                drawingPanel.remove(FunctionBlock.this);
-                connections.removeIf(conn -> conn.from == FunctionBlock.this || conn.to == FunctionBlock.this);
-                updateCanvasSize();
-                drawingPanel.repaint();
-            });
-
-            menu.add(rename);
             menu.add(changeInputs);
+
+            menu.addSeparator();
+            
+            JMenuItem delete = new JMenuItem("🗑️ Delete");
+            delete.addActionListener(e -> {
+                int confirm = JOptionPane.showConfirmDialog(gui4.this, 
+                    "Delete block '" + name + "'?", 
+                    "Confirm Delete", 
+                    JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    functionBlocks.remove(FunctionBlock.this);
+                    drawingPanel.remove(FunctionBlock.this);
+                    connections.removeIf(conn -> conn.from == FunctionBlock.this || conn.to == FunctionBlock.this);
+                    updateCanvasSize();
+                    drawingPanel.repaint();
+                }
+            });
             menu.add(delete);
+
             this.setComponentPopupMenu(menu);
 
             int minHeight = 100;
             int numSlots = Math.max(template.inputCount, template.outputCount);
-            int dynamicHeight = 30 * numSlots + 50;
-            this.setSize(160, Math.max(minHeight, dynamicHeight));
+            int dynamicHeight = 30 * numSlots + 70;
+            this.setSize(180, Math.max(minHeight, dynamicHeight));
             this.setPreferredSize(new Dimension(getWidth(), getHeight()));
             this.revalidate();
             this.setBounds(getLocation().x, getLocation().y, getWidth(), getHeight());
 
             enableDrag(this);
         }
+        
+        // Get color for type
+        private Color getTypeColor(String type) {
+            switch (type) {
+                case "float": return new Color(139, 0, 0);
+                case "integer": case "int": return new Color(0, 0, 139);
+                case "string": return new Color(255, 140, 0);
+                case "file": return new Color(199, 21, 133);
+                case "graph": return new Color(0, 139, 139);
+                case "Status": return new Color(0, 100, 0);
+                case "character": case "char": return new Color(184, 134, 11);
+                default: return Color.DARK_GRAY;
+            }
+        }
+        
+        // Show block info dialog
+        private void showBlockInfo() {
+            String[] desc = getBlockDescription(name);
+            
+            StringBuilder info = new StringBuilder();
+            info.append("=== BLOCK INFORMATION ===\n\n");
+            info.append("Name: ").append(name).append("\n");
+            info.append("Full Name: ").append(desc[0]).append("\n");
+            // info.append("Category: ").append(desc[2]).append("\n\n");
+            info.append("Description:\n").append(desc[1]).append("\n\n");
+            info.append("=== INPUTS (").append(template.inputCount).append(") ===\n");
+            for (int i = 0; i < template.inputCount; i++) {
+                info.append("  Input ").append(i + 1).append(": ").append(template.inputTypes[i]);
+                info.append(" = ").append(inputValues[i]).append("\n");
+            }
+            info.append("\n=== OUTPUTS (").append(template.outputCount).append(") ===\n");
+            for (int i = 0; i < template.outputCount; i++) {
+                info.append("  Output ").append(i + 1).append(": ").append(template.outputTypes[i]).append("\n");
+            }
+            
+            JTextArea textArea = new JTextArea(info.toString());
+            textArea.setEditable(false);
+            textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+            JScrollPane scrollPane = new JScrollPane(textArea);
+            scrollPane.setPreferredSize(new Dimension(400, 350));
+            
+            JOptionPane.showMessageDialog(gui4.this, scrollPane, "Block Info: " + name, JOptionPane.INFORMATION_MESSAGE);
+        }
 
         private void rebuildUI() {
             this.removeAll();
 
             this.setLayout(new BorderLayout(10, 10));
-            this.setBorder(BorderFactory.createTitledBorder(name));
+            updateBorder();
             this.setBackground(new Color(230, 230, 250));
 
+            String[] oldValues = inputValues != null ? inputValues.clone() : null;
             inputValues = new String[template.inputCount];
+            
             JPanel inputPanel = new JPanel();
             inputPanel.setLayout(new GridLayout(template.inputCount, 1, 0, 8));
             inputPanel.setOpaque(false);
             inputArrows = new JLabel[template.inputCount];
 
-            String[] oldValues = inputValues != null ? inputValues.clone() : null;
-
             for (int i = 0; i < template.inputCount; i++) {
                 inputValues[i] = (oldValues != null && i < oldValues.length) ? oldValues[i] : getDefaultValue(template.inputTypes[i]);
 
                 final int idx = i;
-                JLabel inArrow = new JLabel("→");
-                inArrow.setFont(new Font("SansSerif", Font.BOLD, 16));
+                JLabel inArrow = new JLabel("●→");
+                inArrow.setFont(new Font("SansSerif", Font.BOLD, 14));
+                inArrow.setForeground(getTypeColor(template.inputTypes[i]));
                 inArrow.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                inArrow.setToolTipText("input" + (idx + 1) + " (" + template.inputTypes[idx] + ")");
+                inArrow.setToolTipText("<html><b>Input " + (idx + 1) + "</b><br>Type: " + template.inputTypes[idx] + "</html>");
                 inArrow.setBorder(BorderFactory.createEmptyBorder(6, 5, 6, 20));
                 inArrow.addMouseListener(new MouseAdapter() {
                     public void mouseReleased(MouseEvent e) {
@@ -1477,10 +1766,11 @@ public class gui4 extends JFrame {
 
             for (int j = 0; j < template.outputCount; j++) {
                 final int oidx = j;
-                JLabel outArrow = new JLabel("→");
-                outArrow.setFont(new Font("SansSerif", Font.BOLD, 16));
+                JLabel outArrow = new JLabel("→●");
+                outArrow.setFont(new Font("SansSerif", Font.BOLD, 14));
+                outArrow.setForeground(getTypeColor(template.outputTypes[j]));
                 outArrow.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                outArrow.setToolTipText("output" + (oidx + 1) + " (" + template.outputTypes[oidx] + ")");
+                outArrow.setToolTipText("<html><b>Output " + (oidx + 1) + "</b><br>Type: " + template.outputTypes[oidx] + "</html>");
                 outArrow.addMouseListener(new MouseAdapter() {
                     public void mouseClicked(MouseEvent e) {
                         dragSource = FunctionBlock.this;
@@ -1501,14 +1791,12 @@ public class gui4 extends JFrame {
 
             int minHeight = 100;
             int numSlots = Math.max(template.inputCount, template.outputCount);
-            int dynamicHeight = 30 * numSlots + 50;
-            this.setSize(160, Math.max(minHeight, dynamicHeight));
+            int dynamicHeight = 30 * numSlots + 70;
+            this.setSize(180, Math.max(minHeight, dynamicHeight));
             this.setPreferredSize(new Dimension(getWidth(), getHeight()));
             this.revalidate();
             this.repaint();
         }
-
-        private void renameFunctionBlock(String oldName, String newName) {}
 
         void startDrag(FunctionBlock src, int outIndex) {
             dragSource = src;
@@ -1537,10 +1825,9 @@ public class gui4 extends JFrame {
                 public void mouseDragged(MouseEvent e) {
                     Point parent = SwingUtilities.convertPoint(comp, e.getPoint(), drawingPanel);
                     if (offset[0] != null) {
-                        // Account for current zoom factor when dragging
                         int newX = parent.x - offset[0].x;
                         int newY = parent.y - offset[0].y;
-                            
+                        
                         comp.setLocation(newX, newY);
                         updateCanvasSize();
                         drawingPanel.repaint();
@@ -1588,29 +1875,28 @@ public class gui4 extends JFrame {
 
         try (PrintWriter writer = new PrintWriter("execution.txt")) {
 
-            // === Print Topological Order ===
             writer.println("# Topological Sort Order");
             for (int i = 0; i < order.size(); i++) {
-                writer.println((i + 1) + ". " + order.get(i).originalName);
+                FunctionBlock fb = order.get(i);
+                String[] desc = getBlockDescription(fb.originalName);
+                writer.println((i + 1) + ". " + fb.originalName + " (" + desc[0] + ")");
             }
-            writer.println(); // blank line for separation
+            writer.println();
 
-            // === Write Each Function Block ===
             for (FunctionBlock fb : order) {
                 String varName = fb.originalName;
+                String[] desc = getBlockDescription(fb.originalName);
+                writer.println("# " + desc[0] + " - " + desc[2]);
                 writer.println("let $" + varName);
 
-                // Mark status blocks if applicable
                 if (fb.template.outputTypes.length > 0 &&
                     "Status".equals(fb.template.outputTypes[0])) {
                     writer.println("#status " + fb.originalName);
                 }
 
-                // Inputs (either connection or default)
                 for (int i = 0; i < fb.template.inputCount; i++) {
                     String inputValue = "";
 
-                    // First try: connection input
                     for (Connection c : connections) {
                         if (c.to == fb && c.toIdx == i) {
                             inputValue = "$" + c.from.originalName + ".output" + (c.fromIdx + 1);
@@ -1618,7 +1904,6 @@ public class gui4 extends JFrame {
                         }
                     }
 
-                    // If no connection found, use the input value (which is the default or user-set)
                     if (inputValue.isEmpty()) {
                         inputValue = fb.inputValues[i];
                     }
@@ -1626,14 +1911,13 @@ public class gui4 extends JFrame {
                     writer.println("    input" + (i + 1) + " " + inputValue);
                 }
 
-                // Outputs
                 for (int o = 0; o < fb.template.outputCount; o++) {
                     writer.println("    output" + (o + 1) + " $" + varName + ".output" + (o + 1));
                 }
+                writer.println();
             }
 
-            // === Print All Connections ===
-            writer.println(); // separation line
+            writer.println("# Connections");
             for (Connection c : connections) {
                 if (c.toIdx == -1) {
                     writer.println("$" + c.from.originalName + ".output" + (c.fromIdx + 1) + " -> $" + c.to.originalName + " (status)");
@@ -1651,6 +1935,11 @@ public class gui4 extends JFrame {
    
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             new gui4().setVisible(true);
         });
     }
