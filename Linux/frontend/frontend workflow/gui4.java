@@ -8,6 +8,8 @@ import java.io.PrintWriter;
 import java.util.*;
 import java.util.List;
 import java.util.Queue;
+import java.io.*;
+import java.text.SimpleDateFormat;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -36,6 +38,11 @@ public class gui4 extends JFrame {
     private FunctionBlock clipboardBlock = null; // For copy/paste functionality
 
     private JButton hamburgerButton;
+
+    // History tab components
+    private JTextArea historyArea;
+    private List<String> executionHistory = new ArrayList<>();
+    private static final String HISTORY_FILE = "execution_history.txt";
 
     // Block descriptions map - Full forms and descriptions
     private static final Map<String, String[]> BLOCK_DESCRIPTIONS = new HashMap<>();
@@ -96,7 +103,69 @@ public class gui4 extends JFrame {
     }
 
     public gui4() {
+        // loadExecutionHistory();
         initializeGUI();
+    }
+    
+    // Create Legend Panel for type colors - positioned at top right
+    private JPanel createLegendPanel() {
+        JPanel legendPanel = new JPanel();
+        legendPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+        legendPanel.setBackground(new Color(245, 245, 250, 230));
+        legendPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(100, 100, 150), 1),
+            BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
+
+        // Add "Legend:" label
+        JLabel legendLabel = new JLabel("Legend: ");
+        legendLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
+        legendLabel.setForeground(new Color(50, 50, 100));
+        legendPanel.add(legendLabel);
+
+        // Type colors mapping
+        Object[][] typeColors = {
+            {"float", new Color(139, 0, 0)},
+            {"integer", new Color(0, 0, 139)},
+            {"string", new Color(255, 140, 0)},
+            {"file", new Color(199, 21, 133)},
+            {"graph", new Color(0, 139, 139)},
+            {"Status", new Color(0, 100, 0)},
+            {"char", new Color(184, 134, 11)}
+        };
+
+        for (Object[] typeColor : typeColors) {
+            String typeName = (String) typeColor[0];
+            Color color = (Color) typeColor[1];
+            
+            // Create colored box
+            JPanel colorBox = new JPanel() {
+                @Override
+                protected void paintComponent(Graphics g) {
+                    super.paintComponent(g);
+                    Graphics2D g2 = (Graphics2D) g;
+                    g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g2.setColor(color);
+                    g2.fillRoundRect(0, 0, getWidth(), getHeight(), 4, 4);
+                    g2.setColor(Color.DARK_GRAY);
+                    g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 4, 4);
+                }
+            };
+            colorBox.setPreferredSize(new Dimension(14, 14));
+            colorBox.setOpaque(false);
+            
+            // Label
+            JLabel label = new JLabel(typeName);
+            label.setFont(new Font("SansSerif", Font.BOLD, 11));
+            label.setForeground(color.darker());
+            
+            // Add to legend
+            legendPanel.add(colorBox);
+            legendPanel.add(label);
+            legendPanel.add(Box.createHorizontalStrut(5));
+        }
+
+        return legendPanel;
     }
     
     private void initializeGUI() {
@@ -151,7 +220,6 @@ public class gui4 extends JFrame {
         // === Add New Block Template Button ===
         JButton addTemplateBtn = new JButton("+ New Template");
         addTemplateBtn.setBackground(new Color(138, 43, 226));
-        // addTemplateBtn.setForeground(Color.WHITE);
         addTemplateBtn.addActionListener(e -> showNewBlockTemplateDialog());
         controlsPanel.add(addTemplateBtn);
 
@@ -202,10 +270,21 @@ public class gui4 extends JFrame {
         // === Main Content with Tabs ===
         tabbedPane = new JTabbedPane();
         
-        // Drawing Canvas Tab
+        // Drawing Canvas Tab with Legend at top right
+        JPanel editorPanel = new JPanel(new BorderLayout());
+        
+        // Create top panel for legend (aligned right)
+        JPanel legendContainer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        legendContainer.setBackground(new Color(248, 248, 252));
+        legendContainer.add(createLegendPanel());
+        editorPanel.add(legendContainer, BorderLayout.NORTH);
+        
+        // Canvas scroll pane
         JScrollPane canvasScroll = new JScrollPane(drawingPanel);
         canvasScroll.getVerticalScrollBar().setUnitIncrement(16);
-        tabbedPane.addTab("Graph Editor", canvasScroll);
+        editorPanel.add(canvasScroll, BorderLayout.CENTER);
+        
+        tabbedPane.addTab("Graph Editor", editorPanel);
         
         // Results Tab
         resultArea = new JTextArea();
@@ -213,29 +292,14 @@ public class gui4 extends JFrame {
         resultArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
         JScrollPane resultScroll = new JScrollPane(resultArea);
         tabbedPane.addTab("Results", resultScroll);
-        
-        // Block Reference Tab
-        JTextArea referenceArea = new JTextArea();
-        // referenceArea.setEditable(false);
-        // referenceArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-        // StringBuilder refText = new StringBuilder("=== BLOCK REFERENCE GUIDE ===\n\n");
-        // for (Map.Entry<String, String[]> entry : BLOCK_DESCRIPTIONS.entrySet()) {
-            // String[] desc = entry.getValue();
-            // refText.append("📦 ").append(entry.getKey().toUpperCase()).append("\n");
-            // refText.append("   Full Name: ").append(desc[0]).append("\n");
-            // refText.append("   Category: ").append(desc[2]).append("\n");
-            // refText.append("   Description: ").append(desc[1]).append("\n\n");
-        // }
-        // referenceArea.setText(refText.toString());
-        JScrollPane refScroll = new JScrollPane(referenceArea);
-        // tabbedPane.addTab("Block Reference", refScroll);
 
-        // History tab
-        JTextArea historyArea = new JTextArea();
+        // // History Tab
+           JTextArea historyArea = new JTextArea();
         historyArea.setEditable(false);
         JScrollPane historyScroll = new JScrollPane(historyArea);
         tabbedPane.addTab("History", historyScroll);
-        
+        // JPanel historyPanel = createHistoryPanel();
+        // tabbedPane.addTab("History", historyPanel);
         
         add(tabbedPane, BorderLayout.CENTER);
 
@@ -244,6 +308,162 @@ public class gui4 extends JFrame {
 
         setVisible(true);
     }
+
+    // // Create History Panel
+    // private JPanel createHistoryPanel() {
+    //     JPanel panel = new JPanel(new BorderLayout(10, 10));
+    //     panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+    //     panel.setBackground(new Color(248, 249, 250));
+
+    //     // Header panel
+    //     JPanel headerPanel = new JPanel(new BorderLayout());
+    //     headerPanel.setOpaque(false);
+        
+    //     JLabel titleLabel = new JLabel("Execution History");
+    //     titleLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
+    //     titleLabel.setForeground(new Color(60, 60, 100));
+    //     headerPanel.add(titleLabel, BorderLayout.WEST);
+
+    //     JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+    //     buttonPanel.setOpaque(false);
+        
+    //     JButton refreshBtn = new JButton("🔄 Refresh");
+    //     refreshBtn.addActionListener(e -> refreshHistoryDisplay());
+    //     buttonPanel.add(refreshBtn);
+        
+    //     JButton clearBtn = new JButton("🗑️ Clear All");
+    //     clearBtn.setBackground(new Color(220, 53, 69));
+    //     clearBtn.addActionListener(e -> clearExecutionHistory());
+    //     buttonPanel.add(clearBtn);
+        
+    //     headerPanel.add(buttonPanel, BorderLayout.EAST);
+    //     panel.add(headerPanel, BorderLayout.NORTH);
+
+    //     // History text area
+    //     historyArea = new JTextArea();
+    //     historyArea.setEditable(false);
+    //     historyArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+    //     historyArea.setBackground(Color.WHITE);
+    //     JScrollPane historyScroll = new JScrollPane(historyArea);
+    //     historyScroll.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 220), 1));
+    //     panel.add(historyScroll, BorderLayout.CENTER);
+
+    //     // Refresh display
+    //     refreshHistoryDisplay();
+
+    //     return panel;
+    // }
+
+    // // Load execution history from file
+    // private void loadExecutionHistory() {
+    //     File file = new File(HISTORY_FILE);
+    //     if (file.exists()) {
+    //         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+    //             executionHistory.clear();
+    //             StringBuilder currentEntry = new StringBuilder();
+    //             String line;
+    //             while ((line = reader.readLine()) != null) {
+    //                 if (line.equals("===END_ENTRY===")) {
+    //                     if (currentEntry.length() > 0) {
+    //                         executionHistory.add(currentEntry.toString());
+    //                         currentEntry = new StringBuilder();
+    //                     }
+    //                 } else {
+    //                     if (currentEntry.length() > 0) {
+    //                         currentEntry.append("\n");
+    //                     }
+    //                     currentEntry.append(line);
+    //                 }
+    //             }
+    //             if (currentEntry.length() > 0) {
+    //                 executionHistory.add(currentEntry.toString());
+    //             }
+    //         } catch (Exception e) {
+    //             System.err.println("Error loading history: " + e.getMessage());
+    //             executionHistory = new ArrayList<>();
+    //         }
+    //     }
+    // }
+
+    // // Save execution history to file
+    // private void saveExecutionHistory() {
+    //     try (PrintWriter writer = new PrintWriter(new FileWriter(HISTORY_FILE))) {
+    //         for (String entry : executionHistory) {
+    //             writer.println(entry);
+    //             writer.println("===END_ENTRY===");
+    //         }
+    //     } catch (Exception e) {
+    //         System.err.println("Error saving history: " + e.getMessage());
+    //     }
+    // }
+
+    // // Add to execution history
+    // private void addToExecutionHistory(String content) {
+    //     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    //     String timestamp = sdf.format(new Date());
+        
+    //     StringBuilder entry = new StringBuilder();
+    //     entry.append("========================================\n");
+    //     entry.append("EXECUTION: ").append(timestamp).append("\n");
+    //     entry.append("Blocks: ").append(functionBlocks.size());
+    //     entry.append(" | Connections: ").append(connections.size()).append("\n");
+    //     entry.append("========================================\n\n");
+    //     entry.append(content);
+        
+    //     executionHistory.add(entry.toString());
+        
+    //     // Keep only last 50 entries
+    //     while (executionHistory.size() > 50) {
+    //         executionHistory.remove(0);
+    //     }
+        
+    //     saveExecutionHistory();
+    //     refreshHistoryDisplay();
+    // }
+
+    // // Refresh history display
+    // private void refreshHistoryDisplay() {
+    //     if (historyArea == null) return;
+        
+    //     if (executionHistory.isEmpty()) {
+    //         historyArea.setText("No execution history yet.\n\nRun an execution to see history here.");
+    //     } else {
+    //         StringBuilder display = new StringBuilder();
+    //         display.append("=== EXECUTION HISTORY ===\n");
+    //         display.append("Total entries: ").append(executionHistory.size()).append("\n\n");
+            
+    //         // Show in reverse order (newest first)
+    //         for (int i = executionHistory.size() - 1; i >= 0; i--) {
+    //             display.append("[Entry #").append(i + 1).append("]\n");
+    //             display.append(executionHistory.get(i));
+    //             display.append("\n\n");
+    //         }
+            
+    //         historyArea.setText(display.toString());
+    //         historyArea.setCaretPosition(0);
+    //     }
+    // }
+
+    // // Clear execution history
+    // private void clearExecutionHistory() {
+    //     if (executionHistory.isEmpty()) {
+    //         JOptionPane.showMessageDialog(this, "History is already empty.", "Info", JOptionPane.INFORMATION_MESSAGE);
+    //         return;
+    //     }
+        
+    //     int confirm = JOptionPane.showConfirmDialog(this,
+    //         "Are you sure you want to clear all execution history?\nThis action cannot be undone.",
+    //         "Confirm Clear All",
+    //         JOptionPane.YES_NO_OPTION,
+    //         JOptionPane.WARNING_MESSAGE);
+        
+    //     if (confirm == JOptionPane.YES_OPTION) {
+    //         executionHistory.clear();
+    //         saveExecutionHistory();
+    //         refreshHistoryDisplay();
+    //         JOptionPane.showMessageDialog(this, "Execution history cleared.", "Success", JOptionPane.INFORMATION_MESSAGE);
+    //     }
+    // }
 
     // Custom renderer for block selector dropdown
     class BlockSelectorRenderer extends DefaultListCellRenderer {
@@ -290,7 +510,6 @@ public class gui4 extends JFrame {
         for (FunctionBlock fb : functionBlocks) {
             if (fb.isSelected) {
                 clipboardBlock = fb;
-
                 return;
             }
         }
@@ -374,7 +593,7 @@ public class gui4 extends JFrame {
     // Show all block descriptions dialog
     private void showAllBlockDescriptions() {
         JPanel panel = new JPanel();
-        // panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         
         for (Map.Entry<String, String[]> entry : BLOCK_DESCRIPTIONS.entrySet()) {
             String[] desc = entry.getValue();
@@ -383,15 +602,11 @@ public class gui4 extends JFrame {
             blockPanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(100, 100, 200), 2),
                 BorderFactory.createEmptyBorder(10, 10, 10, 10)
-            )
-            );
+            ));
             blockPanel.setBackground(new Color(240, 240, 255));
             
             JLabel titleLabel = new JLabel("<html><b style='font-size:14px;color:#4040A0;'>" + 
                 entry.getKey().toUpperCase() + "</b> - " + desc[0] + "</html>");
-            
-            // JLabel categoryLabel = new JLabel("Category: " + desc[2]);
-            // categoryLabel.setForeground(new Color(100, 100, 100));
             
             JTextArea descArea = new JTextArea(desc[1]);
             descArea.setLineWrap(true);
@@ -403,7 +618,6 @@ public class gui4 extends JFrame {
             JPanel textPanel = new JPanel(new BorderLayout());
             textPanel.setBackground(new Color(240, 240, 255));
             textPanel.add(titleLabel, BorderLayout.NORTH);
-            // textPanel.add(categoryLabel, BorderLayout.CENTER);
             textPanel.add(descArea, BorderLayout.SOUTH);
             
             blockPanel.add(textPanel, BorderLayout.CENTER);
@@ -805,7 +1019,6 @@ public class gui4 extends JFrame {
         JTextArea descriptionArea = new JTextArea(3, 20);
         descriptionArea.setLineWrap(true);
         descriptionArea.setWrapStyleWord(true);
-        // JTextField categoryField = new JTextField(15);
         JSpinner inputSpinner = new JSpinner(new SpinnerNumberModel(1, 0, 10, 1));
         JSpinner outputSpinner = new JSpinner(new SpinnerNumberModel(1, 1, 5, 1));
 
@@ -814,8 +1027,6 @@ public class gui4 extends JFrame {
         panel.add(nameField);
         panel.add(new JLabel("Full Name:"));
         panel.add(fullNameField);
-        // panel.add(new JLabel("Category:"));
-        // panel.add(categoryField);
         panel.add(new JLabel("Description:"));
         panel.add(new JScrollPane(descriptionArea));
         panel.add(new JLabel("# Inputs:"));
@@ -838,9 +1049,8 @@ public class gui4 extends JFrame {
         // Add description
         String fullName = fullNameField.getText().trim().isEmpty() ? name.toUpperCase() + " Block" : fullNameField.getText().trim();
         String description = descriptionArea.getText().trim().isEmpty() ? "Custom block" : descriptionArea.getText().trim();
-        // String category = categoryField.getText().trim().isEmpty() ? "Custom" : categoryField.getText().trim();
-        
-        // BLOCK_DESCRIPTIONS.put(name, new String[]{fullName, description, category});
+
+        BLOCK_DESCRIPTIONS.put(name, new String[]{fullName, description, "Custom"});
 
         String[] types = {"float", "string", "file", "graph","int", "Status", "char"};
         String[] inTypes = new String[inCount];
@@ -889,11 +1099,15 @@ public class gui4 extends JFrame {
         List<FunctionBlock> order = getTopologicalOrder();
         if (order == null) return;
 
-        saveExecutionPlan(order);
+        String executionContent = saveExecutionPlan(order);
+        
+        // Add to history
+        // addToExecutionHistory(executionContent);
         
         StringBuilder resultText = new StringBuilder();
         resultText.append("=== EXECUTION PLAN ===\n\n");
-        resultText.append("Execution plan saved to execution.txt\n\n");
+        resultText.append("Execution plan saved to execution.txt\n");
+        resultText.append("Execution added to History tab\n\n");
         resultText.append("=== TOPOLOGICAL ORDER ===\n");
         for (int i = 0; i < order.size(); i++) {
             FunctionBlock fb = order.get(i);
@@ -1108,45 +1322,7 @@ public class gui4 extends JFrame {
             repaint();
         }
 
-        // @Override
-        // protected void paintComponent(Graphics g) {
-        //     super.paintComponent(g);
-        //     Graphics2D g2 = (Graphics2D) g.create();
-        //     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        //     // Draw grid
-        //     g2.setColor(new Color(230, 230, 230));
-        //     int gridSize = 20;
-        //     for (int x = 0; x < getWidth(); x += gridSize) {
-        //         g2.drawLine(x, 0, x, getHeight());
-        //     }
-        //     for (int y = 0; y < getHeight(); y += gridSize) {
-        //         g2.drawLine(0, y, getWidth(), y);
-        //     }
-
-        //     g2.translate(translateX, translateY);
-        //     g2.scale(zoomFactor, zoomFactor);
-
-        //     for (Connection conn : connections) {
-        //         Point from = getOutputPoint(conn.from, conn.fromIdx);
-        //         Point to = getInputPoint(conn.to, conn.toIdx);
-        //         drawCurvedArrow(g2, from, to, conn.type, conn == selectedConnection);
-        //     }
-
-        //     g2.dispose();
-            
-        //     if (!searchResults.isEmpty()) {
-        //         Graphics2D g2d = (Graphics2D) g.create();
-        //         g2d.setColor(new Color(255, 0, 0, 100)); 
-        //         g2d.setStroke(new BasicStroke(3));
-        //         for (FunctionBlock block : searchResults) {
-        //             Rectangle bounds = block.getBounds();
-        //             g2d.drawRect(bounds.x - 2, bounds.y - 2, bounds.width + 4, bounds.height + 4);
-        //         }
-        //         g2d.dispose();
-        //     }
-        // }
-
+       
         private void drawCurvedArrow(Graphics2D g2, Point from, Point to, String type, boolean isSelected) {
             int dx = to.x - from.x;
             int dy = to.y - from.y;
@@ -1687,7 +1863,6 @@ public class gui4 extends JFrame {
             info.append("=== BLOCK INFORMATION ===\n\n");
             info.append("Name: ").append(name).append("\n");
             info.append("Full Name: ").append(desc[0]).append("\n");
-            // info.append("Category: ").append(desc[2]).append("\n\n");
             info.append("Description:\n").append(desc[1]).append("\n\n");
             info.append("=== INPUTS (").append(template.inputCount).append(") ===\n");
             for (int i = 0; i < template.inputCount; i++) {
@@ -1867,31 +2042,45 @@ public class gui4 extends JFrame {
         return Math.sqrt(dx * dx + dy * dy);
     }
 
-    private void saveExecutionPlan(List<FunctionBlock> order) {
+    private String saveExecutionPlan(List<FunctionBlock> order) {
         if (order == null || order.isEmpty()) {
             System.err.println("No execution plan to save.");
-            return;
+            return "";
         }
+
+        StringBuilder content = new StringBuilder();
 
         try (PrintWriter writer = new PrintWriter("execution.txt")) {
 
+            content.append("# Topological Sort Order\n");
             writer.println("# Topological Sort Order");
             for (int i = 0; i < order.size(); i++) {
                 FunctionBlock fb = order.get(i);
                 String[] desc = getBlockDescription(fb.originalName);
-                writer.println((i + 1) + ". " + fb.originalName + " (" + desc[0] + ")");
+                String line = (i + 1) + ". " + fb.originalName + " (" + desc[0] + ")";
+                content.append(line).append("\n");
+                writer.println(line);
             }
+            content.append("\n");
             writer.println();
 
             for (FunctionBlock fb : order) {
                 String varName = fb.originalName;
                 String[] desc = getBlockDescription(fb.originalName);
-                writer.println("# " + desc[0] + " - " + desc[2]);
-                writer.println("let $" + varName);
+                
+                String headerLine = "# " + desc[0] + " - " + desc[2];
+                content.append(headerLine).append("\n");
+                writer.println(headerLine);
+                
+                String letLine = "let $" + varName;
+                content.append(letLine).append("\n");
+                writer.println(letLine);
 
                 if (fb.template.outputTypes.length > 0 &&
                     "Status".equals(fb.template.outputTypes[0])) {
-                    writer.println("#status " + fb.originalName);
+                    String statusLine = "#status " + fb.originalName;
+                    content.append(statusLine).append("\n");
+                    writer.println(statusLine);
                 }
 
                 for (int i = 0; i < fb.template.inputCount; i++) {
@@ -1908,28 +2097,39 @@ public class gui4 extends JFrame {
                         inputValue = fb.inputValues[i];
                     }
 
-                    writer.println("    input" + (i + 1) + " " + inputValue);
+                    String inputLine = "    input" + (i + 1) + " " + inputValue;
+                    content.append(inputLine).append("\n");
+                    writer.println(inputLine);
                 }
 
                 for (int o = 0; o < fb.template.outputCount; o++) {
-                    writer.println("    output" + (o + 1) + " $" + varName + ".output" + (o + 1));
+                    String outputLine = "    output" + (o + 1) + " $" + varName + ".output" + (o + 1);
+                    content.append(outputLine).append("\n");
+                    writer.println(outputLine);
                 }
+                content.append("\n");
                 writer.println();
             }
 
+            content.append("# Connections\n");
             writer.println("# Connections");
             for (Connection c : connections) {
+                String connLine;
                 if (c.toIdx == -1) {
-                    writer.println("$" + c.from.originalName + ".output" + (c.fromIdx + 1) + " -> $" + c.to.originalName + " (status)");
+                    connLine = "$" + c.from.originalName + ".output" + (c.fromIdx + 1) + " -> $" + c.to.originalName + " (status)";
                 } else {
-                    writer.println("$" + c.from.originalName + ".output" + (c.fromIdx + 1)
-                            + " -> $" + c.to.originalName + ".input" + (c.toIdx + 1));
+                    connLine = "$" + c.from.originalName + ".output" + (c.fromIdx + 1)
+                            + " -> $" + c.to.originalName + ".input" + (c.toIdx + 1);
                 }
+                content.append(connLine).append("\n");
+                writer.println(connLine);
             }
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return content.toString();
     }
 
    
