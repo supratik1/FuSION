@@ -49,26 +49,50 @@ public class gui4 extends JFrame {
     
     static {
         // Format: {Full Name, Description, Category}
+         BLOCK_DESCRIPTIONS.put("let", new String[]{
+            "Nope",
+            "Nope"
+        });
+        
         BLOCK_DESCRIPTIONS.put("cudf", new String[]{
             "Create Up Down File",
             "Processes package dependency files and generates upgrade plans. Used for managing software package dependencies and conflicts.",
             "Package Management"
         });
+
+         BLOCK_DESCRIPTIONS.put("exec", new String[]{
+            "Execute",
+            "Nope"
+        });
+
         BLOCK_DESCRIPTIONS.put("start", new String[]{
             "Start/Initialize Process",
             "Entry point block that initializes the workflow. Takes multiple file inputs and outputs a Status indicating success or failure.",
             "Control Flow"
         });
-        BLOCK_DESCRIPTIONS.put("wgx", new String[]{
-            "write Graph Xml",
-            "Processes weighted graph data and performs graph transformations. Combines two string inputs into a processed output.",
-            "Graph Processing"
-        });
+
         BLOCK_DESCRIPTIONS.put("mff", new String[]{
             "Merge From File",
             "Computes maximum flow in a network graph. Takes a float parameter and outputs a graph structure.",
             "Graph Algorithms"
         });
+
+        BLOCK_DESCRIPTIONS.put("wgx", new String[]{
+            "write Graph Xml",
+            "Processes weighted graph data and performs graph transformations. Combines two string inputs into a processed output.",
+            "Graph Processing"
+        });
+
+        BLOCK_DESCRIPTIONS.put("rgx", new String[]{
+            "Read Graph Xml",
+            "Nope"
+        });
+        
+        BLOCK_DESCRIPTIONS.put("fb_rch", new String[]{
+            "Final Bound Reach",
+            "Nope"
+        });
+
         BLOCK_DESCRIPTIONS.put("result", new String[]{
             "Result",
             "Aggregates multiple inputs (float, string, file, graph) and produces consolidated outputs. Final processing block for workflows.",
@@ -103,7 +127,7 @@ public class gui4 extends JFrame {
     }
 
     public gui4() {
-        // loadExecutionHistory();
+        loadExecutionHistory();
         initializeGUI();
     }
     
@@ -293,13 +317,9 @@ public class gui4 extends JFrame {
         JScrollPane resultScroll = new JScrollPane(resultArea);
         tabbedPane.addTab("Results", resultScroll);
 
-        // // History Tab
-           JTextArea historyArea = new JTextArea();
-        historyArea.setEditable(false);
-        JScrollPane historyScroll = new JScrollPane(historyArea);
-        tabbedPane.addTab("History", historyScroll);
-        // JPanel historyPanel = createHistoryPanel();
-        // tabbedPane.addTab("History", historyPanel);
+        // History Tab
+        JPanel historyPanel = createHistoryPanel();
+        tabbedPane.addTab("History", historyPanel);
         
         add(tabbedPane, BorderLayout.CENTER);
 
@@ -309,161 +329,161 @@ public class gui4 extends JFrame {
         setVisible(true);
     }
 
-    // // Create History Panel
-    // private JPanel createHistoryPanel() {
-    //     JPanel panel = new JPanel(new BorderLayout(10, 10));
-    //     panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-    //     panel.setBackground(new Color(248, 249, 250));
+    // Create History Panel
+    private JPanel createHistoryPanel() {
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        panel.setBackground(new Color(248, 249, 250));
 
-    //     // Header panel
-    //     JPanel headerPanel = new JPanel(new BorderLayout());
-    //     headerPanel.setOpaque(false);
+        // Header panel
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setOpaque(false);
         
-    //     JLabel titleLabel = new JLabel("Execution History");
-    //     titleLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
-    //     titleLabel.setForeground(new Color(60, 60, 100));
-    //     headerPanel.add(titleLabel, BorderLayout.WEST);
+        JLabel titleLabel = new JLabel("Execution History");
+        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
+        titleLabel.setForeground(new Color(60, 60, 100));
+        headerPanel.add(titleLabel, BorderLayout.WEST);
 
-    //     JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-    //     buttonPanel.setOpaque(false);
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.setOpaque(false);
         
-    //     JButton refreshBtn = new JButton("🔄 Refresh");
-    //     refreshBtn.addActionListener(e -> refreshHistoryDisplay());
-    //     buttonPanel.add(refreshBtn);
+        JButton refreshBtn = new JButton("🔄 Refresh");
+        refreshBtn.addActionListener(e -> refreshHistoryDisplay());
+        buttonPanel.add(refreshBtn);
         
-    //     JButton clearBtn = new JButton("🗑️ Clear All");
-    //     clearBtn.setBackground(new Color(220, 53, 69));
-    //     clearBtn.addActionListener(e -> clearExecutionHistory());
-    //     buttonPanel.add(clearBtn);
+        JButton clearBtn = new JButton("🗑️ Clear All");
+        clearBtn.setBackground(new Color(220, 53, 69));
+        clearBtn.addActionListener(e -> clearExecutionHistory());
+        buttonPanel.add(clearBtn);
         
-    //     headerPanel.add(buttonPanel, BorderLayout.EAST);
-    //     panel.add(headerPanel, BorderLayout.NORTH);
+        headerPanel.add(buttonPanel, BorderLayout.EAST);
+        panel.add(headerPanel, BorderLayout.NORTH);
 
-    //     // History text area
-    //     historyArea = new JTextArea();
-    //     historyArea.setEditable(false);
-    //     historyArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-    //     historyArea.setBackground(Color.WHITE);
-    //     JScrollPane historyScroll = new JScrollPane(historyArea);
-    //     historyScroll.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 220), 1));
-    //     panel.add(historyScroll, BorderLayout.CENTER);
+        // History text area
+        historyArea = new JTextArea();
+        historyArea.setEditable(false);
+        historyArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        historyArea.setBackground(Color.WHITE);
+        JScrollPane historyScroll = new JScrollPane(historyArea);
+        historyScroll.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 220), 1));
+        panel.add(historyScroll, BorderLayout.CENTER);
 
-    //     // Refresh display
-    //     refreshHistoryDisplay();
+        // Refresh display
+        refreshHistoryDisplay();
 
-    //     return panel;
-    // }
+        return panel;
+    }
 
-    // // Load execution history from file
-    // private void loadExecutionHistory() {
-    //     File file = new File(HISTORY_FILE);
-    //     if (file.exists()) {
-    //         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-    //             executionHistory.clear();
-    //             StringBuilder currentEntry = new StringBuilder();
-    //             String line;
-    //             while ((line = reader.readLine()) != null) {
-    //                 if (line.equals("===END_ENTRY===")) {
-    //                     if (currentEntry.length() > 0) {
-    //                         executionHistory.add(currentEntry.toString());
-    //                         currentEntry = new StringBuilder();
-    //                     }
-    //                 } else {
-    //                     if (currentEntry.length() > 0) {
-    //                         currentEntry.append("\n");
-    //                     }
-    //                     currentEntry.append(line);
-    //                 }
-    //             }
-    //             if (currentEntry.length() > 0) {
-    //                 executionHistory.add(currentEntry.toString());
-    //             }
-    //         } catch (Exception e) {
-    //             System.err.println("Error loading history: " + e.getMessage());
-    //             executionHistory = new ArrayList<>();
-    //         }
-    //     }
-    // }
+    // Load execution history from file
+    private void loadExecutionHistory() {
+        File file = new File(HISTORY_FILE);
+        if (file.exists()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                executionHistory.clear();
+                StringBuilder currentEntry = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (line.equals("===END_ENTRY===")) {
+                        if (currentEntry.length() > 0) {
+                            executionHistory.add(currentEntry.toString());
+                            currentEntry = new StringBuilder();
+                        }
+                    } else {
+                        if (currentEntry.length() > 0) {
+                            currentEntry.append("\n");
+                        }
+                        currentEntry.append(line);
+                    }
+                }
+                if (currentEntry.length() > 0) {
+                    executionHistory.add(currentEntry.toString());
+                }
+            } catch (Exception e) {
+                System.err.println("Error loading history: " + e.getMessage());
+                executionHistory = new ArrayList<>();
+            }
+        }
+    }
 
-    // // Save execution history to file
-    // private void saveExecutionHistory() {
-    //     try (PrintWriter writer = new PrintWriter(new FileWriter(HISTORY_FILE))) {
-    //         for (String entry : executionHistory) {
-    //             writer.println(entry);
-    //             writer.println("===END_ENTRY===");
-    //         }
-    //     } catch (Exception e) {
-    //         System.err.println("Error saving history: " + e.getMessage());
-    //     }
-    // }
+    // Save execution history to file
+    private void saveExecutionHistory() {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(HISTORY_FILE))) {
+            for (String entry : executionHistory) {
+                writer.println(entry);
+                writer.println("===END_ENTRY===");
+            }
+        } catch (Exception e) {
+            System.err.println("Error saving history: " + e.getMessage());
+        }
+    }
 
-    // // Add to execution history
-    // private void addToExecutionHistory(String content) {
-    //     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    //     String timestamp = sdf.format(new Date());
+    // Add to execution history
+    private void addToExecutionHistory(String content) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String timestamp = sdf.format(new Date());
         
-    //     StringBuilder entry = new StringBuilder();
-    //     entry.append("========================================\n");
-    //     entry.append("EXECUTION: ").append(timestamp).append("\n");
-    //     entry.append("Blocks: ").append(functionBlocks.size());
-    //     entry.append(" | Connections: ").append(connections.size()).append("\n");
-    //     entry.append("========================================\n\n");
-    //     entry.append(content);
+        StringBuilder entry = new StringBuilder();
+        entry.append("========================================\n");
+        entry.append("EXECUTION: ").append(timestamp).append("\n");
+        entry.append("Blocks: ").append(functionBlocks.size());
+        entry.append(" | Connections: ").append(connections.size()).append("\n");
+        entry.append("========================================\n\n");
+        entry.append(content);
         
-    //     executionHistory.add(entry.toString());
+        executionHistory.add(entry.toString());
         
-    //     // Keep only last 50 entries
-    //     while (executionHistory.size() > 50) {
-    //         executionHistory.remove(0);
-    //     }
+        // Keep only last 50 entries
+        while (executionHistory.size() > 50) {
+            executionHistory.remove(0);
+        }
         
-    //     saveExecutionHistory();
-    //     refreshHistoryDisplay();
-    // }
+        saveExecutionHistory();
+        refreshHistoryDisplay();
+    }
 
-    // // Refresh history display
-    // private void refreshHistoryDisplay() {
-    //     if (historyArea == null) return;
+    // Refresh history display
+    private void refreshHistoryDisplay() {
+        if (historyArea == null) return;
         
-    //     if (executionHistory.isEmpty()) {
-    //         historyArea.setText("No execution history yet.\n\nRun an execution to see history here.");
-    //     } else {
-    //         StringBuilder display = new StringBuilder();
-    //         display.append("=== EXECUTION HISTORY ===\n");
-    //         display.append("Total entries: ").append(executionHistory.size()).append("\n\n");
+        if (executionHistory.isEmpty()) {
+            historyArea.setText("No execution history yet.\n\nRun an execution to see history here.");
+        } else {
+            StringBuilder display = new StringBuilder();
+            display.append("=== EXECUTION HISTORY ===\n");
+            display.append("Total entries: ").append(executionHistory.size()).append("\n\n");
             
-    //         // Show in reverse order (newest first)
-    //         for (int i = executionHistory.size() - 1; i >= 0; i--) {
-    //             display.append("[Entry #").append(i + 1).append("]\n");
-    //             display.append(executionHistory.get(i));
-    //             display.append("\n\n");
-    //         }
+            // Show in reverse order (newest first)
+            for (int i = executionHistory.size() - 1; i >= 0; i--) {
+                display.append("[Entry #").append(i + 1).append("]\n");
+                display.append(executionHistory.get(i));
+                display.append("\n\n");
+            }
             
-    //         historyArea.setText(display.toString());
-    //         historyArea.setCaretPosition(0);
-    //     }
-    // }
+            historyArea.setText(display.toString());
+            historyArea.setCaretPosition(0);
+        }
+    }
 
-    // // Clear execution history
-    // private void clearExecutionHistory() {
-    //     if (executionHistory.isEmpty()) {
-    //         JOptionPane.showMessageDialog(this, "History is already empty.", "Info", JOptionPane.INFORMATION_MESSAGE);
-    //         return;
-    //     }
+    // Clear execution history
+    private void clearExecutionHistory() {
+        if (executionHistory.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "History is already empty.", "Info", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
         
-    //     int confirm = JOptionPane.showConfirmDialog(this,
-    //         "Are you sure you want to clear all execution history?\nThis action cannot be undone.",
-    //         "Confirm Clear All",
-    //         JOptionPane.YES_NO_OPTION,
-    //         JOptionPane.WARNING_MESSAGE);
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "Are you sure you want to clear all execution history?\nThis action cannot be undone.",
+            "Confirm Clear All",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE);
         
-    //     if (confirm == JOptionPane.YES_OPTION) {
-    //         executionHistory.clear();
-    //         saveExecutionHistory();
-    //         refreshHistoryDisplay();
-    //         JOptionPane.showMessageDialog(this, "Execution history cleared.", "Success", JOptionPane.INFORMATION_MESSAGE);
-    //     }
-    // }
+        if (confirm == JOptionPane.YES_OPTION) {
+            executionHistory.clear();
+            saveExecutionHistory();
+            refreshHistoryDisplay();
+            JOptionPane.showMessageDialog(this, "Execution history cleared.", "Success", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
 
     // Custom renderer for block selector dropdown
     class BlockSelectorRenderer extends DefaultListCellRenderer {
@@ -1102,7 +1122,7 @@ public class gui4 extends JFrame {
         String executionContent = saveExecutionPlan(order);
         
         // Add to history
-        // addToExecutionHistory(executionContent);
+        addToExecutionHistory(executionContent);
         
         StringBuilder resultText = new StringBuilder();
         resultText.append("=== EXECUTION PLAN ===\n\n");
@@ -1322,7 +1342,45 @@ public class gui4 extends JFrame {
             repaint();
         }
 
-       
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            // Draw grid
+            g2.setColor(new Color(230, 230, 230));
+            int gridSize = 20;
+            for (int x = 0; x < getWidth(); x += gridSize) {
+                g2.drawLine(x, 0, x, getHeight());
+            }
+            for (int y = 0; y < getHeight(); y += gridSize) {
+                g2.drawLine(0, y, getWidth(), y);
+            }
+
+            g2.translate(translateX, translateY);
+            g2.scale(zoomFactor, zoomFactor);
+
+            for (Connection conn : connections) {
+                Point from = getOutputPoint(conn.from, conn.fromIdx);
+                Point to = getInputPoint(conn.to, conn.toIdx);
+                drawCurvedArrow(g2, from, to, conn.type, conn == selectedConnection);
+            }
+
+            g2.dispose();
+            
+            if (!searchResults.isEmpty()) {
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setColor(new Color(255, 0, 0, 100)); 
+                g2d.setStroke(new BasicStroke(3));
+                for (FunctionBlock block : searchResults) {
+                    Rectangle bounds = block.getBounds();
+                    g2d.drawRect(bounds.x - 2, bounds.y - 2, bounds.width + 4, bounds.height + 4);
+                }
+                g2d.dispose();
+            }
+        }
+
         private void drawCurvedArrow(Graphics2D g2, Point from, Point to, String type, boolean isSelected) {
             int dx = to.x - from.x;
             int dy = to.y - from.y;
