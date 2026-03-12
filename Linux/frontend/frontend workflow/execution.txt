@@ -1,0 +1,24 @@
+# Topological Sort Order
+1. cudf_2 (Create Up Down File)
+2. result_2 (Result Aggregator)
+
+# Create Up Down File - Package Management
+let $cudf_2
+    input1 default
+    input2 0
+    input3 0
+    output1 $cudf_2.output1
+    output2 $cudf_2.output2
+
+# Result Aggregator - Output/Aggregation
+let $result_2
+    input1 default
+    input2 default_string
+    input3 $cudf_2.output2
+    input4 default_graph
+    output1 $result_2.output1
+    output2 $result_2.output2
+    output3 $result_2.output3
+
+# Connections
+$cudf_2.output2 -> $result_2.input3
