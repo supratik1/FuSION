@@ -49,46 +49,18 @@ ofstream debug_log("mylog.txt");
 
 // anjan
 
-set<int> get_min_cut(int i, int j, map<string, set<int>> &map_i_j_to_mincut_edges)
-{
-    stringstream ss;
+// DEAD CODE: get_min_cut — superseded by GH-tree mincut, never called
+// set<int> get_min_cut(int i, int j, map<string, set<int>> &map_i_j_to_mincut_edges) { ... }
 
-    if (i < j)
-        ss << j << ":" << i;
-    else
-        ss << i << ":" << j;
+// DEAD CODE: getMinCutMatrix_dummy — placeholder superseded by GH-tree, never called
+// void getMinCutMatrix_dummy(GraphNew *graph, vector<vector<vector<int>>> &minCutMatrix) { ... }
 
-    return map_i_j_to_mincut_edges[ss.str()];
-}
-
-void getMinCutMatrix_dummy(GraphNew *graph, vector<vector<vector<int>>> &minCutMatrix)
-{
-
-    int v = graph->get_node_ids().size();
-    int e = graph->get_edge_ids().size();
-
-    for (int i = 0; i < v; i++)
-    {
-        for (int j = 0; j < v; j++)
-        {
-            int outlist_size, inlist_size;
-            outlist_size = graph->get_outlist(i + 1).size();
-            inlist_size = graph->get_inlist(j + 1).size();
-            if (inlist_size < outlist_size)
-                minCutMatrix[i][j] = graph->get_inlist(j + 1);
-            else
-                minCutMatrix[i][j] = graph->get_outlist(i + 1);
-        }
-    }
-}
-
-// constraint solver CNF related global data
-int idx = 1, clauses = 0;                              // clauses is num of clauses, idx stores the number that is to be given to the next variable, thus idx-1 is the total variables
-map<string, t_Expression *> getExpressionMap;          // maps variable name as string to expression as t_Expression*
-map<t_Expression *, pair<string, int>> getCNFIndexMap; // maps expression as t_Expression* to a pair<variable name as string, internal variable index in CNF format>
-
-void read_z3_output(string inp_filename, string out_filename);
-vector<int> add_cnf(vector<int> u, vector<int> v, int &idx, int &clauses, ofstream &fout_CNF_file);
+// CNF globals — kept for GraphManager.cc linkage, no longer used in core workflow
+int idx = 1, clauses = 0;
+map<string, t_Expression *> getExpressionMap;
+map<t_Expression *, pair<string, int>> getCNFIndexMap;
+// void read_z3_output(string inp_filename, string out_filename);  // DEAD: only used by dead solve command
+// vector<int> add_cnf(...);  // DEAD: only used by dead solve command
 string buildRelationalExpression(string reader, t_ExpressionManager *em, t_Expression *&expr);
 string buildArithmaticExpression(string reader, t_ExpressionManager *em, t_Expression *&expr);
 string buildSelectExpression(string reader, t_ExpressionManager *em, t_Expression *&expr);
@@ -96,85 +68,61 @@ string buildConcatExpression(string reader, t_ExpressionManager *em, t_Expressio
 string buildBracketExpression(string reader, t_ExpressionManager *em, t_Expression *&expr);
 string buildVariableExpression(string reader, t_ExpressionManager *em, t_Expression *&expr);
 
-t_Expression *build_OR_constraints(string s1, string s2, int a1, int a2, t_ExpressionManager *em);
-t_Expression *build_AND_constraints(string s1, string s2, int a1, int a2, t_ExpressionManager *em);
+// DEAD CODE: forward declarations for dead string-overload build_OR/AND_constraints
+// t_Expression *build_OR_constraints(string s1, string s2, int a1, int a2, t_ExpressionManager *em);
+// t_Expression *build_AND_constraints(string s1, string s2, int a1, int a2, t_ExpressionManager *em);
 t_Expression *build_OR_constraints(t_Expression *e1, t_Expression *e2, int a1, int a2, t_ExpressionManager *em);
 t_Expression *build_AND_constraints(t_Expression *e1, t_Expression *e2, int a1, int a2, t_ExpressionManager *em);
 
-bool nonempty_intersection_files(string file1, string file2)
-{
-    string command1 = "sort -u " + file1 + " > temp-in-1";
-    string command2 = "sort -u " + file2 + " > temp-in-2";
-    string command3 = "sort temp-in-1 temp-in-2 | uniq -d | wc -l > temp-in-3";
+// DEAD CODE: nonempty_intersection_files — never called anywhere in the codebase
+// bool nonempty_intersection_files(string file1, string file2) { ... }
 
-    string command = command1 + " ; " + command2 + " ; " + command3;
-    system(command.c_str());
-
-    ifstream fin("temp-in-3");
-
-    if (!fin)
-    {
-        cerr << "Error: can't open file temp-in-3 file for reading, exiting ..." << endl;
-        exit(1);
-    }
-    else
-    {
-        int count;
-        fin >> count;
-        fin.close();
-        system("rm temp-in-1 temp-in-2 temp-in-3");
-        if (count == 0)
-        {
-            return false;
-        }
-        return true;
-    }
-}
-
-void read_z3_output(string inp_filename, string out_filename)
-{
-    ifstream fin(inp_filename.c_str());
-    ofstream fout(out_filename.c_str(), ofstream::out);
-
-    string s;
-
-    fin >> s;
-
-    if (s != "sat")
-    {
-        fout << "Solution is not sat\n";
-        return;
-    }
-
-    int num;
-
-    map<int, bool> soln_map;
-
-    while (fin >> num)
-    {
-        if (num > 0)
-            soln_map[num] = true;
-        else
-            soln_map[-num] = false;
-    }
-
-    for (map<t_Expression *, pair<string, int>>::iterator it = getCNFIndexMap.begin(); it != getCNFIndexMap.end(); it++)
-    {
-        int var_idx = (it->second).second;
-        if (var_idx != -1)
-        {
-            fout << (it->second).first;
-            if (soln_map[var_idx] == true)
-                fout << " true\n";
-            else
-                fout << " false\n";
-        }
-    }
-}
+// DEAD CODE: read_z3_output — only called by dead solve/get_assg_z3 commands
+// void read_z3_output(string inp_filename, string out_filename)
+// {
+//     ifstream fin(inp_filename.c_str());
+//     ofstream fout(out_filename.c_str(), ofstream::out);
+// 
+//     string s;
+// 
+//     fin >> s;
+// 
+//     if (s != "sat")
+//     {
+//         fout << "Solution is not sat\n";
+//         return;
+//     }
+// 
+//     int num;
+// 
+//     map<int, bool> soln_map;
+// 
+//     while (fin >> num)
+//     {
+//         if (num > 0)
+//             soln_map[num] = true;
+//         else
+//             soln_map[-num] = false;
+//     }
+// 
+//     for (map<t_Expression *, pair<string, int>>::iterator it = getCNFIndexMap.begin(); it != getCNFIndexMap.end(); it++)
+//     {
+//         int var_idx = (it->second).second;
+//         if (var_idx != -1)
+//         {
+//             fout << (it->second).first;
+//             if (soln_map[var_idx] == true)
+//                 fout << " true\n";
+//             else
+//                 fout << " false\n";
+//         }
+//     }
+// }
 
 // the bit sequences represented by u and v are added and there sum is represented by the returned vector
 // this summing up of u and v and its outcome is written as constraints in the fout_CNF_file
 
+// add_cnf — still referenced by GraphManager.cc
 vector<int> add_cnf(vector<int> u, vector<int> v, int &idx, int &clauses, ofstream &fout_CNF_file)
 {
     vector<int> r;
@@ -757,68 +705,70 @@ t_Expression *build_AND_constraints(t_Expression *e1, t_Expression *e2, int a1, 
 // s2 = (not s2) if a2==1
 // retuns the expression (or s1 s2)
 
-t_Expression *build_OR_constraints(string s1, string s2, int a1, int a2, t_ExpressionManager *em)
-{
-    TypeOfExpressionTuple te = {TYPE_UNSIGNED_BITVECTOR, 1};
-
-    if (getExpressionMap.find(s1) == getExpressionMap.end() || getExpressionMap.find(s2) == getExpressionMap.end())
-    {
-        cout << "no....!!! " << s1 << " " << s2 << endl;
-        // shoudl add some cerror here later
-        return NULL;
-    }
-
-    t_Expression *expr1, *expr2;
-    vector<t_Expression *> v;
-
-    expr1 = getExpressionMap[s1];
-    expr2 = getExpressionMap[s2];
-
-    if (a1 == 1)
-        expr1 = em->createOneBitExpressionWithOneOperand(em->m_operatorLabelLogNOT, expr1);
-
-    if (a2 == 1)
-        expr2 = em->createOneBitExpressionWithOneOperand(em->m_operatorLabelLogNOT, expr2);
-
-    v.push_back(expr1);
-    v.push_back(expr2);
-
-    return em->createExpression(em->m_operatorLabelLogOR, v, te);
-}
+// DEAD CODE: build_OR_constraints(string,...) — string overload, uses dead getExpressionMap
+// t_Expression *build_OR_constraints(string s1, string s2, int a1, int a2, t_ExpressionManager *em)
+// {
+//     TypeOfExpressionTuple te = {TYPE_UNSIGNED_BITVECTOR, 1};
+// 
+//     if (getExpressionMap.find(s1) == getExpressionMap.end() || getExpressionMap.find(s2) == getExpressionMap.end())
+//     {
+//         cout << "no....!!! " << s1 << " " << s2 << endl;
+//         // shoudl add some cerror here later
+//         return NULL;
+//     }
+// 
+//     t_Expression *expr1, *expr2;
+//     vector<t_Expression *> v;
+// 
+//     expr1 = getExpressionMap[s1];
+//     expr2 = getExpressionMap[s2];
+// 
+//     if (a1 == 1)
+//         expr1 = em->createOneBitExpressionWithOneOperand(em->m_operatorLabelLogNOT, expr1);
+// 
+//     if (a2 == 1)
+//         expr2 = em->createOneBitExpressionWithOneOperand(em->m_operatorLabelLogNOT, expr2);
+// 
+//     v.push_back(expr1);
+//     v.push_back(expr2);
+// 
+//     return em->createExpression(em->m_operatorLabelLogOR, v, te);
+// }
 
 // function added by sai krishna
 // s1 = (not s1) if a1==1
 // s2 = (not s2) if a2==1
 // returns the expression (and s1 s2)
 
-t_Expression *build_AND_constraints(string s1, string s2, int a1, int a2, t_ExpressionManager *em)
-{
-    TypeOfExpressionTuple te = {TYPE_UNSIGNED_BITVECTOR, 1};
-
-    if (getExpressionMap.find(s1) == getExpressionMap.end() || getExpressionMap.find(s2) == getExpressionMap.end())
-    {
-        cout << "no....!!! " << s1 << " " << s2 << endl;
-        // shoudl add some cerror here later
-        return NULL;
-    }
-
-    t_Expression *expr1, *expr2;
-    vector<t_Expression *> v;
-
-    expr1 = getExpressionMap[s1];
-    expr2 = getExpressionMap[s2];
-
-    if (a1 == 1)
-        expr1 = em->createOneBitExpressionWithOneOperand(em->m_operatorLabelLogNOT, expr1);
-
-    if (a2 == 1)
-        expr2 = em->createOneBitExpressionWithOneOperand(em->m_operatorLabelLogNOT, expr2);
-
-    v.push_back(expr1);
-    v.push_back(expr2);
-
-    return em->createExpression(em->m_operatorLabelLogAND, v, te);
-}
+// DEAD CODE: build_AND_constraints(string,...) — string overload, uses dead getExpressionMap
+// t_Expression *build_AND_constraints(string s1, string s2, int a1, int a2, t_ExpressionManager *em)
+// {
+//     TypeOfExpressionTuple te = {TYPE_UNSIGNED_BITVECTOR, 1};
+// 
+//     if (getExpressionMap.find(s1) == getExpressionMap.end() || getExpressionMap.find(s2) == getExpressionMap.end())
+//     {
+//         cout << "no....!!! " << s1 << " " << s2 << endl;
+//         // shoudl add some cerror here later
+//         return NULL;
+//     }
+// 
+//     t_Expression *expr1, *expr2;
+//     vector<t_Expression *> v;
+// 
+//     expr1 = getExpressionMap[s1];
+//     expr2 = getExpressionMap[s2];
+// 
+//     if (a1 == 1)
+//         expr1 = em->createOneBitExpressionWithOneOperand(em->m_operatorLabelLogNOT, expr1);
+// 
+//     if (a2 == 1)
+//         expr2 = em->createOneBitExpressionWithOneOperand(em->m_operatorLabelLogNOT, expr2);
+// 
+//     v.push_back(expr1);
+//     v.push_back(expr2);
+// 
+//     return em->createExpression(em->m_operatorLabelLogAND, v, te);
+// }
 
 t_Expression *build_XOR_constraints(t_Expression *a, t_Expression *b, t_ExpressionManager *em)
 {
@@ -1048,12 +998,8 @@ bool compare_pair_on_second_descending(const pair<int, int> &i, const pair<int, 
     return i.second > j.second;
 }
 
-bool compare_pair_on_second_descending_int_float(const pair<int, float> &i, const pair<int, float> &j)
-{
-    if (i.second == j.second)
-        return i.first < j.first;
-    return i.second > j.second;
-}
+// DEAD CODE: compare_pair_on_second_descending_int_float — never called (only in commented-out code)
+// bool compare_pair_on_second_descending_int_float(const pair<int, float> &i, const pair<int, float> &j) { ... }
 
 bool compare_pair_on_second_descending_int_double(const pair<int, double> &i, const pair<int, double> &j)
 {
@@ -1062,13 +1008,8 @@ bool compare_pair_on_second_descending_int_double(const pair<int, double> &i, co
     return i.second > j.second;
 }
 
-bool compare_pair_on_second_descending_string_to_int(const pair<string, int> &i, const pair<string, int> &j)
-{
-    if (i.second == j.second)
-        // return strcmp(i.first.c_str(), j.first.c_str()) < 0;
-        return i.first < j.first;
-    return i.second > j.second;
-}
+// DEAD CODE: compare_pair_on_second_descending_string_to_int — declared extern in GraphManagerNew.cc but never invoked
+// bool compare_pair_on_second_descending_string_to_int(const pair<string, int> &i, const pair<string, int> &j) { ... }
 
 string remove_substr(string base_string, string substr_to_remove)
 {
@@ -1441,13 +1382,14 @@ int main(int argc, char *argv[])
             cout << "Time taken (in sec): " << time_in_sec << endl;
         }
 
-        else if (command == "name")
-        {
-            int graphnum;
-            string filename = "EGFR_down_reg_names";
-
-            graph_man->get_hsa_from_name(filename);
-        }
+        // DEAD CODE: name — hardcoded filename, not part of core workflow
+        // (lines 1381-1387 commented out)
+        // else if (command == "name")
+        // {
+        // int graphnum;
+        // string filename = "EGFR_down_reg_names";
+        //         // graph_man->get_hsa_from_name(filename);
+        // }
         //        else if (command == "create_reactome_map" || command == "rmap") {
         //            string filename;
         //            cin >> filename;
@@ -2744,46 +2686,39 @@ int main(int argc, char *argv[])
             graph_man->generate_constraints_using_rules_parser(graphnum, list_of_rules, em);
         }
 
-        else if (command == "solve")
-        {
-            int graphnum;
-            string cnf_file, mapping_filename, z3_out_file_name;
-            string soln, soln_file;
-
-            cout << "\nFor graph number: ";
-            cin >> graphnum;
-
-            if (graphnum == 0)
-                graphnum = graph_man->graph_id_count;
-
-            cout << "\nEnter DIMACS format file: ";
-            cin >> cnf_file;
-            cout << "\nEnter z3 output file name: ";
-            cin >> z3_out_file_name;
-
-            string systemCommand = "z3 -dimacs " + cnf_file + " > " + z3_out_file_name;
-            // cout << systemCommand << endl;
-            soln_file = z3_out_file_name;
-            system(systemCommand.c_str());
-            sleep(2);
-            ifstream fin(soln_file.c_str());
-            fin >> soln;
-
-            if (soln == "unsat")
-                cout << "\nNo solutions";
-
-            else if (soln == "sat")
-            {
-
-                string output_assigns = z3_out_file_name + "_assignment";
-                read_z3_output(z3_out_file_name, output_assigns);
-
-                GraphNew *graph = graph_man->get_graph(graphnum);
-                GraphNew *subgraph = graph_man->get_subgraph_with_edges_retained(graph, output_assigns);
-
-                cout << "Solution subgraph is Graph " << subgraph->get_graph_id() << endl;
-            }
-        }
+        // DEAD CODE: solve — old DIMACS/z3-CLI approach, superseded by pathz3
+        // (lines 2684-2723 commented out)
+        // else if (command == "solve")
+        // {
+        // int graphnum;
+        // string cnf_file, mapping_filename, z3_out_file_name;
+        // string soln, soln_file;
+        //         // cout << "\nFor graph number: ";
+        // cin >> graphnum;
+        //         // if (graphnum == 0)
+        // graphnum = graph_man->graph_id_count;
+        //         // cout << "\nEnter DIMACS format file: ";
+        // cin >> cnf_file;
+        // cout << "\nEnter z3 output file name: ";
+        // cin >> z3_out_file_name;
+        //         // string systemCommand = "z3 -dimacs " + cnf_file + " > " + z3_out_file_name;
+        // // cout << systemCommand << endl;
+        // soln_file = z3_out_file_name;
+        // system(systemCommand.c_str());
+        // sleep(2);
+        // ifstream fin(soln_file.c_str());
+        // fin >> soln;
+        //         // if (soln == "unsat")
+        // cout << "\nNo solutions";
+        //         // else if (soln == "sat")
+        // {
+        //         // string output_assigns = z3_out_file_name + "_assignment";
+        // read_z3_output(z3_out_file_name, output_assigns);
+        //         // GraphNew *graph = graph_man->get_graph(graphnum);
+        // GraphNew *subgraph = graph_man->get_subgraph_with_edges_retained(graph, output_assigns);
+        //         // cout << "Solution subgraph is Graph " << subgraph->get_graph_id() << endl;
+        // }
+        // }
 
         else if (command == "print_GErels" || command == "pgrel")
         {
@@ -2927,256 +2862,230 @@ int main(int argc, char *argv[])
             cout << "Written to CNF file " << cnf_out_file << endl;
         }
 
-        else if (command == "get_all_solutions_from_cnf" || command == "get_all_solns_cnf")
-        {
-            int graphnum;
-            string cnf_file, mapping_filename, z3_out_file_prefix;
-            string soln, soln_file;
-            list<int> resultant_subgraphs_to_merge;
-            int merged_graphnum = graphnum;
+        // DEAD CODE: get_all_solutions_from_cnf — old CNF enumeration approach, superseded by pathz3
+        // (lines 2867-3082 commented out)
+        // else if (command == "get_all_solutions_from_cnf" || command == "get_all_solns_cnf")
+        // {
+        // int graphnum;
+        // string cnf_file, mapping_filename, z3_out_file_prefix;
+        // string soln, soln_file;
+        // list<int> resultant_subgraphs_to_merge;
+        // int merged_graphnum = graphnum;
+        //         // string xdot_path_name = XDOT_PATH_NAME;
+        // string merged_result = "merged_result.dot";
+        // string merged_vis_file = "merged_vis";
+        //         // cout << "\nFor graph number: ";
+        // cin >> graphnum;
+        //         // if (graphnum == 0)
+        // graphnum = graph_man->graph_id_count;
+        //         // cout << "\nEnter DIMACS format file: ";
+        // cin >> cnf_file;
+        // cout << "\nEnter mapping filename: ";
+        // cin >> mapping_filename;
+        // cout << "\nEnter z3 output file prefix: ";
+        // cin >> z3_out_file_prefix;
+        //         // string file_diff_nodes;
+        // cout << "Enter the file path with the list differentially expressed nodes : ";
+        // cin >> file_diff_nodes;
+        //         // string color_map_filename;
+        // cout << "\nEnter color map file name: ";
+        // cin >> color_map_filename;
+        // // string vis_edges_filename;
+        // // cout << "\nEnter the file containing visible edges list: ";
+        // // cin >> vis_edges_filename;
+        // string dis_name;
+        // cout << "\nEnter a file prefix for the graph display: ";
+        // cin >> dis_name;
+        //         // int soln_counter = 0;
+        // string systemCommand = "z3 -dimacs " + cnf_file + " > " + z3_out_file_prefix + (soln_counter + 1);
+        // // cout << systemCommand << endl;
+        // soln_file = z3_out_file_prefix + (soln_counter + 1);
+        // system(systemCommand.c_str());
+        // sleep(2);
+        // ifstream fin(soln_file.c_str());
+        // fin >> soln;
+        //         // if (soln == "unsat")
+        // cout << "\nNo solutions";
+        //         // else if (soln == "sat")
+        // { // got a new sat solution
+        //         // string project_option;
+        // bool project = false;
+        // int num_soln_option = 1;
+        // cout << "How many do you want to see? (default is 1): ";
+        // cin >> num_soln_option;
+        // cout << "Count solutions projected on present edges? (Y/n): ";
+        // cin >> project_option;
+        // if (project_option == "y" || project_option == "Y")
+        // project = true;
+        //         // // copying original CNF file - intermediate copies will be deleted
+        // string systemCommand2 = "cp " + cnf_file + " " + cnf_file + (soln_counter + 1);
+        // // cout << systemCommand2 << endl;
+        // system(systemCommand2.c_str());
+        //         // while (1)
+        // {
+        // soln_counter++;
+        // cout << "Solutions counted: " << soln_counter << endl;
+        //         // // display first n solutions
+        // if (soln_counter <= num_soln_option)
+        // {
+        //         // ////cout << "Displaying solution " << z3_out_file_prefix << soln_counter << endl;
+        // string z3_result = z3_out_file_prefix + IntToString(soln_counter);
+        // string output_assigns = z3_result + "_assignment";
+        // read_z3_output(z3_result, output_assigns);
+        //         // GraphNew *graph = graph_man->get_graph(graphnum);
+        // GraphNew *subgraph = graph_man->get_subgraph_with_edges_retained(graph, output_assigns);
+        //         // vector<string> diif_exp_nodes_set;
+        // vector<string> excl_exp_nodes_set;
+        // excl_exp_nodes_set.clear();
+        //         // ifstream fin(file_diff_nodes.c_str());
+        // string node_name;
+        // while (fin >> node_name)
+        // {
+        // string diff_rid = subgraph->get_rep_id_from_id(node_name);
+        // if (diff_rid != "")
+        // {
+        // // from the diff_exp_nodes_set pick only those that are actually targets of GErel edges in the graph fwd_gid
+        // int diff_nid = subgraph->get_nid_from_rep_id(diff_rid);
+        // vector<int> inlist_diff_node = subgraph->get_inlist(diff_nid);
+        // for (vector<int>::iterator itr = inlist_diff_node.begin(); itr != inlist_diff_node.end(); ++itr)
+        // {
+        // diif_exp_nodes_set.push_back(node_name);
+        // }
+        // }
+        // }
+        //         // int breach_on_sg_id = graph_man->bounded_reach(subgraph->get_graph_id(), BACKWARD, diif_exp_nodes_set, excl_exp_nodes_set, 25);
+        // GraphNew *breach_on_sg = graph_man->get_graph(breach_on_sg_id);
+        // string file_visible_edges = "empty";
+        // // cout << "Enter the file name to store the edges that are visible (to be colored red) but not present (i.e. not doing their job)" << endl;
+        // // cin >> file_visible_edges;
+        //         // ////                                        string file_visible_edges = output_assigns + "_vis";
+        // ////                                        ofstream fout(file_visible_edges.c_str());
+        // ////                                        if(fout.is_open()){
+        // ////                                                graph_man->print_visible_but_not_present_edges_from_z3_assignment(output_assigns, fout);
+        // ////                                                fout.close();
+        // ////                                        }
+        // ////                                        else{
+        // ////                                                cerr << "Error: file " + file_visible_edges + " couldn't be opened" << endl;
+        // ////                                        }
+        //         // /** Merging solutions begins **/
+        // //                                        string output_assigns_prev;
+        // //                                        if(soln_counter == 0 || soln_counter == 1)
+        // //                                            output_assigns_prev = z3_out_file_prefix + "1" + "_assignment";
+        // //                                        else
+        // //                                            output_assigns_prev = z3_out_file_prefix + gm->toString(soln_counter-1) + "_assignment";
+        // //
+        // //                                        ofstream vis_fout(merged_vis_file.c_str());
+        // //                                        if(vis_fout.is_open()) {
+        // //                                            graph_man->merge_vis_files(output_assigns_prev, output_assigns, vis_fout);
+        // //                                            vis_fout.close();
+        // //                                        }
+        // //                                        else{
+        // //                                            cerr << "Error: File " + merged_vis_file + " could not be opened" << endl;
+        // //                                        }
+        // //
+        // //                                        resultant_subgraphs_to_merge.push_back(subgraph->get_graph_id());
+        // //                                        GraphNew * merged_result_graph = graph_man->get_graph(graph_man->merge_graphs(resultant_subgraphs_to_merge));
+        // //                                        merged_graphnum = merged_result_graph->get_graph_id();
+        // //
+        // /** Merging solutions ends **/
+        // // string color_map_filename = "0";
+        // // string dot_filename = "graph_" + gm->toString(soln_counter) + ".dot";
+        // string dot_filename = dis_name + "_" + IntToString(soln_counter) + ".dot";
+        // ////subgraph->display_graph_silent(color_map_filename, file_visible_edges, dot_filename, graph_man);
+        // breach_on_sg->display_graph_silent(color_map_filename, file_visible_edges, dot_filename, graph_man);
+        //         // //					string xdot_path_name = XDOT_PATH_NAME;
+        // string systemCommand_xdot = xdot_path_name + dot_filename + " & ";
+        // system(systemCommand_xdot.c_str());
+        // }
+        //         // //                                        string tps = " -Tps ";
+        // //                                        string dotCommand = DOT_PATH_NAME + tps + result_graph_name + " -o MERGED_RESULT.pdf &";
+        // //                                        system(dotCommand.c_str());
+        // //                                        string pdf = " MERGED_RESULT.pdf &";
+        // //                                        string evinceCommand = PDF_VIEWER_PATH_NAME + pdf;
+        // //                                        system(evinceCommand.c_str());
+        //         // // string systemCommand_xdot_result =  xdot_path_name + result_graph_name + " & ";
+        // // system(systemCommand_xdot_result.c_str());
+        //         // int temp = soln_counter + 1;
+        // // string systemCommand3 = "../supporting_scripts/negate_z3_cnf_solution.py " + cnf_file + soln_counter + " " + std::string("mapping") + " " + z3_out_file_prefix + soln_counter + " " + cnf_file + temp;
+        // string systemCommand3;
+        // set<int> eid_set;
+        // set<int>::iterator eid_itr;
+        // if (project == true)
+        // {
+        //         // systemCommand3 = "../supporting_scripts/negate_z3_cnf_solution_only_black_edges.py " + cnf_file + soln_counter + " " + mapping_filename + " " + z3_out_file_prefix + soln_counter + " " + cnf_file + temp;
+        // }
+        // else
+        // systemCommand3 = "../supporting_scripts/negate_z3_cnf_solution2.py " + cnf_file + soln_counter + " " + mapping_filename + " " + z3_out_file_prefix + soln_counter + " " + cnf_file + temp;
+        // // cout << systemCommand3 << endl;
+        // system(systemCommand3.c_str());
+        // sleep(2);
+        //         // string systemCommand5 = "rm " + cnf_file + soln_counter;
+        // // cout << systemCommand5 << endl;
+        // system(systemCommand5.c_str());
+        //         // string systemCommand6 = "z3 -dimacs " + cnf_file + temp + " > " + z3_out_file_prefix + temp;
+        // // cout << systemCommand6 << endl;
+        // system(systemCommand6.c_str());
+        // sleep(2);
+        //         // string systemCommand4 = "rm " + z3_out_file_prefix + soln_counter;
+        // // cout << systemCommand4 << endl;
+        // system(systemCommand4.c_str());
+        //         // string soln_filename = z3_out_file_prefix + IntToString(temp);
+        //         // ifstream infile(soln_filename.c_str());
+        // string soln;
+        // infile >> soln;
+        // // cout << soln << endl;
+        // if (soln == "unsat")
+        // {
+        // cout << "\nNo more solutions" << endl;
+        // break;
+        // }
+        // else if (soln != "sat")
+        // {
+        // cout << "\nError in z3 output" << endl;
+        // }
+        // }
+        // }
+        //         // cout << "Total solutions: " << soln_counter << endl;
+        // cout << "Merged vis file written to " << merged_vis_file << endl;
+        // cout << "Merged graph id: " << merged_graphnum << endl;
+        // }
 
-            string xdot_path_name = XDOT_PATH_NAME;
-            string merged_result = "merged_result.dot";
-            string merged_vis_file = "merged_vis";
+        // DEAD CODE: call_ApproxMC — approximate model counter, not in core workflow
+        // (lines 3084-3106 commented out)
+        // else if (command == "call_ApproxMC" || command == "approxmc")
+        // {
+        // string cnf_file, delta, epsilon, logging;
+        // string logfile = "log/logging/" + cnf_file + ".txt";
+        // cout << "\nEnter DIMACS format file: ";
+        // cin >> cnf_file;
+        // cout << "\nEnter delta parameter: ";
+        // cin >> delta;
+        // cout << "\nEnter epsilon parameter: ";
+        // cin >> epsilon;
+        // cout << "\nEnable logging (0/1): ";
+        // cin >> logging;
+        // if (logging == "1")
+        // {
+        // cout << "\nEnter destination for logfile: ";
+        // cin >> logfile;
+        // }
+        // string approxmc = APPROXMC_PATH_NAME;
+        // string systemCommand = "python " + approxmc + " -delta=" + delta + " -epsilon=" + epsilon + " " + cnf_file;
+        // cout << systemCommand << endl;
+        // system(systemCommand.c_str());
+        // sleep(2);
+        // }
 
-            cout << "\nFor graph number: ";
-            cin >> graphnum;
-
-            if (graphnum == 0)
-                graphnum = graph_man->graph_id_count;
-
-            cout << "\nEnter DIMACS format file: ";
-            cin >> cnf_file;
-            cout << "\nEnter mapping filename: ";
-            cin >> mapping_filename;
-            cout << "\nEnter z3 output file prefix: ";
-            cin >> z3_out_file_prefix;
-
-            string file_diff_nodes;
-            cout << "Enter the file path with the list differentially expressed nodes : ";
-            cin >> file_diff_nodes;
-
-            string color_map_filename;
-            cout << "\nEnter color map file name: ";
-            cin >> color_map_filename;
-            // string vis_edges_filename;
-            // cout << "\nEnter the file containing visible edges list: ";
-            // cin >> vis_edges_filename;
-            string dis_name;
-            cout << "\nEnter a file prefix for the graph display: ";
-            cin >> dis_name;
-
-            int soln_counter = 0;
-            string systemCommand = "z3 -dimacs " + cnf_file + " > " + z3_out_file_prefix + (soln_counter + 1);
-            // cout << systemCommand << endl;
-            soln_file = z3_out_file_prefix + (soln_counter + 1);
-            system(systemCommand.c_str());
-            sleep(2);
-            ifstream fin(soln_file.c_str());
-            fin >> soln;
-
-            if (soln == "unsat")
-                cout << "\nNo solutions";
-
-            else if (soln == "sat")
-            { // got a new sat solution
-
-                string project_option;
-                bool project = false;
-                int num_soln_option = 1;
-                cout << "How many do you want to see? (default is 1): ";
-                cin >> num_soln_option;
-                cout << "Count solutions projected on present edges? (Y/n): ";
-                cin >> project_option;
-                if (project_option == "y" || project_option == "Y")
-                    project = true;
-
-                // copying original CNF file - intermediate copies will be deleted
-                string systemCommand2 = "cp " + cnf_file + " " + cnf_file + (soln_counter + 1);
-                // cout << systemCommand2 << endl;
-                system(systemCommand2.c_str());
-
-                while (1)
-                {
-                    soln_counter++;
-                    cout << "Solutions counted: " << soln_counter << endl;
-
-                    // display first n solutions
-                    if (soln_counter <= num_soln_option)
-                    {
-
-                        ////cout << "Displaying solution " << z3_out_file_prefix << soln_counter << endl;
-                        string z3_result = z3_out_file_prefix + IntToString(soln_counter);
-                        string output_assigns = z3_result + "_assignment";
-                        read_z3_output(z3_result, output_assigns);
-
-                        GraphNew *graph = graph_man->get_graph(graphnum);
-                        GraphNew *subgraph = graph_man->get_subgraph_with_edges_retained(graph, output_assigns);
-
-                        vector<string> diif_exp_nodes_set;
-                        vector<string> excl_exp_nodes_set;
-                        excl_exp_nodes_set.clear();
-
-                        ifstream fin(file_diff_nodes.c_str());
-                        string node_name;
-                        while (fin >> node_name)
-                        {
-                            string diff_rid = subgraph->get_rep_id_from_id(node_name);
-                            if (diff_rid != "")
-                            {
-                                // from the diff_exp_nodes_set pick only those that are actually targets of GErel edges in the graph fwd_gid
-                                int diff_nid = subgraph->get_nid_from_rep_id(diff_rid);
-                                vector<int> inlist_diff_node = subgraph->get_inlist(diff_nid);
-                                for (vector<int>::iterator itr = inlist_diff_node.begin(); itr != inlist_diff_node.end(); ++itr)
-                                {
-                                    diif_exp_nodes_set.push_back(node_name);
-                                }
-                            }
-                        }
-
-                        int breach_on_sg_id = graph_man->bounded_reach(subgraph->get_graph_id(), BACKWARD, diif_exp_nodes_set, excl_exp_nodes_set, 25);
-                        GraphNew *breach_on_sg = graph_man->get_graph(breach_on_sg_id);
-                        string file_visible_edges = "empty";
-                        // cout << "Enter the file name to store the edges that are visible (to be colored red) but not present (i.e. not doing their job)" << endl;
-                        // cin >> file_visible_edges;
-
-                        ////                                        string file_visible_edges = output_assigns + "_vis";
-                        ////                                        ofstream fout(file_visible_edges.c_str());
-                        ////                                        if(fout.is_open()){
-                        ////                                                graph_man->print_visible_but_not_present_edges_from_z3_assignment(output_assigns, fout);
-                        ////                                                fout.close();
-                        ////                                        }
-                        ////                                        else{
-                        ////                                                cerr << "Error: file " + file_visible_edges + " couldn't be opened" << endl;
-                        ////                                        }
-
-                        /** Merging solutions begins **/
-                        //                                        string output_assigns_prev;
-                        //                                        if(soln_counter == 0 || soln_counter == 1)
-                        //                                            output_assigns_prev = z3_out_file_prefix + "1" + "_assignment";
-                        //                                        else
-                        //                                            output_assigns_prev = z3_out_file_prefix + gm->toString(soln_counter-1) + "_assignment";
-                        //
-                        //                                        ofstream vis_fout(merged_vis_file.c_str());
-                        //                                        if(vis_fout.is_open()) {
-                        //                                            graph_man->merge_vis_files(output_assigns_prev, output_assigns, vis_fout);
-                        //                                            vis_fout.close();
-                        //                                        }
-                        //                                        else{
-                        //                                            cerr << "Error: File " + merged_vis_file + " could not be opened" << endl;
-                        //                                        }
-                        //
-                        //                                        resultant_subgraphs_to_merge.push_back(subgraph->get_graph_id());
-                        //                                        GraphNew * merged_result_graph = graph_man->get_graph(graph_man->merge_graphs(resultant_subgraphs_to_merge));
-                        //                                        merged_graphnum = merged_result_graph->get_graph_id();
-                        //
-                        /** Merging solutions ends **/
-                        // string color_map_filename = "0";
-                        // string dot_filename = "graph_" + gm->toString(soln_counter) + ".dot";
-                        string dot_filename = dis_name + "_" + IntToString(soln_counter) + ".dot";
-                        ////subgraph->display_graph_silent(color_map_filename, file_visible_edges, dot_filename, graph_man);
-                        breach_on_sg->display_graph_silent(color_map_filename, file_visible_edges, dot_filename, graph_man);
-
-                        //					string xdot_path_name = XDOT_PATH_NAME;
-                        string systemCommand_xdot = xdot_path_name + dot_filename + " & ";
-                        system(systemCommand_xdot.c_str());
-                    }
-
-                    //                                        string tps = " -Tps ";
-                    //                                        string dotCommand = DOT_PATH_NAME + tps + result_graph_name + " -o MERGED_RESULT.pdf &";
-                    //                                        system(dotCommand.c_str());
-                    //                                        string pdf = " MERGED_RESULT.pdf &";
-                    //                                        string evinceCommand = PDF_VIEWER_PATH_NAME + pdf;
-                    //                                        system(evinceCommand.c_str());
-
-                    // string systemCommand_xdot_result =  xdot_path_name + result_graph_name + " & ";
-                    // system(systemCommand_xdot_result.c_str());
-
-                    int temp = soln_counter + 1;
-                    // string systemCommand3 = "../supporting_scripts/negate_z3_cnf_solution.py " + cnf_file + soln_counter + " " + std::string("mapping") + " " + z3_out_file_prefix + soln_counter + " " + cnf_file + temp;
-                    string systemCommand3;
-                    set<int> eid_set;
-                    set<int>::iterator eid_itr;
-                    if (project == true)
-                    {
-
-                        systemCommand3 = "../supporting_scripts/negate_z3_cnf_solution_only_black_edges.py " + cnf_file + soln_counter + " " + mapping_filename + " " + z3_out_file_prefix + soln_counter + " " + cnf_file + temp;
-                    }
-                    else
-                        systemCommand3 = "../supporting_scripts/negate_z3_cnf_solution2.py " + cnf_file + soln_counter + " " + mapping_filename + " " + z3_out_file_prefix + soln_counter + " " + cnf_file + temp;
-                    // cout << systemCommand3 << endl;
-                    system(systemCommand3.c_str());
-                    sleep(2);
-
-                    string systemCommand5 = "rm " + cnf_file + soln_counter;
-                    // cout << systemCommand5 << endl;
-                    system(systemCommand5.c_str());
-
-                    string systemCommand6 = "z3 -dimacs " + cnf_file + temp + " > " + z3_out_file_prefix + temp;
-                    // cout << systemCommand6 << endl;
-                    system(systemCommand6.c_str());
-                    sleep(2);
-
-                    string systemCommand4 = "rm " + z3_out_file_prefix + soln_counter;
-                    // cout << systemCommand4 << endl;
-                    system(systemCommand4.c_str());
-
-                    string soln_filename = z3_out_file_prefix + IntToString(temp);
-
-                    ifstream infile(soln_filename.c_str());
-                    string soln;
-                    infile >> soln;
-                    // cout << soln << endl;
-                    if (soln == "unsat")
-                    {
-                        cout << "\nNo more solutions" << endl;
-                        break;
-                    }
-                    else if (soln != "sat")
-                    {
-                        cout << "\nError in z3 output" << endl;
-                    }
-                }
-            }
-
-            cout << "Total solutions: " << soln_counter << endl;
-            cout << "Merged vis file written to " << merged_vis_file << endl;
-            cout << "Merged graph id: " << merged_graphnum << endl;
-        }
-
-        else if (command == "call_ApproxMC" || command == "approxmc")
-        {
-            string cnf_file, delta, epsilon, logging;
-            string logfile = "log/logging/" + cnf_file + ".txt";
-            cout << "\nEnter DIMACS format file: ";
-            cin >> cnf_file;
-            cout << "\nEnter delta parameter: ";
-            cin >> delta;
-            cout << "\nEnter epsilon parameter: ";
-            cin >> epsilon;
-            cout << "\nEnable logging (0/1): ";
-            cin >> logging;
-            if (logging == "1")
-            {
-                cout << "\nEnter destination for logfile: ";
-                cin >> logfile;
-            }
-            string approxmc = APPROXMC_PATH_NAME;
-            string systemCommand = "python " + approxmc + " -delta=" + delta + " -epsilon=" + epsilon + " " + cnf_file;
-            cout << systemCommand << endl;
-            system(systemCommand.c_str());
-            sleep(2);
-        }
-
-        else if (command == "clear_expression_maps" || command == "clxm")
-        {
-            // empty the internal maps
-            getCNFIndexMap.clear();
-            getExpressionMap.clear();
-            idx = 1;     // added by Sukanya
-            clauses = 0; // added by Sukanya
-            // more maps need to be cleared - not complete
-        }
+        // DEAD CODE: clear_expression_maps — clears dead CNF global maps
+        // else if (command == "clear_expression_maps" || command == "clxm")
+        // {
+        // // empty the internal maps
+        // getCNFIndexMap.clear();
+        // getExpressionMap.clear();
+        // idx = 1;     // added by Sukanya
+        // clauses = 0; // added by Sukanya
+        // // more maps need to be cleared - not complete
+        // }
 
         else if (command == "clr")
         {
@@ -5365,56 +5274,51 @@ int main(int argc, char *argv[])
             //            graph->get_nids_sorted_by_betweenness(nid_to_betw_map_sorted);
         }
 
-        else if (command == "gerstein")
-        {
-            int graphnum;
-            string filename;
-            int cmd_index = 1;
-            if (!b_mode)
-            {
-                cin >> graphnum;
-                cout << "Enter output file prefix: ";
-                cin >> filename;
-            }
-            else
-            {
-                graphnum = stoi(token_cmd[cmd_index++]);
-                filename = token_cmd[cmd_index++];
-            }
-
-            if (graphnum == 0)
-                graphnum = graph_man->graph_id_count;
-
-            string betweenness_filename = filename + "_nodes_ranked_by_betweenness";
-            ofstream fout(betweenness_filename.c_str());
-
-            GraphNew *graph = graph_man->get_graph(graphnum);
-            map<int, float> nid_to_betw_map;
-            graph->get_nids_sorted_by_betweenness(nid_to_betw_map);
-
-            list<pair<int, float>> sorted_nid_to_betw_list;
-            for (auto itr = nid_to_betw_map.begin(); itr != nid_to_betw_map.end(); itr++)
-            {
-                int key = itr->first;
-                float value = itr->second;
-                sorted_nid_to_betw_list.push_back(make_pair(key, value));
-            }
-
-            // std::sort(sorted_nid_to_betw_list.begin(), sorted_nid_to_betw_list.end(), compare_pair_on_second_descending_int_float);
-
-            int count = 1;
-            for (auto l_itr = sorted_nid_to_betw_list.begin(); l_itr != sorted_nid_to_betw_list.end(); l_itr++)
-            {
-                int nid = l_itr->first;
-                // string name = graph->get_all_display_ids_of_node(nid)[0];
-                string name = graph_man->kegg_hsa_id_to_display_name_map[graph->get_rep_id_from_nid(nid)];
-
-                fout << count << "\t" << graph->get_rep_id_from_nid(nid) << "\t" << name << "\t" << l_itr->second << endl;
-                count++;
-            }
-            fout << endl;
-            fout.close();
-        }
+        // DEAD CODE: gerstein — betweenness centrality output utility, not in core workflow
+        // (lines 5305-5354 commented out)
+        // else if (command == "gerstein")
+        // {
+        // int graphnum;
+        // string filename;
+        // int cmd_index = 1;
+        // if (!b_mode)
+        // {
+        // cin >> graphnum;
+        // cout << "Enter output file prefix: ";
+        // cin >> filename;
+        // }
+        // else
+        // {
+        // graphnum = stoi(token_cmd[cmd_index++]);
+        // filename = token_cmd[cmd_index++];
+        // }
+        //         // if (graphnum == 0)
+        // graphnum = graph_man->graph_id_count;
+        //         // string betweenness_filename = filename + "_nodes_ranked_by_betweenness";
+        // ofstream fout(betweenness_filename.c_str());
+        //         // GraphNew *graph = graph_man->get_graph(graphnum);
+        // map<int, float> nid_to_betw_map;
+        // graph->get_nids_sorted_by_betweenness(nid_to_betw_map);
+        //         // list<pair<int, float>> sorted_nid_to_betw_list;
+        // for (auto itr = nid_to_betw_map.begin(); itr != nid_to_betw_map.end(); itr++)
+        // {
+        // int key = itr->first;
+        // float value = itr->second;
+        // sorted_nid_to_betw_list.push_back(make_pair(key, value));
+        // }
+        //         // // std::sort(sorted_nid_to_betw_list.begin(), sorted_nid_to_betw_list.end(), compare_pair_on_second_descending_int_float);
+        //         // int count = 1;
+        // for (auto l_itr = sorted_nid_to_betw_list.begin(); l_itr != sorted_nid_to_betw_list.end(); l_itr++)
+        // {
+        // int nid = l_itr->first;
+        // // string name = graph->get_all_display_ids_of_node(nid)[0];
+        // string name = graph_man->kegg_hsa_id_to_display_name_map[graph->get_rep_id_from_nid(nid)];
+        //         // fout << count << "\t" << graph->get_rep_id_from_nid(nid) << "\t" << name << "\t" << l_itr->second << endl;
+        // count++;
+        // }
+        // fout << endl;
+        // fout.close();
+        // }
 
         else if (command == "common_paths" || command == "cpaths")
         {
@@ -5662,13 +5566,14 @@ int main(int argc, char *argv[])
             break;
         }
 
-        else if (command == "get_assignments_z3" || command == "get_assg_z3")
-        {
-            string z3_result, output_assigns;
-            cin >> z3_result >> output_assigns;
-            cout << "\nNote: for this command to successfully work\n the mapping of internal variables in the hash maps should be the recent ones\n";
-            read_z3_output(z3_result, output_assigns);
-        }
+        // DEAD CODE: get_assignments_z3 — reads output of dead solve command
+        // else if (command == "get_assignments_z3" || command == "get_assg_z3")
+        // {
+        // string z3_result, output_assigns;
+        // cin >> z3_result >> output_assigns;
+        // cout << "\nNote: for this command to successfully work\n the mapping of internal variables in the hash maps should be the recent ones\n";
+        // read_z3_output(z3_result, output_assigns);
+        // }
 
         else if (command == "undir" || command == "u")
         {
@@ -5688,64 +5593,55 @@ int main(int argc, char *argv[])
             cout << "New graph: " << graphnum_undirected << endl;
         }
 
-        else if (command == "bcc")
-        {
-            int graphnum;
-            cin >> graphnum;
-            if (graphnum == 0)
-                graphnum = graph_man->graph_id_count;
-
-            GraphNew *graph = graph_man->get_graph(graphnum);
-
-            vector<int> orig_node_ids = graph->get_node_ids();
-            graph->first_offset = orig_node_ids.front();
-
-            // shuffle node seq numbers
-            int num_of_nodes = orig_node_ids.size();
-            int index = 0;
-            vector<int>::iterator nid_itr;
-            vector<int> node_ids;
-            int counter1 = 0;
-            for (nid_itr = orig_node_ids.begin(); nid_itr != orig_node_ids.end(); nid_itr++)
-            {
-                if (graph->is_isolated_node((*nid_itr)))
-                {
-                    int nseq = num_of_nodes - counter1;
-                    counter1++;
-                    graph->map_nid_to_nseq.insert(pair<int, int>(*nid_itr, nseq));
-                    graph->map_nseq_to_nid.insert(pair<int, int>(nseq, *nid_itr));
-                }
-                else
-                {
-                    node_ids.push_back(*nid_itr);
-                }
-            }
-
-            vector<int> gomoryhu_parents;
-
-            // std::random_shuffle(node_ids.begin(), node_ids.end());
-
-            //            for (vector<int>::iterator temp_itr = node_ids.begin(); temp_itr != node_ids.end(); temp_itr++)
-            //                cout << *temp_itr << endl;
-            //            cout << endl;
-
-            graph->sort_nids_by_degree(node_ids);
-
-            //            for (vector<int>::iterator temp_itr = node_ids.begin(); temp_itr != node_ids.end(); temp_itr++)
-            //                cout << *temp_itr << endl;
-            //            cout << endl;
-
-            for (index = 0, nid_itr = node_ids.begin(); nid_itr != node_ids.end(); index++, nid_itr++)
-            {
-                graph->map_nid_to_nseq.insert(pair<int, int>(*nid_itr, index));
-                graph->map_nseq_to_nid.insert(pair<int, int>(index, *nid_itr));
-
-                gomoryhu_parents.push_back(0);
-            }
-
-            int count = graph_man->bcc(graph);
-            cout << count << " biconnected components" << endl;
-        }
+        // DEAD CODE: bcc — biconnected components analysis, not in core workflow
+        // (lines 5628-5685 commented out)
+        // else if (command == "bcc")
+        // {
+        // int graphnum;
+        // cin >> graphnum;
+        // if (graphnum == 0)
+        // graphnum = graph_man->graph_id_count;
+        //         // GraphNew *graph = graph_man->get_graph(graphnum);
+        //         // vector<int> orig_node_ids = graph->get_node_ids();
+        // graph->first_offset = orig_node_ids.front();
+        //         // // shuffle node seq numbers
+        // int num_of_nodes = orig_node_ids.size();
+        // int index = 0;
+        // vector<int>::iterator nid_itr;
+        // vector<int> node_ids;
+        // int counter1 = 0;
+        // for (nid_itr = orig_node_ids.begin(); nid_itr != orig_node_ids.end(); nid_itr++)
+        // {
+        // if (graph->is_isolated_node((*nid_itr)))
+        // {
+        // int nseq = num_of_nodes - counter1;
+        // counter1++;
+        // graph->map_nid_to_nseq.insert(pair<int, int>(*nid_itr, nseq));
+        // graph->map_nseq_to_nid.insert(pair<int, int>(nseq, *nid_itr));
+        // }
+        // else
+        // {
+        // node_ids.push_back(*nid_itr);
+        // }
+        // }
+        //         // vector<int> gomoryhu_parents;
+        //         // // std::random_shuffle(node_ids.begin(), node_ids.end());
+        //         // //            for (vector<int>::iterator temp_itr = node_ids.begin(); temp_itr != node_ids.end(); temp_itr++)
+        // //                cout << *temp_itr << endl;
+        // //            cout << endl;
+        //         // graph->sort_nids_by_degree(node_ids);
+        //         // //            for (vector<int>::iterator temp_itr = node_ids.begin(); temp_itr != node_ids.end(); temp_itr++)
+        // //                cout << *temp_itr << endl;
+        // //            cout << endl;
+        //         // for (index = 0, nid_itr = node_ids.begin(); nid_itr != node_ids.end(); index++, nid_itr++)
+        // {
+        // graph->map_nid_to_nseq.insert(pair<int, int>(*nid_itr, index));
+        // graph->map_nseq_to_nid.insert(pair<int, int>(index, *nid_itr));
+        //         // gomoryhu_parents.push_back(0);
+        // }
+        //         // int count = graph_man->bcc(graph);
+        // cout << count << " biconnected components" << endl;
+        // }
 
         else if (command == "mincut" || command == "mc")
         {
@@ -6096,525 +5992,461 @@ int main(int argc, char *argv[])
             }
         }
 
-        else if (command == "mincut1" || command == "mc1")
-        {
-            int graphnum;
-            int cmd_index = 1;
-            if (!b_mode)
-                cin >> graphnum;
-            else
-                graphnum = stoi(token_cmd[cmd_index++]);
-
-            if (graphnum == 0)
-                graphnum = graph_man->graph_id_count;
-
-            GraphNew *graph = graph_man->get_graph(graphnum);
-
-            if (graph == NULL)
-            {
-                cout << "Invalid graph" << endl;
-                if (b_mode)
-                    exit(1);
-            }
-
-            GraphNew *ugraph = graph_man->get_graph(graph_man->convert_to_undirected_graph(graphnum));
-
-            if (ugraph == NULL)
-            {
-                cout << "Invalid graph" << endl;
-                if (b_mode)
-                    exit(1);
-            }
-
-            vector<int> node_unids;
-            vector<int> gomoryhu_parents;
-            vector<bool> selected_mincut_vec;
-            ugraph->preprocess_graph_for_mincut(node_unids, gomoryhu_parents);
-
-            vector<set<int>> cut_edges(node_unids.size());
-
-            time(&time1);
-
-#ifdef DEBUG_FLAG
-            debug_log << "Before calling compute_gh_tree" << endl;
-#endif
-            int new_gid = graph_man->compute_gh_tree(ugraph->get_graph_id(), node_unids, gomoryhu_parents, cut_edges);
-            cout << "Gomory-Hu tree has graph id: " << new_gid << endl;
-
-            time(&time2);
-            cout << "Total time taken (in sec): " << difftime(time2, time1) << endl;
-
-#ifdef DEBUG_FLAG
-            debug_log << "After returning from compute_gh_tree" << endl;
-            debug_log << "Total time taken (in sec): " << difftime(time2, time1) << endl;
-#endif
-
-            // added by sukanya on 27 Aug 2016
-            // generate all pair min cut file
-            vector<int> unids1 = ugraph->get_node_ids();
-            vector<int> unids2 = ugraph->get_node_ids();
-
-            string up_reg_filename, down_reg_filename;
-            if (!b_mode)
-            {
-                cout << "\nEnter file for up regulated entries: ";
-                cin >> up_reg_filename;
-                cout << "\nEnter file for down regulated entries: ";
-                cin >> down_reg_filename;
-            }
-            else
-            {
-                up_reg_filename = token_cmd[cmd_index++];
-                down_reg_filename = token_cmd[cmd_index++];
-            }
-
-            string id;
-            ifstream ifs_up(up_reg_filename.c_str()), ifs_down(down_reg_filename.c_str());
-            set<string> up_reg_rep_ids, down_reg_rep_ids;
-
-            if (!ifs_up.is_open())
-                cerr << "Error: file " + up_reg_filename + " cannot be opened." << endl;
-
-            if (!ifs_down.is_open())
-                cerr << "Error: file " + down_reg_filename + " cannot be opened." << endl;
-
-            while (ifs_up >> id)
-            {
-                string repid = ugraph->get_rep_id_from_id(id);
-                if (repid != "")
-                    up_reg_rep_ids.insert(repid);
-            }
-            ifs_up.close();
-
-            while (ifs_down >> id)
-            {
-                string repid = ugraph->get_rep_id_from_id(id);
-                if (repid != "")
-                    down_reg_rep_ids.insert(repid);
-            }
-            ifs_down.close();
-
-            string all_pair_file_name;
-            if (!b_mode)
-            {
-                cout << "Enter all pair output file name: ";
-                cin >> all_pair_file_name;
-            }
-            else
-            {
-                all_pair_file_name = token_cmd[cmd_index++];
-            }
-
-            time(&time1);
-
-            // get mincuts
-            string source, target;
-            int source_unid, target_unid;
-            set<int> mincut_eids;
-            map<string, int> nodes_in_all_mincuts;
-
-            while (1)
-            {
-                if (!b_mode)
-                {
-                    cout << "Source: ";
-                    cin >> source;
-                    cout << endl;
-
-                    cout << "Target: ";
-                    cin >> target;
-                    cout << endl;
-                }
-                else
-                {
-                    source = token_cmd[cmd_index++];
-                    target = token_cmd[cmd_index++];
-                }
-                if (source == "-1" || target == "-1")
-                    break;
-
-                source_unid = ugraph->get_nid_from_rep_id(ugraph->get_rep_id_from_id(source));
-                if (source_unid == -1)
-                    continue;
-
-                target_unid = ugraph->get_nid_from_rep_id(ugraph->get_rep_id_from_id(target));
-                if (target_unid == -1)
-                    continue;
-
-                set<int> directed_cut_eids;
-
-                // inconsistent call -- temporarily commented out
-                // graph_man->get_min_cut_edges_from_ghtree(graph, ugraph, cut_edges, gomoryhu_parents, selected_mincut_vec, GET_NODE_SEQ_NUM(ugraph, source_unid), GET_NODE_SEQ_NUM(ugraph, target_unid), directed_cut_eids);
-
-                assert(!directed_cut_eids.empty());
-
-                ofstream hout(all_pair_file_name.c_str());
-                map<string, int> nodes_in_mincut;
-                hout << "<!DOCTYPE html>" << endl;
-                hout << "<html>" << endl;
-                hout << "<head>" << endl;
-                hout << "<title>All pair min cuts</title>" << endl;
-                hout << "</head>" << endl;
-                hout << "<body style=\"background-color:#FFFFF0;\">" << endl;
-
-                hout << "<h2 style=\"color:red;text-align:center;font-family:courier;\">Min cuts</h2>" << endl;
-
-                hout << "\n\n"
-                     << endl;
-                hout << "<p style=\"text-align:left;\">";
-                hout << "<br> <br> To disconnect <b>" << ugraph->get_all_display_ids_of_node(source_unid)[0] << "</b> ";
-                hout << "from <b> " << ugraph->get_all_display_ids_of_node(target_unid)[0] << "</b>";
-                hout << "<br>remove all of the following edges <br>" << endl;
-                hout << "<br>" << endl;
-
-                set<string> written_edges;
-                for (set<int>::iterator set_itr = directed_cut_eids.begin(); set_itr != directed_cut_eids.end(); set_itr++)
-                {
-                    graph->write_mincut_edge_to_html(*set_itr, hout, up_reg_rep_ids, down_reg_rep_ids, nodes_in_mincut, nodes_in_all_mincuts, written_edges);
-                }
-
-                hout << "</p>" << endl;
-                hout << "<br>" << endl;
-                hout << "</body>" << endl;
-                hout << "</html>" << endl;
-            }
-
-            time(&time2);
-
-            time_in_sec = difftime(time2, time1);
-
-            cout << "TIME: " << time_in_sec << endl;
-        }
-
-        else if (command == "mcd")
-        {
-            int graphnum;
-            int cmd_index = 1;
-            if (!b_mode)
-                cin >> graphnum;
-            else
-                graphnum = stoi(token_cmd[cmd_index++]);
-
-            if (graphnum == 0)
-                graphnum = graph_man->graph_id_count;
-
-            GraphNew *graph = graph_man->get_graph(graphnum);
-
-            vector<int> node_ids;
-            vector<int> gomoryhu_parents;
-            graph->preprocess_graph_for_mincut(node_ids, gomoryhu_parents);
-
-            vector<set<int>> cut_edges(node_ids.size());
-            vector<set<int>> fwd_cut_edges(node_ids.size());
-            vector<set<int>> bkd_cut_edges(node_ids.size());
-            time(&time1);
-
-#ifdef DEBUG_FLAG
-            debug_log << "Before calling compute_gh_tree" << endl;
-#endif
-            // int new_gid = graph_man->compute_gh_tree(graphnum, gomoryhu_parents, cut_edges);
-            int new_gid = graph_man->compute_gh_tree_dinics(graphnum, node_ids, gomoryhu_parents, cut_edges, fwd_cut_edges, bkd_cut_edges);
-
-            cout << "Gomory-Hu tree has graph id: " << new_gid << endl;
-
-#ifdef DEBUG_FLAG
-            debug_log << "After returning from compute_gh_tree" << endl;
-            //                        for (vector<int>::iterator vec_itr = node_ids.begin(); vec_itr != node_ids.end(); vec_itr++) {
-            //                            debug_log << GET_NODE_SEQ_NUM(graph, *vec_itr) << " -- " << gomoryhu_parents[GET_NODE_SEQ_NUM(graph, *vec_itr)] << endl;
-            //                        }
-#endif
-            time(&time2);
-            cout << "Total time taken (in sec): " << difftime(time2, time1) << endl;
-#ifdef DEBUG_FLAG
-            debug_log << "Total time taken (in sec): " << difftime(time2, time1) << endl;
-#endif
-
-            // else
-            // graphnum = stoi(token_cmd[cmd_index++]);
-
-            // added by sukanya on 27 Aug 2016
-            // generate all pair min cut file
-            vector<int> nids1 = graph->get_node_ids();
-            vector<int> nids2 = graph->get_node_ids();
-
-            string up_reg_filename, down_reg_filename;
-            if (!b_mode)
-            {
-                cout << "\nEnter file for up regulated entries: ";
-                cin >> up_reg_filename;
-                cout << "\nEnter file for down regulated entries: ";
-                cin >> down_reg_filename;
-            }
-            else
-            {
-                up_reg_filename = token_cmd[cmd_index++];
-                down_reg_filename = token_cmd[cmd_index++];
-            }
-
-            string id;
-            ifstream ifs_up(up_reg_filename.c_str()), ifs_down(down_reg_filename.c_str());
-            set<string> up_reg_rep_ids, down_reg_rep_ids;
-
-            if (!ifs_up.is_open())
-            {
-                cerr << "Error: file " + up_reg_filename + " can't be opened, returning without any microarray assertions..." << endl;
-            }
-            if (!ifs_down.is_open())
-            {
-                cerr << "Error: file " + down_reg_filename + " can't be opened, returning without any microarray assertions..." << endl;
-            }
-            while (ifs_up >> id)
-            {
-                string repid = graph->get_rep_id_from_id(id);
-                if (repid != "")
-                {
-                    up_reg_rep_ids.insert(repid);
-                }
-            }
-            ifs_up.close();
-            while (ifs_down >> id)
-            {
-                string repid = graph->get_rep_id_from_id(id);
-                if (repid != "")
-                {
-                    down_reg_rep_ids.insert(repid);
-                }
-            }
-            ifs_down.close();
-
-            string all_pair_file_name;
-            if (!b_mode)
-            {
-                cout << "Enter all pair output file name: ";
-                cin >> all_pair_file_name;
-            }
-            else
-            {
-                all_pair_file_name = token_cmd[cmd_index++];
-            }
-            // get mincuts
-            string source, target;
-            int source_nid, target_nid;
-            set<int> mincut_eids;
-            map<string, int> nodes_in_all_mincuts;
-
-            while (1)
-            {
-                if (!b_mode)
-                {
-                    cout << "Source: ";
-                    cin >> source;
-                    cout << endl;
-
-                    cout << "Target: ";
-                    cin >> target;
-                    cout << endl;
-                }
-                else
-                {
-                    source = token_cmd[cmd_index++];
-                    target = token_cmd[cmd_index++];
-                }
-                if (source == "-1" || target == "-1")
-                    break;
-
-                string rep = graph->get_rep_id_from_id(source);
-                string source_name, target_name;
-                source_nid = graph->get_nid_from_rep_id(graph->get_rep_id_from_id(source));
-                if (source_nid == -1)
-                    continue;
-                source_name = graph->get_all_display_ids_of_node(source_nid)[0];
-                target_nid = graph->get_nid_from_rep_id(graph->get_rep_id_from_id(target));
-                if (target_nid == -1)
-                    continue;
-                target_name = graph->get_all_display_ids_of_node(target_nid)[0];
-                int node_u_in_tree; // represents the u of the u-v cut in the GH-tree
-                int is_src_side;
-                ofstream outfile;
-                ostringstream filename;
-                filename << static_cast<unsigned long>(::time(0)) << ".dat";
-                outfile.open(filename.str());
-                // mincut_eids = graph_man->my_getMinCutEdges(graph, cut_edges, gomoryhu_parents, source_nid, target_nid);
-                mincut_eids = graph_man->getMinCutEdges(graph, cut_edges, gomoryhu_parents, GET_NODE_SEQ_NUM(graph, source_nid), GET_NODE_SEQ_NUM(graph, target_nid), node_u_in_tree, is_src_side, outfile);
-                // mincut_eids = graph_man->getMinCutEdges_directed(graph, fwd_cut_edges, bkd_cut_edges, gomoryhu_parents, GET_NODE_SEQ_NUM(graph,source_nid), GET_NODE_SEQ_NUM(graph,target_nid), node_u_in_tree, is_src_side, outfile);
-                set<int> directed_mincut_eids;
-                directed_mincut_eids = graph_man->getFilteredCutEdges(graph, mincut_eids, source_nid, target_nid);
-
-                char response;
-                if (!b_mode)
-                {
-                    cout << "Create subgraph (y/n): ";
-                    cin >> response;
-                }
-                else
-                    response = token_cmd[cmd_index++][0];
-
-                if (response == 'y')
-                {
-                    int sg_id = graph_man->get_subgraph_edges_removed(graphnum, mincut_eids);
-                    cout << "New subgraph: " << sg_id << endl;
-                    //                    if (sg_id != -1) {
-                    //                        GraphNew* graph_ptr = graph_man->get_graph(sg_id);
-                    //
-                    //                        string filename;
-                    //                        if (!b_mode) {
-                    //                            cout << "Enter the file path to store the graph in xml format: ";
-                    //                            cin >> filename;
-                    //                        } else {
-                    //                            filename = token_cmd[cmd_index++];
-                    //                        }
-                    //                        ofstream fout(filename.c_str());
-                    //                        if (fout.is_open()) {
-                    //                            graph_ptr->write_to_xml_file(fout, false, filename);
-                    //                            fout.close();
-                    //                        } else {
-                    //                            cerr << "Error: couldn't open file " << filename << endl;
-                    //                        }
-                    //
-                    //
-                    //                    }
-                }
-
-                ////                            int node_u_in_tree;// represents the u of the u-v cut in the GH-tree
-                ////                            int is_src_side;
-                ////                            ofstream outfile;
-                ////                            ostringstream filename;
-                ////                            filename << static_cast<unsigned long>(::time(0))<<".dat";
-                ////                            outfile.open(filename.str());
-                set<int> curr_min_cut = graph_man->getMinCutEdges(graph, cut_edges, gomoryhu_parents, GET_NODE_SEQ_NUM(graph, source_nid), GET_NODE_SEQ_NUM(graph, target_nid), node_u_in_tree, is_src_side, outfile);
-                // set<int> curr_min_cut = graph_man->getMinCutEdges_directed(graph, fwd_cut_edges, bkd_cut_edges, gomoryhu_parents, GET_NODE_SEQ_NUM(graph,source_nid), GET_NODE_SEQ_NUM(graph,target_nid), node_u_in_tree, is_src_side, outfile);
-
-                // cout << "Mincut edges: " << endl;
-
-                ofstream hout(all_pair_file_name.c_str());
-                map<string, int> nodes_in_mincut;
-                hout << "<!DOCTYPE html>" << endl;
-                hout << "<html>" << endl;
-                hout << "<head>" << endl;
-                hout << "<title>All pair min cuts</title>" << endl;
-                hout << "</head>" << endl;
-                // hout<<"<body style=\"background-color:powderblue;\">"<<endl;
-                hout << "<body style=\"background-color:#FFFFF0;\">" << endl;
-
-                hout << "<h2 style=\"color:red;text-align:center;font-family:courier;\">Min cuts</h2>" << endl;
-
-                hout << "\n\n"
-                     << endl;
-                hout << "<p style=\"text-align:left;\">";
-                hout << "<br> <br> To disconnect <b>" << source_name << "</b> ";
-                hout << "from <b> " << target_name << "</b>";
-                hout << "<br>remove all of the following edges <br>" << endl;
-                hout << "<br>" << endl;
-
-                set<string> written_edges;
-                for (set<int>::iterator set_itr = directed_mincut_eids.begin(); set_itr != directed_mincut_eids.end(); set_itr++)
-                {
-                    graph->write_mincut_edge_to_html(*set_itr, hout, up_reg_rep_ids, down_reg_rep_ids, nodes_in_mincut, nodes_in_all_mincuts, written_edges);
-                }
-                hout << "</p>" << endl;
-
-                hout << "<br>" << endl;
-                hout << "</body>" << endl;
-                hout << "</html>" << endl;
-            }
-
-            list<int> source_nodes_nid_list;
-            string node_name, rep_id;
-            int node_id;
-            if (!b_mode)
-            {
-                cout << "Source node ids list (end with -1): ";
-                cin >> node_name;
-            }
-            else
-            {
-                node_name = token_cmd[cmd_index++];
-            }
-            while (node_name != "-1")
-            {
-                rep_id = graph->get_rep_id_from_id(node_name);
-                if (rep_id == "")
-                {
-                    cout << "Not found " << node_name << endl;
-                    // continue;
-                }
-                else
-                {
-                    node_id = graph->get_nid_from_rep_id(rep_id);
-
-#ifdef ASSERT_FLAG
-                    assert(node_id != -1);
-#endif
-                    source_nodes_nid_list.push_back(node_id);
-                }
-                if (!b_mode)
-                    cin >> node_name;
-                else
-                    node_name = token_cmd[cmd_index++];
-            }
-
-            list<int> target_nodes_nid_list;
-            if (!b_mode)
-            {
-                cout << "Target node list (end with -1): ";
-                cin >> node_name;
-            }
-            else
-            {
-                node_name = token_cmd[cmd_index++];
-            }
-            while (node_name != "-1")
-            {
-                rep_id = graph->get_rep_id_from_id(node_name);
-                if (rep_id == "")
-                {
-                    cout << "Not found " << node_name << endl;
-                    // continue;
-                }
-                else
-                {
-                    node_id = graph->get_nid_from_rep_id(rep_id);
-#ifdef ASSERT_FLAG
-                    assert(node_id != -1);
-#endif
-                    target_nodes_nid_list.push_back(node_id);
-                }
-                if (!b_mode)
-                    cin >> node_name;
-                else
-                    node_name = token_cmd[cmd_index++];
-            }
-
-            set<int> present_edges;
-            list<int>::iterator iter1, iter2;
-
-            ofstream outfile;
-            ostringstream filename;
-            filename << static_cast<unsigned long>(::time(0)) << ".dat";
-            outfile.open(filename.str());
-            for (iter1 = source_nodes_nid_list.begin(); iter1 != source_nodes_nid_list.end(); iter1++)
-            {
-                for (iter2 = target_nodes_nid_list.begin(); iter2 != target_nodes_nid_list.end(); iter2++)
-                {
-
-                    // graph_man->connect(graph, present_edges, cut_edges, cut_edge_index, *iter1, *iter2); // some more things may be need to be output
-                    graph_man->new_connect(graph, present_edges, cut_edges, gomoryhu_parents, GET_NODE_SEQ_NUM(graph, *iter1), GET_NODE_SEQ_NUM(graph, *iter2), outfile);
-                    //                                map<int, int> map_nid_to_dfs_index;
-                    //                                graph_man->dfs_numbering(graph, *iter1, map_nid_to_dfs_index);
-                    //                                graph_man->connect_with_dfs_numbering(graph, present_edges, fwd_cut_edges, bkd_cut_edges, gomoryhu_parents, *iter1, *iter2, map_nid_to_dfs_index, outfile);
-                }
-            }
-
-            int subgraph = graph_man->get_subgraph_with_edge_ids(graph, present_edges);
-            if (subgraph != -1)
-            {
-                cout << "New subgraph id: " << subgraph << endl;
-            }
-            else
-            {
-                cerr << "Subgraph not created" << endl;
-            }
-        }
+        // DEAD CODE: mincut1/mc1 — alternate mincut variant, redundant with mc command
+        // (lines 6036-6224 commented out)
+        // else if (command == "mincut1" || command == "mc1")
+        // {
+        // int graphnum;
+        // int cmd_index = 1;
+        // if (!b_mode)
+        // cin >> graphnum;
+        // else
+        // graphnum = stoi(token_cmd[cmd_index++]);
+        //         // if (graphnum == 0)
+        // graphnum = graph_man->graph_id_count;
+        //         // GraphNew *graph = graph_man->get_graph(graphnum);
+        //         // if (graph == NULL)
+        // {
+        // cout << "Invalid graph" << endl;
+        // if (b_mode)
+        // exit(1);
+        // }
+        //         // GraphNew *ugraph = graph_man->get_graph(graph_man->convert_to_undirected_graph(graphnum));
+        //         // if (ugraph == NULL)
+        // {
+        // cout << "Invalid graph" << endl;
+        // if (b_mode)
+        // exit(1);
+        // }
+        //         // vector<int> node_unids;
+        // vector<int> gomoryhu_parents;
+        // vector<bool> selected_mincut_vec;
+        // ugraph->preprocess_graph_for_mincut(node_unids, gomoryhu_parents);
+        //         // vector<set<int>> cut_edges(node_unids.size());
+        //         // time(&time1);
+        //         // #ifdef DEBUG_FLAG
+        // debug_log << "Before calling compute_gh_tree" << endl;
+        // #endif
+        // int new_gid = graph_man->compute_gh_tree(ugraph->get_graph_id(), node_unids, gomoryhu_parents, cut_edges);
+        // cout << "Gomory-Hu tree has graph id: " << new_gid << endl;
+        //         // time(&time2);
+        // cout << "Total time taken (in sec): " << difftime(time2, time1) << endl;
+        //         // #ifdef DEBUG_FLAG
+        // debug_log << "After returning from compute_gh_tree" << endl;
+        // debug_log << "Total time taken (in sec): " << difftime(time2, time1) << endl;
+        // #endif
+        //         // // added by sukanya on 27 Aug 2016
+        // // generate all pair min cut file
+        // vector<int> unids1 = ugraph->get_node_ids();
+        // vector<int> unids2 = ugraph->get_node_ids();
+        //         // string up_reg_filename, down_reg_filename;
+        // if (!b_mode)
+        // {
+        // cout << "\nEnter file for up regulated entries: ";
+        // cin >> up_reg_filename;
+        // cout << "\nEnter file for down regulated entries: ";
+        // cin >> down_reg_filename;
+        // }
+        // else
+        // {
+        // up_reg_filename = token_cmd[cmd_index++];
+        // down_reg_filename = token_cmd[cmd_index++];
+        // }
+        //         // string id;
+        // ifstream ifs_up(up_reg_filename.c_str()), ifs_down(down_reg_filename.c_str());
+        // set<string> up_reg_rep_ids, down_reg_rep_ids;
+        //         // if (!ifs_up.is_open())
+        // cerr << "Error: file " + up_reg_filename + " cannot be opened." << endl;
+        //         // if (!ifs_down.is_open())
+        // cerr << "Error: file " + down_reg_filename + " cannot be opened." << endl;
+        //         // while (ifs_up >> id)
+        // {
+        // string repid = ugraph->get_rep_id_from_id(id);
+        // if (repid != "")
+        // up_reg_rep_ids.insert(repid);
+        // }
+        // ifs_up.close();
+        //         // while (ifs_down >> id)
+        // {
+        // string repid = ugraph->get_rep_id_from_id(id);
+        // if (repid != "")
+        // down_reg_rep_ids.insert(repid);
+        // }
+        // ifs_down.close();
+        //         // string all_pair_file_name;
+        // if (!b_mode)
+        // {
+        // cout << "Enter all pair output file name: ";
+        // cin >> all_pair_file_name;
+        // }
+        // else
+        // {
+        // all_pair_file_name = token_cmd[cmd_index++];
+        // }
+        //         // time(&time1);
+        //         // // get mincuts
+        // string source, target;
+        // int source_unid, target_unid;
+        // set<int> mincut_eids;
+        // map<string, int> nodes_in_all_mincuts;
+        //         // while (1)
+        // {
+        // if (!b_mode)
+        // {
+        // cout << "Source: ";
+        // cin >> source;
+        // cout << endl;
+        //         // cout << "Target: ";
+        // cin >> target;
+        // cout << endl;
+        // }
+        // else
+        // {
+        // source = token_cmd[cmd_index++];
+        // target = token_cmd[cmd_index++];
+        // }
+        // if (source == "-1" || target == "-1")
+        // break;
+        //         // source_unid = ugraph->get_nid_from_rep_id(ugraph->get_rep_id_from_id(source));
+        // if (source_unid == -1)
+        // continue;
+        //         // target_unid = ugraph->get_nid_from_rep_id(ugraph->get_rep_id_from_id(target));
+        // if (target_unid == -1)
+        // continue;
+        //         // set<int> directed_cut_eids;
+        //         // // inconsistent call -- temporarily commented out
+        // // graph_man->get_min_cut_edges_from_ghtree(graph, ugraph, cut_edges, gomoryhu_parents, selected_mincut_vec, GET_NODE_SEQ_NUM(ugraph, source_unid), GET_NODE_SEQ_NUM(ugraph, target_unid), directed_cut_eids);
+        //         // assert(!directed_cut_eids.empty());
+        //         // ofstream hout(all_pair_file_name.c_str());
+        // map<string, int> nodes_in_mincut;
+        // hout << "<!DOCTYPE html>" << endl;
+        // hout << "<html>" << endl;
+        // hout << "<head>" << endl;
+        // hout << "<title>All pair min cuts</title>" << endl;
+        // hout << "</head>" << endl;
+        // hout << "<body style=\"background-color:#FFFFF0;\">" << endl;
+        //         // hout << "<h2 style=\"color:red;text-align:center;font-family:courier;\">Min cuts</h2>" << endl;
+        //         // hout << "\n\n"
+        // << endl;
+        // hout << "<p style=\"text-align:left;\">";
+        // hout << "<br> <br> To disconnect <b>" << ugraph->get_all_display_ids_of_node(source_unid)[0] << "</b> ";
+        // hout << "from <b> " << ugraph->get_all_display_ids_of_node(target_unid)[0] << "</b>";
+        // hout << "<br>remove all of the following edges <br>" << endl;
+        // hout << "<br>" << endl;
+        //         // set<string> written_edges;
+        // for (set<int>::iterator set_itr = directed_cut_eids.begin(); set_itr != directed_cut_eids.end(); set_itr++)
+        // {
+        // graph->write_mincut_edge_to_html(*set_itr, hout, up_reg_rep_ids, down_reg_rep_ids, nodes_in_mincut, nodes_in_all_mincuts, written_edges);
+        // }
+        //         // hout << "</p>" << endl;
+        // hout << "<br>" << endl;
+        // hout << "</body>" << endl;
+        // hout << "</html>" << endl;
+        // }
+        //         // time(&time2);
+        //         // time_in_sec = difftime(time2, time1);
+        //         // cout << "TIME: " << time_in_sec << endl;
+        // }
+
+        // DEAD CODE: mcd — Dinics mincut variant handler, redundant with mc command
+        // (lines 6226-6554 commented out)
+        // else if (command == "mcd")
+        // {
+        // int graphnum;
+        // int cmd_index = 1;
+        // if (!b_mode)
+        // cin >> graphnum;
+        // else
+        // graphnum = stoi(token_cmd[cmd_index++]);
+        //         // if (graphnum == 0)
+        // graphnum = graph_man->graph_id_count;
+        //         // GraphNew *graph = graph_man->get_graph(graphnum);
+        //         // vector<int> node_ids;
+        // vector<int> gomoryhu_parents;
+        // graph->preprocess_graph_for_mincut(node_ids, gomoryhu_parents);
+        //         // vector<set<int>> cut_edges(node_ids.size());
+        // vector<set<int>> fwd_cut_edges(node_ids.size());
+        // vector<set<int>> bkd_cut_edges(node_ids.size());
+        // time(&time1);
+        //         // #ifdef DEBUG_FLAG
+        // debug_log << "Before calling compute_gh_tree" << endl;
+        // #endif
+        // // int new_gid = graph_man->compute_gh_tree(graphnum, gomoryhu_parents, cut_edges);
+        // int new_gid = graph_man->compute_gh_tree_dinics(graphnum, node_ids, gomoryhu_parents, cut_edges, fwd_cut_edges, bkd_cut_edges);
+        //         // cout << "Gomory-Hu tree has graph id: " << new_gid << endl;
+        //         // #ifdef DEBUG_FLAG
+        // debug_log << "After returning from compute_gh_tree" << endl;
+        // //                        for (vector<int>::iterator vec_itr = node_ids.begin(); vec_itr != node_ids.end(); vec_itr++) {
+        // //                            debug_log << GET_NODE_SEQ_NUM(graph, *vec_itr) << " -- " << gomoryhu_parents[GET_NODE_SEQ_NUM(graph, *vec_itr)] << endl;
+        // //                        }
+        // #endif
+        // time(&time2);
+        // cout << "Total time taken (in sec): " << difftime(time2, time1) << endl;
+        // #ifdef DEBUG_FLAG
+        // debug_log << "Total time taken (in sec): " << difftime(time2, time1) << endl;
+        // #endif
+        //         // // else
+        // // graphnum = stoi(token_cmd[cmd_index++]);
+        //         // // added by sukanya on 27 Aug 2016
+        // // generate all pair min cut file
+        // vector<int> nids1 = graph->get_node_ids();
+        // vector<int> nids2 = graph->get_node_ids();
+        //         // string up_reg_filename, down_reg_filename;
+        // if (!b_mode)
+        // {
+        // cout << "\nEnter file for up regulated entries: ";
+        // cin >> up_reg_filename;
+        // cout << "\nEnter file for down regulated entries: ";
+        // cin >> down_reg_filename;
+        // }
+        // else
+        // {
+        // up_reg_filename = token_cmd[cmd_index++];
+        // down_reg_filename = token_cmd[cmd_index++];
+        // }
+        //         // string id;
+        // ifstream ifs_up(up_reg_filename.c_str()), ifs_down(down_reg_filename.c_str());
+        // set<string> up_reg_rep_ids, down_reg_rep_ids;
+        //         // if (!ifs_up.is_open())
+        // {
+        // cerr << "Error: file " + up_reg_filename + " can't be opened, returning without any microarray assertions..." << endl;
+        // }
+        // if (!ifs_down.is_open())
+        // {
+        // cerr << "Error: file " + down_reg_filename + " can't be opened, returning without any microarray assertions..." << endl;
+        // }
+        // while (ifs_up >> id)
+        // {
+        // string repid = graph->get_rep_id_from_id(id);
+        // if (repid != "")
+        // {
+        // up_reg_rep_ids.insert(repid);
+        // }
+        // }
+        // ifs_up.close();
+        // while (ifs_down >> id)
+        // {
+        // string repid = graph->get_rep_id_from_id(id);
+        // if (repid != "")
+        // {
+        // down_reg_rep_ids.insert(repid);
+        // }
+        // }
+        // ifs_down.close();
+        //         // string all_pair_file_name;
+        // if (!b_mode)
+        // {
+        // cout << "Enter all pair output file name: ";
+        // cin >> all_pair_file_name;
+        // }
+        // else
+        // {
+        // all_pair_file_name = token_cmd[cmd_index++];
+        // }
+        // // get mincuts
+        // string source, target;
+        // int source_nid, target_nid;
+        // set<int> mincut_eids;
+        // map<string, int> nodes_in_all_mincuts;
+        //         // while (1)
+        // {
+        // if (!b_mode)
+        // {
+        // cout << "Source: ";
+        // cin >> source;
+        // cout << endl;
+        //         // cout << "Target: ";
+        // cin >> target;
+        // cout << endl;
+        // }
+        // else
+        // {
+        // source = token_cmd[cmd_index++];
+        // target = token_cmd[cmd_index++];
+        // }
+        // if (source == "-1" || target == "-1")
+        // break;
+        //         // string rep = graph->get_rep_id_from_id(source);
+        // string source_name, target_name;
+        // source_nid = graph->get_nid_from_rep_id(graph->get_rep_id_from_id(source));
+        // if (source_nid == -1)
+        // continue;
+        // source_name = graph->get_all_display_ids_of_node(source_nid)[0];
+        // target_nid = graph->get_nid_from_rep_id(graph->get_rep_id_from_id(target));
+        // if (target_nid == -1)
+        // continue;
+        // target_name = graph->get_all_display_ids_of_node(target_nid)[0];
+        // int node_u_in_tree; // represents the u of the u-v cut in the GH-tree
+        // int is_src_side;
+        // ofstream outfile;
+        // ostringstream filename;
+        // filename << static_cast<unsigned long>(::time(0)) << ".dat";
+        // outfile.open(filename.str());
+        // // mincut_eids = graph_man->my_getMinCutEdges(graph, cut_edges, gomoryhu_parents, source_nid, target_nid);
+        // mincut_eids = graph_man->getMinCutEdges(graph, cut_edges, gomoryhu_parents, GET_NODE_SEQ_NUM(graph, source_nid), GET_NODE_SEQ_NUM(graph, target_nid), node_u_in_tree, is_src_side, outfile);
+        // // mincut_eids = graph_man->getMinCutEdges_directed(graph, fwd_cut_edges, bkd_cut_edges, gomoryhu_parents, GET_NODE_SEQ_NUM(graph,source_nid), GET_NODE_SEQ_NUM(graph,target_nid), node_u_in_tree, is_src_side, outfile);
+        // set<int> directed_mincut_eids;
+        // directed_mincut_eids = graph_man->getFilteredCutEdges(graph, mincut_eids, source_nid, target_nid);
+        //         // char response;
+        // if (!b_mode)
+        // {
+        // cout << "Create subgraph (y/n): ";
+        // cin >> response;
+        // }
+        // else
+        // response = token_cmd[cmd_index++][0];
+        //         // if (response == 'y')
+        // {
+        // int sg_id = graph_man->get_subgraph_edges_removed(graphnum, mincut_eids);
+        // cout << "New subgraph: " << sg_id << endl;
+        // //                    if (sg_id != -1) {
+        // //                        GraphNew* graph_ptr = graph_man->get_graph(sg_id);
+        // //
+        // //                        string filename;
+        // //                        if (!b_mode) {
+        // //                            cout << "Enter the file path to store the graph in xml format: ";
+        // //                            cin >> filename;
+        // //                        } else {
+        // //                            filename = token_cmd[cmd_index++];
+        // //                        }
+        // //                        ofstream fout(filename.c_str());
+        // //                        if (fout.is_open()) {
+        // //                            graph_ptr->write_to_xml_file(fout, false, filename);
+        // //                            fout.close();
+        // //                        } else {
+        // //                            cerr << "Error: couldn't open file " << filename << endl;
+        // //                        }
+        // //
+        // //
+        // //                    }
+        // }
+        //         // ////                            int node_u_in_tree;// represents the u of the u-v cut in the GH-tree
+        // ////                            int is_src_side;
+        // ////                            ofstream outfile;
+        // ////                            ostringstream filename;
+        // ////                            filename << static_cast<unsigned long>(::time(0))<<".dat";
+        // ////                            outfile.open(filename.str());
+        // set<int> curr_min_cut = graph_man->getMinCutEdges(graph, cut_edges, gomoryhu_parents, GET_NODE_SEQ_NUM(graph, source_nid), GET_NODE_SEQ_NUM(graph, target_nid), node_u_in_tree, is_src_side, outfile);
+        // // set<int> curr_min_cut = graph_man->getMinCutEdges_directed(graph, fwd_cut_edges, bkd_cut_edges, gomoryhu_parents, GET_NODE_SEQ_NUM(graph,source_nid), GET_NODE_SEQ_NUM(graph,target_nid), node_u_in_tree, is_src_side, outfile);
+        //         // // cout << "Mincut edges: " << endl;
+        //         // ofstream hout(all_pair_file_name.c_str());
+        // map<string, int> nodes_in_mincut;
+        // hout << "<!DOCTYPE html>" << endl;
+        // hout << "<html>" << endl;
+        // hout << "<head>" << endl;
+        // hout << "<title>All pair min cuts</title>" << endl;
+        // hout << "</head>" << endl;
+        // // hout<<"<body style=\"background-color:powderblue;\">"<<endl;
+        // hout << "<body style=\"background-color:#FFFFF0;\">" << endl;
+        //         // hout << "<h2 style=\"color:red;text-align:center;font-family:courier;\">Min cuts</h2>" << endl;
+        //         // hout << "\n\n"
+        // << endl;
+        // hout << "<p style=\"text-align:left;\">";
+        // hout << "<br> <br> To disconnect <b>" << source_name << "</b> ";
+        // hout << "from <b> " << target_name << "</b>";
+        // hout << "<br>remove all of the following edges <br>" << endl;
+        // hout << "<br>" << endl;
+        //         // set<string> written_edges;
+        // for (set<int>::iterator set_itr = directed_mincut_eids.begin(); set_itr != directed_mincut_eids.end(); set_itr++)
+        // {
+        // graph->write_mincut_edge_to_html(*set_itr, hout, up_reg_rep_ids, down_reg_rep_ids, nodes_in_mincut, nodes_in_all_mincuts, written_edges);
+        // }
+        // hout << "</p>" << endl;
+        //         // hout << "<br>" << endl;
+        // hout << "</body>" << endl;
+        // hout << "</html>" << endl;
+        // }
+        //         // list<int> source_nodes_nid_list;
+        // string node_name, rep_id;
+        // int node_id;
+        // if (!b_mode)
+        // {
+        // cout << "Source node ids list (end with -1): ";
+        // cin >> node_name;
+        // }
+        // else
+        // {
+        // node_name = token_cmd[cmd_index++];
+        // }
+        // while (node_name != "-1")
+        // {
+        // rep_id = graph->get_rep_id_from_id(node_name);
+        // if (rep_id == "")
+        // {
+        // cout << "Not found " << node_name << endl;
+        // // continue;
+        // }
+        // else
+        // {
+        // node_id = graph->get_nid_from_rep_id(rep_id);
+        //         // #ifdef ASSERT_FLAG
+        // assert(node_id != -1);
+        // #endif
+        // source_nodes_nid_list.push_back(node_id);
+        // }
+        // if (!b_mode)
+        // cin >> node_name;
+        // else
+        // node_name = token_cmd[cmd_index++];
+        // }
+        //         // list<int> target_nodes_nid_list;
+        // if (!b_mode)
+        // {
+        // cout << "Target node list (end with -1): ";
+        // cin >> node_name;
+        // }
+        // else
+        // {
+        // node_name = token_cmd[cmd_index++];
+        // }
+        // while (node_name != "-1")
+        // {
+        // rep_id = graph->get_rep_id_from_id(node_name);
+        // if (rep_id == "")
+        // {
+        // cout << "Not found " << node_name << endl;
+        // // continue;
+        // }
+        // else
+        // {
+        // node_id = graph->get_nid_from_rep_id(rep_id);
+        // #ifdef ASSERT_FLAG
+        // assert(node_id != -1);
+        // #endif
+        // target_nodes_nid_list.push_back(node_id);
+        // }
+        // if (!b_mode)
+        // cin >> node_name;
+        // else
+        // node_name = token_cmd[cmd_index++];
+        // }
+        //         // set<int> present_edges;
+        // list<int>::iterator iter1, iter2;
+        //         // ofstream outfile;
+        // ostringstream filename;
+        // filename << static_cast<unsigned long>(::time(0)) << ".dat";
+        // outfile.open(filename.str());
+        // for (iter1 = source_nodes_nid_list.begin(); iter1 != source_nodes_nid_list.end(); iter1++)
+        // {
+        // for (iter2 = target_nodes_nid_list.begin(); iter2 != target_nodes_nid_list.end(); iter2++)
+        // {
+        //         // // graph_man->connect(graph, present_edges, cut_edges, cut_edge_index, *iter1, *iter2); // some more things may be need to be output
+        // graph_man->new_connect(graph, present_edges, cut_edges, gomoryhu_parents, GET_NODE_SEQ_NUM(graph, *iter1), GET_NODE_SEQ_NUM(graph, *iter2), outfile);
+        // //                                map<int, int> map_nid_to_dfs_index;
+        // //                                graph_man->dfs_numbering(graph, *iter1, map_nid_to_dfs_index);
+        // //                                graph_man->connect_with_dfs_numbering(graph, present_edges, fwd_cut_edges, bkd_cut_edges, gomoryhu_parents, *iter1, *iter2, map_nid_to_dfs_index, outfile);
+        // }
+        // }
+        //         // int subgraph = graph_man->get_subgraph_with_edge_ids(graph, present_edges);
+        // if (subgraph != -1)
+        // {
+        // cout << "New subgraph id: " << subgraph << endl;
+        // }
+        // else
+        // {
+        // cerr << "Subgraph not created" << endl;
+        // }
+        // }
 
         else if (command == "split_node" || command == "split")
         {
@@ -6792,406 +6624,351 @@ int main(int argc, char *argv[])
         //
         //                }
 
-        else if (command == "matrix" || command == "mat")
-        {
-            int graphnum;
-            cin >> graphnum;
-
-            if (graphnum == 0)
-                graphnum = graph_man->graph_id_count;
-
-            GraphNew *graph = graph_man->get_graph(graphnum);
-            if (graph == NULL)
-            {
-                cout << "No such graph" << endl;
-                continue;
-            }
-
-            vector<int> orig_node_ids = graph->get_node_ids();
-            graph->first_offset = orig_node_ids.front();
-
-            // shuffle node seq numbers
-            int num_of_nodes = orig_node_ids.size();
-            int index = 0;
-            vector<int>::iterator nid_itr;
-            vector<int> node_ids;
-            int counter1 = 0;
-            for (nid_itr = orig_node_ids.begin(); nid_itr != orig_node_ids.end(); nid_itr++)
-            {
-                if (graph->is_isolated_node((*nid_itr)))
-                {
-                    int nseq = num_of_nodes - counter1;
-                    counter1++;
-                    graph->map_nid_to_nseq.insert(pair<int, int>(*nid_itr, nseq));
-                    graph->map_nseq_to_nid.insert(pair<int, int>(nseq, *nid_itr));
-                }
-                else
-                {
-                    node_ids.push_back(*nid_itr);
-                }
-            }
-
-            for (index = 0, nid_itr = node_ids.begin(); nid_itr != node_ids.end(); index++, nid_itr++)
-            {
-                graph->map_nid_to_nseq.insert(pair<int, int>(*nid_itr, index));
-                graph->map_nseq_to_nid.insert(pair<int, int>(index, *nid_itr));
-            }
-
-            string outfilename = "matrix";
-            ofstream fout(outfilename.c_str());
-
-            if (fout.is_open())
-            {
-                vector<int> nids = node_ids; // graph->get_node_ids();
-                vector<int> eids = graph->get_edge_ids();
-
-                // nodes
-                fout << "c(" << *nids.begin();
-                for (auto nids_iter = nids.begin() + 1; nids_iter != nids.end(); nids_iter++)
-                {
-                    fout << "," << *nids_iter;
-                }
-                fout << ")" << endl;
-                fout << endl;
-
-                // edges
-                int weight = 1;
-                int curr_eid = *eids.begin();
-                fout << "matrix (c(" << graph->get_source_node(curr_eid) << "," << graph->get_target_node(curr_eid) << "," << weight;
-                for (auto eids_iter = eids.begin() + 1; eids_iter != eids.end(); eids_iter++)
-                {
-                    curr_eid = *eids_iter;
-                    fout << ", "; // << endl;
-                    fout << graph->get_source_node(curr_eid) << "," << graph->get_target_node(curr_eid) << "," << weight;
-                }
-                fout << "), ncol = 3, byrow = TRUE)" << endl;
-
-                // nodes
-                fout << *nids.begin() << " - " << graph->get_rep_id_from_nid(*nids.begin()) << endl;
-                for (auto nids_iter = nids.begin() + 1; nids_iter != nids.end(); nids_iter++)
-                {
-                    fout << *nids_iter << " - " << graph->get_rep_id_from_nid(*nids_iter) << endl;
-                }
-                fout << endl;
-            }
-            fout.close();
-        }
-
-        else if (command == "partition" || command == "part")
-        {
-            int graphnum;
-            cin >> graphnum;
-
-            if (graphnum == 0)
-                graphnum = graph_man->graph_id_count;
-
-            GraphNew *graph = graph_man->get_graph(graphnum);
-            if (graph == NULL)
-            {
-                cout << "No such graph" << endl;
-                continue;
-            }
-
-            // convert to undirected graph
-            int ugraphnum = graph_man->convert_to_undirected_graph(graphnum);
-            GraphNew *ugraph = graph_man->get_graph(ugraphnum);
-
-            vector<int> orig_node_ids = graph->get_node_ids();
-            graph->first_offset = orig_node_ids.front();
-
-            // shuffle node seq numbers
-            int num_of_nodes = orig_node_ids.size();
-            int index = 0;
-            vector<int>::iterator nid_itr;
-            vector<int> node_ids;
-            int counter1 = 0;
-            for (nid_itr = orig_node_ids.begin(); nid_itr != orig_node_ids.end(); nid_itr++)
-            {
-                if (graph->is_isolated_node((*nid_itr)))
-                {
-                    int nseq = num_of_nodes - counter1;
-                    counter1++;
-                    graph->map_nid_to_nseq.insert(pair<int, int>(*nid_itr, nseq));
-                    graph->map_nseq_to_nid.insert(pair<int, int>(nseq, *nid_itr));
-                }
-                else
-                {
-                    node_ids.push_back(*nid_itr);
-                }
-            }
-
-            vector<int> gomoryhu_parents;
-            std::random_shuffle(node_ids.begin(), node_ids.end());
-            for (index = 0, nid_itr = node_ids.begin(); nid_itr != node_ids.end(); index++, nid_itr++)
-            {
-                graph->map_nid_to_nseq.insert(pair<int, int>(*nid_itr, index));
-                graph->map_nseq_to_nid.insert(pair<int, int>(index, *nid_itr));
-
-                gomoryhu_parents.push_back(0);
-            }
-        }
-
-        else if (command == "disconnect" || command == "dc")
-        {
-            int graphnum;
-            cin >> graphnum;
-
-            if (graphnum == 0)
-                graphnum = graph_man->graph_id_count;
-
-            GraphNew *graph = graph_man->get_graph(graphnum);
-
-            if (graph == NULL)
-            {
-                cout << "No such graph" << endl;
-                continue;
-            }
-
-            // convert to undirected graph
-            int ugraphnum = graph_man->convert_to_undirected_graph(graphnum);
-            GraphNew *ugraph = graph_man->get_graph(ugraphnum);
-
-            vector<int> orig_node_ids = graph->get_node_ids();
-            graph->first_offset = orig_node_ids.front();
-
-            // shuffle node seq numbers
-            int num_of_nodes = orig_node_ids.size();
-            int index = 0;
-            vector<int>::iterator nid_itr;
-            vector<int> node_ids;
-            int counter1 = 0;
-            for (nid_itr = orig_node_ids.begin(); nid_itr != orig_node_ids.end(); nid_itr++)
-            {
-                if (graph->is_isolated_node((*nid_itr)))
-                {
-                    int nseq = num_of_nodes - counter1;
-                    counter1++;
-                    graph->map_nid_to_nseq.insert(pair<int, int>(*nid_itr, nseq));
-                    graph->map_nseq_to_nid.insert(pair<int, int>(nseq, *nid_itr));
-                }
-                else
-                {
-                    node_ids.push_back(*nid_itr);
-                }
-            }
-
-            vector<int> gomoryhu_parents;
-            std::random_shuffle(node_ids.begin(), node_ids.end());
-            for (index = 0, nid_itr = node_ids.begin(); nid_itr != node_ids.end(); index++, nid_itr++)
-            {
-                graph->map_nid_to_nseq.insert(pair<int, int>(*nid_itr, index));
-                graph->map_nseq_to_nid.insert(pair<int, int>(index, *nid_itr));
-
-                gomoryhu_parents.push_back(0);
-            }
-
-            // compute Gomory-Hu tree
-            //                    vector<int> node_ids = graph->get_node_ids();
-            //                    graph->first_offset = node_ids.front();
-            //
-            //                    int num_of_nodes = node_ids.size();
-            //                    vector<int> gomoryhu_parents(node_ids.size());
-            //                    for (vector<int>::iterator vec_itr = node_ids.begin(); vec_itr != node_ids.end(); vec_itr++) {
-            //                        gomoryhu_parents[GET_NODE_SEQ_NUM(graph, *vec_itr)] = 0;
-            //                    }
-
-            vector<set<int>> cut_edges(node_ids.size());
-
-            int new_gid = graph_man->compute_gh_tree(graphnum, node_ids, gomoryhu_parents, cut_edges);
-            cout << "Gomory-Hu tree has graph id: " << new_gid << endl;
-
-            set<int> present_edges;
-
-            // get GH tree
-            GraphNew *ghtree = graph_man->get_graph(new_gid);
-
-            // get input nodes for sources, targets and nodes to be avoided
-            string source_name;
-            string node_name;
-            int src_nid, node_nid;
-            set<int> set_S; // contains nids in graph
-            set<int> set_T; // contains nids in graph
-            set<int> set_W; // contains nids in graph
-
-            string rep_id;
-
-            cout << "Source node: ";
-            cin >> source_name;
-            cout << endl;
-
-            rep_id = graph->get_rep_id_from_id(source_name);
-            if (rep_id == "")
-            {
-                cout << "Source not in graph" << endl;
-                continue;
-            }
-            else
-                src_nid = graph->get_nid_from_rep_id(rep_id);
-
-            cout << "Nodes connected to source (end by -1): ";
-            cin >> node_name;
-
-            while (node_name != "-1")
-            {
-                rep_id = graph->get_rep_id_from_id(node_name);
-                if (rep_id != "")
-                    set_S.insert(graph->get_nid_from_rep_id(rep_id));
-                cin >> node_name;
-            }
-
-            cout << "Nodes connected to target (end by -1): ";
-            cin >> node_name;
-
-            while (node_name != "-1")
-            {
-                rep_id = graph->get_rep_id_from_id(node_name);
-                if (rep_id != "")
-                    set_T.insert(graph->get_nid_from_rep_id(rep_id));
-                cin >> node_name;
-            }
-
-            cout << "Nodes to be avoided (end by -1): ";
-            cin >> node_name;
-
-            while (node_name != "-1")
-            {
-                rep_id = graph->get_rep_id_from_id(node_name);
-                if (rep_id != "")
-                    set_W.insert(graph->get_nid_from_rep_id(rep_id));
-                cin >> node_name;
-            }
-
-            // graph_man->disconnect(graph, ghtree, src_nid, set_S, set_T, set_W, present_edges, cut_edges, gomoryhu_parents);
-        }
-
-        else if (command == "disconnect2" || command == "dc2")
-        {
-            int graphnum;
-            cin >> graphnum;
-
-            if (graphnum == 0)
-                graphnum = graph_man->graph_id_count;
-
-            GraphNew *graph = graph_man->get_graph(graphnum);
-
-            if (graph == NULL)
-            {
-                cout << "No such graph" << endl;
-                continue;
-            }
-
-            //            // convert to undirected graph
-            //            int ugraphnum = graph_man->convert_to_undirected_graph(graphnum);
-            //            GraphNew * ugraph = graph_man->get_graph(ugraphnum);
-
-            vector<int> orig_node_ids = graph->get_node_ids();
-            graph->first_offset = orig_node_ids.front();
-
-            // shuffle node seq numbers
-            int num_of_nodes = orig_node_ids.size();
-            int index = 0;
-            vector<int>::iterator nid_itr;
-            vector<int> node_ids;
-            int counter1 = 0;
-            for (nid_itr = orig_node_ids.begin(); nid_itr != orig_node_ids.end(); nid_itr++)
-            {
-                if (graph->is_isolated_node((*nid_itr)))
-                {
-                    int nseq = num_of_nodes - counter1;
-                    counter1++;
-                    graph->map_nid_to_nseq.insert(pair<int, int>(*nid_itr, nseq));
-                    graph->map_nseq_to_nid.insert(pair<int, int>(nseq, *nid_itr));
-                }
-                else
-                {
-                    node_ids.push_back(*nid_itr);
-                }
-            }
-
-            vector<int> gomoryhu_parents;
-            // std::random_shuffle(node_ids.begin(), node_ids.end());
-            graph->sort_nids_by_degree(node_ids);
-            for (index = 0, nid_itr = node_ids.begin(); nid_itr != node_ids.end(); index++, nid_itr++)
-            {
-                graph->map_nid_to_nseq.insert(pair<int, int>(*nid_itr, index));
-                graph->map_nseq_to_nid.insert(pair<int, int>(index, *nid_itr));
-
-                gomoryhu_parents.push_back(0);
-            }
-
-            vector<set<int>> cut_edges(node_ids.size());
-
-            int new_gid = graph_man->compute_gh_tree(graphnum, node_ids, gomoryhu_parents, cut_edges);
-            cout << "Gomory-Hu tree has graph id: " << new_gid << endl;
-
-            set<int> present_edges;
-
-            // get GH tree
-            GraphNew *ghtree = graph_man->get_graph(new_gid);
-
-            // create undirected GH tree for correct traversal
-            vector<int> temp_eids;
-            vector<int> gh_eids = ghtree->get_edge_ids();
-            for (auto gh_eid_itr = gh_eids.begin(); gh_eid_itr != gh_eids.end(); gh_eid_itr++)
-            {
-                int new_eid = *gh_eid_itr;
-                int rev_eid = ghtree->create_new_edge();
-                if (rev_eid == -1)
-                {
-                    cerr << "Problem creating reverse edge" << endl;
-                }
-                temp_eids.push_back(rev_eid);
-                ghtree->add_edge_id(rev_eid);
-                graph_man->add_edge_id_graph_id(rev_eid, ghtree->get_graph_id());
-                ghtree->add_edge_type(rev_eid, ghtree->get_edge_type(new_eid));
-                ghtree->add_edge_to_outlist_of_node(ghtree->get_target_node(new_eid), rev_eid);
-                ghtree->add_edge_to_inlist_of_node(ghtree->get_source_node(new_eid), rev_eid);
-                ghtree->add_source_node(rev_eid, ghtree->get_target_node(new_eid));
-                ghtree->add_target_node(rev_eid, ghtree->get_source_node(new_eid));
-                ghtree->add_subtype_for_edge(rev_eid, "gh_edge");
-                ghtree->add_subtype_for_edge(rev_eid, "dummy_d_to_u");
-                vector<string> pathways = ghtree->get_all_pathways_for_edge(new_eid);
-                for (auto path_itr = pathways.begin(); path_itr != pathways.end(); path_itr++)
-                    ghtree->add_pathway_for_edge(rev_eid, *path_itr);
-            }
-
-            // get input nodes for sources, targets and nodes to be avoided
-            string node_name;
-
-            set<int> set_S; // contains nids in graph
-            set<int> set_T; // contains nids in graph
-
-            string rep_id;
-
-            cout << "Nodes connected to source (end by -1): ";
-            cin >> node_name;
-
-            while (node_name != "-1")
-            {
-                rep_id = graph->get_rep_id_from_id(node_name);
-                if (rep_id != "")
-                    set_S.insert(graph->get_nid_from_rep_id(rep_id));
-                cin >> node_name;
-            }
-
-            cout << "Nodes connected to target (end by -1): ";
-            cin >> node_name;
-
-            while (node_name != "-1")
-            {
-                rep_id = graph->get_rep_id_from_id(node_name);
-                if (rep_id != "")
-                    set_T.insert(graph->get_nid_from_rep_id(rep_id));
-                cin >> node_name;
-            }
-
-            graph_man->disconnect2(graph, ghtree, set_S, set_T, present_edges, cut_edges, gomoryhu_parents);
-
-            for (auto eid_iter = temp_eids.begin(); eid_iter != temp_eids.end(); eid_iter++)
-            {
-                ghtree->remove_edge(*eid_iter);
-            }
-        }
+        // DEAD CODE: matrix/mat — adjacency matrix export utility, not in core workflow
+        // (lines 6732-6815 commented out)
+        // else if (command == "matrix" || command == "mat")
+        // {
+        // int graphnum;
+        // cin >> graphnum;
+        //         // if (graphnum == 0)
+        // graphnum = graph_man->graph_id_count;
+        //         // GraphNew *graph = graph_man->get_graph(graphnum);
+        // if (graph == NULL)
+        // {
+        // cout << "No such graph" << endl;
+        // continue;
+        // }
+        //         // vector<int> orig_node_ids = graph->get_node_ids();
+        // graph->first_offset = orig_node_ids.front();
+        //         // // shuffle node seq numbers
+        // int num_of_nodes = orig_node_ids.size();
+        // int index = 0;
+        // vector<int>::iterator nid_itr;
+        // vector<int> node_ids;
+        // int counter1 = 0;
+        // for (nid_itr = orig_node_ids.begin(); nid_itr != orig_node_ids.end(); nid_itr++)
+        // {
+        // if (graph->is_isolated_node((*nid_itr)))
+        // {
+        // int nseq = num_of_nodes - counter1;
+        // counter1++;
+        // graph->map_nid_to_nseq.insert(pair<int, int>(*nid_itr, nseq));
+        // graph->map_nseq_to_nid.insert(pair<int, int>(nseq, *nid_itr));
+        // }
+        // else
+        // {
+        // node_ids.push_back(*nid_itr);
+        // }
+        // }
+        //         // for (index = 0, nid_itr = node_ids.begin(); nid_itr != node_ids.end(); index++, nid_itr++)
+        // {
+        // graph->map_nid_to_nseq.insert(pair<int, int>(*nid_itr, index));
+        // graph->map_nseq_to_nid.insert(pair<int, int>(index, *nid_itr));
+        // }
+        //         // string outfilename = "matrix";
+        // ofstream fout(outfilename.c_str());
+        //         // if (fout.is_open())
+        // {
+        // vector<int> nids = node_ids; // graph->get_node_ids();
+        // vector<int> eids = graph->get_edge_ids();
+        //         // // nodes
+        // fout << "c(" << *nids.begin();
+        // for (auto nids_iter = nids.begin() + 1; nids_iter != nids.end(); nids_iter++)
+        // {
+        // fout << "," << *nids_iter;
+        // }
+        // fout << ")" << endl;
+        // fout << endl;
+        //         // // edges
+        // int weight = 1;
+        // int curr_eid = *eids.begin();
+        // fout << "matrix (c(" << graph->get_source_node(curr_eid) << "," << graph->get_target_node(curr_eid) << "," << weight;
+        // for (auto eids_iter = eids.begin() + 1; eids_iter != eids.end(); eids_iter++)
+        // {
+        // curr_eid = *eids_iter;
+        // fout << ", "; // << endl;
+        // fout << graph->get_source_node(curr_eid) << "," << graph->get_target_node(curr_eid) << "," << weight;
+        // }
+        // fout << "), ncol = 3, byrow = TRUE)" << endl;
+        //         // // nodes
+        // fout << *nids.begin() << " - " << graph->get_rep_id_from_nid(*nids.begin()) << endl;
+        // for (auto nids_iter = nids.begin() + 1; nids_iter != nids.end(); nids_iter++)
+        // {
+        // fout << *nids_iter << " - " << graph->get_rep_id_from_nid(*nids_iter) << endl;
+        // }
+        // fout << endl;
+        // }
+        // fout.close();
+        // }
+
+        // DEAD CODE: partition/part — graph partitioning utility, not in core workflow
+        // (lines 6817-6869 commented out)
+        // else if (command == "partition" || command == "part")
+        // {
+        // int graphnum;
+        // cin >> graphnum;
+        //         // if (graphnum == 0)
+        // graphnum = graph_man->graph_id_count;
+        //         // GraphNew *graph = graph_man->get_graph(graphnum);
+        // if (graph == NULL)
+        // {
+        // cout << "No such graph" << endl;
+        // continue;
+        // }
+        //         // // convert to undirected graph
+        // int ugraphnum = graph_man->convert_to_undirected_graph(graphnum);
+        // GraphNew *ugraph = graph_man->get_graph(ugraphnum);
+        //         // vector<int> orig_node_ids = graph->get_node_ids();
+        // graph->first_offset = orig_node_ids.front();
+        //         // // shuffle node seq numbers
+        // int num_of_nodes = orig_node_ids.size();
+        // int index = 0;
+        // vector<int>::iterator nid_itr;
+        // vector<int> node_ids;
+        // int counter1 = 0;
+        // for (nid_itr = orig_node_ids.begin(); nid_itr != orig_node_ids.end(); nid_itr++)
+        // {
+        // if (graph->is_isolated_node((*nid_itr)))
+        // {
+        // int nseq = num_of_nodes - counter1;
+        // counter1++;
+        // graph->map_nid_to_nseq.insert(pair<int, int>(*nid_itr, nseq));
+        // graph->map_nseq_to_nid.insert(pair<int, int>(nseq, *nid_itr));
+        // }
+        // else
+        // {
+        // node_ids.push_back(*nid_itr);
+        // }
+        // }
+        //         // vector<int> gomoryhu_parents;
+        // std::random_shuffle(node_ids.begin(), node_ids.end());
+        // for (index = 0, nid_itr = node_ids.begin(); nid_itr != node_ids.end(); index++, nid_itr++)
+        // {
+        // graph->map_nid_to_nseq.insert(pair<int, int>(*nid_itr, index));
+        // graph->map_nseq_to_nid.insert(pair<int, int>(index, *nid_itr));
+        //         // gomoryhu_parents.push_back(0);
+        // }
+        // }
+
+        // DEAD CODE: disconnect/dc — alternative disconnect handler, not in core workflow
+        // (lines 6871-7002 commented out)
+        // else if (command == "disconnect" || command == "dc")
+        // {
+        // int graphnum;
+        // cin >> graphnum;
+        //         // if (graphnum == 0)
+        // graphnum = graph_man->graph_id_count;
+        //         // GraphNew *graph = graph_man->get_graph(graphnum);
+        //         // if (graph == NULL)
+        // {
+        // cout << "No such graph" << endl;
+        // continue;
+        // }
+        //         // // convert to undirected graph
+        // int ugraphnum = graph_man->convert_to_undirected_graph(graphnum);
+        // GraphNew *ugraph = graph_man->get_graph(ugraphnum);
+        //         // vector<int> orig_node_ids = graph->get_node_ids();
+        // graph->first_offset = orig_node_ids.front();
+        //         // // shuffle node seq numbers
+        // int num_of_nodes = orig_node_ids.size();
+        // int index = 0;
+        // vector<int>::iterator nid_itr;
+        // vector<int> node_ids;
+        // int counter1 = 0;
+        // for (nid_itr = orig_node_ids.begin(); nid_itr != orig_node_ids.end(); nid_itr++)
+        // {
+        // if (graph->is_isolated_node((*nid_itr)))
+        // {
+        // int nseq = num_of_nodes - counter1;
+        // counter1++;
+        // graph->map_nid_to_nseq.insert(pair<int, int>(*nid_itr, nseq));
+        // graph->map_nseq_to_nid.insert(pair<int, int>(nseq, *nid_itr));
+        // }
+        // else
+        // {
+        // node_ids.push_back(*nid_itr);
+        // }
+        // }
+        //         // vector<int> gomoryhu_parents;
+        // std::random_shuffle(node_ids.begin(), node_ids.end());
+        // for (index = 0, nid_itr = node_ids.begin(); nid_itr != node_ids.end(); index++, nid_itr++)
+        // {
+        // graph->map_nid_to_nseq.insert(pair<int, int>(*nid_itr, index));
+        // graph->map_nseq_to_nid.insert(pair<int, int>(index, *nid_itr));
+        //         // gomoryhu_parents.push_back(0);
+        // }
+        //         // // compute Gomory-Hu tree
+        // //                    vector<int> node_ids = graph->get_node_ids();
+        // //                    graph->first_offset = node_ids.front();
+        // //
+        // //                    int num_of_nodes = node_ids.size();
+        // //                    vector<int> gomoryhu_parents(node_ids.size());
+        // //                    for (vector<int>::iterator vec_itr = node_ids.begin(); vec_itr != node_ids.end(); vec_itr++) {
+        // //                        gomoryhu_parents[GET_NODE_SEQ_NUM(graph, *vec_itr)] = 0;
+        // //                    }
+        //         // vector<set<int>> cut_edges(node_ids.size());
+        //         // int new_gid = graph_man->compute_gh_tree(graphnum, node_ids, gomoryhu_parents, cut_edges);
+        // cout << "Gomory-Hu tree has graph id: " << new_gid << endl;
+        //         // set<int> present_edges;
+        //         // // get GH tree
+        // GraphNew *ghtree = graph_man->get_graph(new_gid);
+        //         // // get input nodes for sources, targets and nodes to be avoided
+        // string source_name;
+        // string node_name;
+        // int src_nid, node_nid;
+        // set<int> set_S; // contains nids in graph
+        // set<int> set_T; // contains nids in graph
+        // set<int> set_W; // contains nids in graph
+        //         // string rep_id;
+        //         // cout << "Source node: ";
+        // cin >> source_name;
+        // cout << endl;
+        //         // rep_id = graph->get_rep_id_from_id(source_name);
+        // if (rep_id == "")
+        // {
+        // cout << "Source not in graph" << endl;
+        // continue;
+        // }
+        // else
+        // src_nid = graph->get_nid_from_rep_id(rep_id);
+        //         // cout << "Nodes connected to source (end by -1): ";
+        // cin >> node_name;
+        //         // while (node_name != "-1")
+        // {
+        // rep_id = graph->get_rep_id_from_id(node_name);
+        // if (rep_id != "")
+        // set_S.insert(graph->get_nid_from_rep_id(rep_id));
+        // cin >> node_name;
+        // }
+        //         // cout << "Nodes connected to target (end by -1): ";
+        // cin >> node_name;
+        //         // while (node_name != "-1")
+        // {
+        // rep_id = graph->get_rep_id_from_id(node_name);
+        // if (rep_id != "")
+        // set_T.insert(graph->get_nid_from_rep_id(rep_id));
+        // cin >> node_name;
+        // }
+        //         // cout << "Nodes to be avoided (end by -1): ";
+        // cin >> node_name;
+        //         // while (node_name != "-1")
+        // {
+        // rep_id = graph->get_rep_id_from_id(node_name);
+        // if (rep_id != "")
+        // set_W.insert(graph->get_nid_from_rep_id(rep_id));
+        // cin >> node_name;
+        // }
+        //         // // graph_man->disconnect(graph, ghtree, src_nid, set_S, set_T, set_W, present_edges, cut_edges, gomoryhu_parents);
+        // }
+
+        // DEAD CODE: disconnect2/dc2 — alternative disconnect handler, not in core workflow
+        // (lines 7004-7131 commented out)
+        // else if (command == "disconnect2" || command == "dc2")
+        // {
+        // int graphnum;
+        // cin >> graphnum;
+        //         // if (graphnum == 0)
+        // graphnum = graph_man->graph_id_count;
+        //         // GraphNew *graph = graph_man->get_graph(graphnum);
+        //         // if (graph == NULL)
+        // {
+        // cout << "No such graph" << endl;
+        // continue;
+        // }
+        //         // //            // convert to undirected graph
+        // //            int ugraphnum = graph_man->convert_to_undirected_graph(graphnum);
+        // //            GraphNew * ugraph = graph_man->get_graph(ugraphnum);
+        //         // vector<int> orig_node_ids = graph->get_node_ids();
+        // graph->first_offset = orig_node_ids.front();
+        //         // // shuffle node seq numbers
+        // int num_of_nodes = orig_node_ids.size();
+        // int index = 0;
+        // vector<int>::iterator nid_itr;
+        // vector<int> node_ids;
+        // int counter1 = 0;
+        // for (nid_itr = orig_node_ids.begin(); nid_itr != orig_node_ids.end(); nid_itr++)
+        // {
+        // if (graph->is_isolated_node((*nid_itr)))
+        // {
+        // int nseq = num_of_nodes - counter1;
+        // counter1++;
+        // graph->map_nid_to_nseq.insert(pair<int, int>(*nid_itr, nseq));
+        // graph->map_nseq_to_nid.insert(pair<int, int>(nseq, *nid_itr));
+        // }
+        // else
+        // {
+        // node_ids.push_back(*nid_itr);
+        // }
+        // }
+        //         // vector<int> gomoryhu_parents;
+        // // std::random_shuffle(node_ids.begin(), node_ids.end());
+        // graph->sort_nids_by_degree(node_ids);
+        // for (index = 0, nid_itr = node_ids.begin(); nid_itr != node_ids.end(); index++, nid_itr++)
+        // {
+        // graph->map_nid_to_nseq.insert(pair<int, int>(*nid_itr, index));
+        // graph->map_nseq_to_nid.insert(pair<int, int>(index, *nid_itr));
+        //         // gomoryhu_parents.push_back(0);
+        // }
+        //         // vector<set<int>> cut_edges(node_ids.size());
+        //         // int new_gid = graph_man->compute_gh_tree(graphnum, node_ids, gomoryhu_parents, cut_edges);
+        // cout << "Gomory-Hu tree has graph id: " << new_gid << endl;
+        //         // set<int> present_edges;
+        //         // // get GH tree
+        // GraphNew *ghtree = graph_man->get_graph(new_gid);
+        //         // // create undirected GH tree for correct traversal
+        // vector<int> temp_eids;
+        // vector<int> gh_eids = ghtree->get_edge_ids();
+        // for (auto gh_eid_itr = gh_eids.begin(); gh_eid_itr != gh_eids.end(); gh_eid_itr++)
+        // {
+        // int new_eid = *gh_eid_itr;
+        // int rev_eid = ghtree->create_new_edge();
+        // if (rev_eid == -1)
+        // {
+        // cerr << "Problem creating reverse edge" << endl;
+        // }
+        // temp_eids.push_back(rev_eid);
+        // ghtree->add_edge_id(rev_eid);
+        // graph_man->add_edge_id_graph_id(rev_eid, ghtree->get_graph_id());
+        // ghtree->add_edge_type(rev_eid, ghtree->get_edge_type(new_eid));
+        // ghtree->add_edge_to_outlist_of_node(ghtree->get_target_node(new_eid), rev_eid);
+        // ghtree->add_edge_to_inlist_of_node(ghtree->get_source_node(new_eid), rev_eid);
+        // ghtree->add_source_node(rev_eid, ghtree->get_target_node(new_eid));
+        // ghtree->add_target_node(rev_eid, ghtree->get_source_node(new_eid));
+        // ghtree->add_subtype_for_edge(rev_eid, "gh_edge");
+        // ghtree->add_subtype_for_edge(rev_eid, "dummy_d_to_u");
+        // vector<string> pathways = ghtree->get_all_pathways_for_edge(new_eid);
+        // for (auto path_itr = pathways.begin(); path_itr != pathways.end(); path_itr++)
+        // ghtree->add_pathway_for_edge(rev_eid, *path_itr);
+        // }
+        //         // // get input nodes for sources, targets and nodes to be avoided
+        // string node_name;
+        //         // set<int> set_S; // contains nids in graph
+        // set<int> set_T; // contains nids in graph
+        //         // string rep_id;
+        //         // cout << "Nodes connected to source (end by -1): ";
+        // cin >> node_name;
+        //         // while (node_name != "-1")
+        // {
+        // rep_id = graph->get_rep_id_from_id(node_name);
+        // if (rep_id != "")
+        // set_S.insert(graph->get_nid_from_rep_id(rep_id));
+        // cin >> node_name;
+        // }
+        //         // cout << "Nodes connected to target (end by -1): ";
+        // cin >> node_name;
+        //         // while (node_name != "-1")
+        // {
+        // rep_id = graph->get_rep_id_from_id(node_name);
+        // if (rep_id != "")
+        // set_T.insert(graph->get_nid_from_rep_id(rep_id));
+        // cin >> node_name;
+        // }
+        //         // graph_man->disconnect2(graph, ghtree, set_S, set_T, present_edges, cut_edges, gomoryhu_parents);
+        //         // for (auto eid_iter = temp_eids.begin(); eid_iter != temp_eids.end(); eid_iter++)
+        // {
+        // ghtree->remove_edge(*eid_iter);
+        // }
+        // }
 
         // written by uddipaan
 
@@ -7299,529 +7076,494 @@ int main(int argc, char *argv[])
             }
         }
 
-        else if (command == "domination" || command == "dom")
-        {
-            int graphnum;
-            cin >> graphnum;
+        // DEAD CODE: domination/dom — domination analysis, not in core workflow
+        // (lines 7239-7276 commented out)
+        // else if (command == "domination" || command == "dom")
+        // {
+        // int graphnum;
+        // cin >> graphnum;
+        //         // if (graphnum == 0)
+        // graphnum = graph_man->graph_id_count;
+        //         // GraphNew *graph = graph_man->get_graph(graphnum);
+        // if (graph == NULL)
+        // {
+        // cout << "No such graph" << endl;
+        // continue;
+        // }
+        //         // int num_of_nodes = graph->get_node_ids().size();
+        // #ifdef DEBUG_FLAG
+        // debug_log << "--------------------------------" << endl;
+        // debug_log << "Dominating factor calculations" << endl;
+        // debug_log << "Num of nodes = " << num_of_nodes << endl;
+        // #endif
+        // // get dominating factor for every node
+        // vector<int> nids = graph->get_node_ids();
+        // for (vector<int>::iterator vec_itr = nids.begin(); vec_itr != nids.end(); vec_itr++)
+        // {
+        // int curr_nid = *vec_itr;
+        // // get [x] for every x in nids
+        // // in our case, it is the degree
+        // // for now, also considering dummy edges to calculate degree
+        // int degree = graph->get_inlist(curr_nid).size() + graph->get_outlist(curr_nid).size();
+        // // degree = degree/2;
+        // long network_degree = degree / 2;
+        // int dom_factor = (ceil(network_degree) == network_degree) ? (network_degree) + 1 : ceil(network_degree);
+        // #ifdef DEBUG_FLAG
+        // debug_log << "nid = " << curr_nid << " degree = " << degree << " dom factor = " << dom_factor << endl;
+        // #endif
+        // }
+        // }
+        // DEAD CODE: cbc/cal_betweenness_centrality — betweenness centrality, not in core workflow
+        // (lines 7277-7307 commented out)
+        // else if (command == "cbc" || command == "cal_betweenness_centrality")
+        // {
+        // int graphnum;
+        // int cmd_index = 1;
+        // if (!b_mode)
+        // {
+        // cin >> graphnum;
+        // }
+        // else
+        // {
+        // graphnum = stoi(token_cmd[cmd_index++]);
+        // }
+        //         // GraphNew *graph = graph_man->get_graph(graphnum);
+        // if (graph == NULL)
+        // {
+        // cout << "No such graph!!!";
+        // continue;
+        // }
+        //         // #ifdef DEBUG_FLAG
+        // debug_log << "--------------------------------" << endl;
+        // debug_log << "Betweenness centrality calculations" << endl;
+        // #endif
+        // vector<int> node_ids;
+        // vector<int> gomoryhu_parents;
+        // graph->preprocess_graph_for_mincut(node_ids, gomoryhu_parents);
+        //         // map<pair<int, int>, double> CB_edge;
+        // graph_man->compute_Betweenness_centrality(graph, CB_edge);
+        // }
+        // DEAD CODE: ford — Ford-Fulkerson flow analysis command, not in core workflow
+        // (lines 7308-7354 commented out)
+        // else if (command == "ford")
+        // {
+        // int graphnum, src, target;
+        // int cmd_index = 1;
+        // if (!b_mode)
+        // {
+        // cin >> graphnum;
+        // cout << "provide the source id: ";
+        // cin >> src;
+        // cout << "provide the target id: ";
+        // cin >> target;
+        // }
+        // else
+        // {
+        // graphnum = stoi(token_cmd[cmd_index++]);
+        // src = stoi(token_cmd[cmd_index++]);
+        // target = stoi(token_cmd[cmd_index++]);
+        // }
+        // // preprocess the graph
+        // GraphNew *graph = graph_man->get_graph(graphnum);
+        // if (graph == NULL)
+        // {
+        // cout << "No such graph!!!";
+        // continue;
+        // }
+        //         // #ifdef DEBUG_FLAG
+        // debug_log << "--------------------------------" << endl;
+        // debug_log << "Balanced partition calculations" << endl;
+        // #endif
+        // vector<int> node_ids;
+        // vector<int> gomoryhu_parents;
+        // graph->preprocess_graph_for_mincut(node_ids, gomoryhu_parents);
+        //         // // calculate max flow
+        // set<int> cut_edges, set_s;
+        // GraphNew *res_graph;
+        // map<int, int> map_nseq_to_res_graph_nid;
+        // map<string, long int> map_src_tgt_to_eid_res;
+        // map<string, long int> map_src_tgt_to_eid_org;
+        // int start_node_id = node_ids[0];
+        // // populate the map_src_tgt_to_eid_org
+        // // graph_man->populate_map_src_tgt_to_eid(graph, map_src_tgt_to_eid_org, start_node_id);
+        // // int current_size = graph_man->mincut_ford(graph, src, target, node_ids.size(), cut_edges, set_s);
+        // // cout<<current_size;
+        // graph_man->mincut_excess_scaling(graph, src, target, node_ids.size(), cut_edges, set_s, 1);
+        // }
+        // DEAD CODE: cbp — centrality-based path cutting, not in core workflow
+        // (lines 7355-7577 commented out)
+        // else if (command == "cbp")
+        // {
+        // map<string, int> nodes_in_all_mincuts; // added by sukanya on 16 May 2017
+        // string source_str, target_str;
+        // int src_nid, target_nid;
+        // int graphnum, src_seq, target_seq;
+        // int cmd_index = 1;
+        // if (!b_mode)
+        // {
+        // cin >> graphnum;
+        //         // cout << "Source(e.g. hsa100):";
+        // cin >> source_str;
+        // cout << endl;
+        //         // cout << "Target(e.g. hsa200): ";
+        // cin >> target_str;
+        // cout << endl;
+        // }
+        // else
+        // {
+        // graphnum = stoi(token_cmd[cmd_index++]);
+        // source_str = token_cmd[cmd_index++];
+        // target_str = token_cmd[cmd_index++];
+        //         // // src = stoi(token_cmd[cmd_index++]);
+        // // target = stoi(token_cmd[cmd_index++]);
+        // }
+        // // Get the graph
+        // GraphNew *graph = graph_man->get_graph(graphnum);
+        // string source_name, target_name;
+        //         // if (graph == NULL)
+        // {
+        // cout << "No such graph!!!";
+        // continue;
+        // }
+        //         // #ifdef DEBUG_FLAG
+        // debug_log << "--------------------------------" << endl;
+        // debug_log << "Balanced partition calculations" << endl;
+        // #endif
+        // vector<int> node_ids;
+        // vector<int> gomoryhu_parents;
+        //         // // preprocess the graph
+        // graph->preprocess_graph_for_mincut(node_ids, gomoryhu_parents);
+        // const int num_of_nodes = node_ids.size();
+        // const int arrsize = num_of_nodes * num_of_nodes;
+        // // calculate max flow
+        // set<int> cut_edges, set_s;
+        // GraphNew *res_graph;
+        // map<int, int> map_nseq_to_res_graph_nid;
+        // map<string, long int> map_src_tgt_to_eid_res;
+        // map<string, long int> map_src_tgt_to_eid_org;
+        // int start_node_id = node_ids[0];
+        // vector<bool> path_flag_dyn(num_of_nodes);
+        // vector<bool> path_flag(num_of_nodes);
+        // map<int, int> eid_to_path_map_dyn;
+        // map<int, int> eid_to_path_map;
+        // src_nid = graph->get_nid_from_rep_id(graph->get_rep_id_from_id(source_str));
+        // src_seq = GET_NODE_SEQ_NUM(graph, src_nid);
+        // source_name = graph->get_all_display_ids_of_node(src_nid)[0];
+        // target_nid = graph->get_nid_from_rep_id(graph->get_rep_id_from_id(target_str));
+        // target_seq = GET_NODE_SEQ_NUM(graph, target_nid);
+        // target_name = graph->get_all_display_ids_of_node(target_nid)[0];
+        //         // // populate the map_src_tgt_to_eid_org
+        // graph_man->populate_map_src_tgt_to_eid(graph, map_src_tgt_to_eid_org, start_node_id);
+        // int current_size = graph_man->mincut_ford_extended(graph, &res_graph, src_seq, target_seq, node_ids.size(), set_s, map_nseq_to_res_graph_nid, map_src_tgt_to_eid_res, path_flag, eid_to_path_map);
+        // // calculate Betweenness_centrality
+        // map<pair<int, int>, double> CB_edge;
+        // graph_man->compute_Betweenness_centrality(graph, CB_edge);
+        // // collect the CB_edges in a struct and sort them
+        // struct a
+        // {
+        // double num1;
+        // pair<int, int> num2;
+        // };
+        //         // vector<a> sorted_edge;
+        // // assign the elements in the map to the struct
+        // int i = 0;
+        // for (map<pair<int, int>, double>::iterator itr = CB_edge.begin(); itr != CB_edge.end(); itr++)
+        // {
+        // sorted_edge.push_back(a());
+        // sorted_edge[i].num1 = itr->second;
+        // sorted_edge[i++].num2 = itr->first;
+        // }
+        // // sort the array of struct
+        // // sort(array, array+i, array[0]);
+        // sort(sorted_edge.begin(), sorted_edge.end(), [](a lhs, a rhs)
+        // { return lhs.num1 > rhs.num1; });
+        // int next_max_index = 0;
+        // vector<pair<int, int>> balanced_cut_edges;
+        // bool flag = true;
+        // while (flag)
+        // {
+        // cut_edges.clear();
+        // // get the maximum weighted edge
+        // int src_node_org = get<0>(sorted_edge[next_max_index].num2);
+        // int target_node_org = get<1>(sorted_edge[next_max_index++].num2);
+        // // get the edge from it
+        // int eid = graph_man->get_node_from_src_tgt(src_node_org, target_node_org, map_src_tgt_to_eid_org);
+        // // get the path number
+        // // cout<<eid<<"->";
+        // int path_no = eid_to_path_map[eid]; // path_no == 0 means the eid is not assigned to any path
+        // // If the edge is not belongs to any of the class of path leave it
+        // //---//For the path, we use a path_flag(boolean) vector
+        // // If the edge belongs to any class then check deleting this edge reduce mincut value -- no - non-delete the edge, yes - take this edge
+        // // If the path exists
+        // if (path_flag[path_no])
+        // {
+        // graph->add_subtype_for_edge(eid, "deleted");
+        // int mincut_value = graph_man->mincut_ford_extended(graph, &res_graph, src_seq, target_seq, node_ids.size(), set_s, map_nseq_to_res_graph_nid, map_src_tgt_to_eid_res, path_flag_dyn, eid_to_path_map_dyn);
+        // if (mincut_value == 0)
+        // {
+        // balanced_cut_edges.push_back(make_pair(src_node_org, target_node_org));
+        // flag = false;
+        // }
+        // else if (current_size > mincut_value)
+        // {
+        // balanced_cut_edges.push_back(make_pair(src_node_org, target_node_org));
+        // current_size = mincut_value;
+        // path_flag[path_no] = false; // to skip all the edges that belongs to the same path
+        // }
+        // else
+        // graph->add_subtype_for_edge(eid, "non-deleted");
+        // // continue;
+        // }
+        // }
+        // cout << "Node id pairs" << endl;
+        // for (vector<pair<int, int>>::iterator itr = balanced_cut_edges.begin(); itr != balanced_cut_edges.end(); itr++)
+        // cout << itr->first << "-" << itr->second << "(" << graph_man->get_node_from_src_tgt(itr->first, itr->second, map_src_tgt_to_eid_org) << ")" << endl;
+        // // writing to the html file
+        // string up_reg_filename, down_reg_filename;
+        // if (!b_mode)
+        // {
+        // cout << "\nEnter file for up regulated entries: ";
+        // cin >> up_reg_filename;
+        // cout << "\nEnter file for down regulated entries: ";
+        // cin >> down_reg_filename;
+        // }
+        // else
+        // {
+        // up_reg_filename = token_cmd[cmd_index++];
+        // down_reg_filename = token_cmd[cmd_index++];
+        // }
+        //         // string id;
+        // ifstream ifs_up(up_reg_filename.c_str()), ifs_down(down_reg_filename.c_str());
+        // set<string> up_reg_rep_ids, down_reg_rep_ids;
+        //         // if (!ifs_up.is_open())
+        // {
+        // cerr << "Error: file " + up_reg_filename + " can't be opened, returning without any microarray assertions..." << endl;
+        // }
+        // if (!ifs_down.is_open())
+        // {
+        // cerr << "Error: file " + down_reg_filename + " can't be opened, returning without any microarray assertions..." << endl;
+        // }
+        // while (ifs_up >> id)
+        // {
+        // string repid = graph->get_rep_id_from_id(id);
+        // if (repid != "")
+        // {
+        // up_reg_rep_ids.insert(repid);
+        // }
+        // }
+        // ifs_up.close();
+        // while (ifs_down >> id)
+        // {
+        // string repid = graph->get_rep_id_from_id(id);
+        // if (repid != "")
+        // {
+        // down_reg_rep_ids.insert(repid);
+        // }
+        // }
+        // ifs_down.close();
+        //         // string all_pair_file_name;
+        // if (!b_mode)
+        // {
+        // cout << "Enter all pair output file name: ";
+        // cin >> all_pair_file_name;
+        // }
+        // else
+        // {
+        // all_pair_file_name = token_cmd[cmd_index++];
+        // }
+        //         // // cout<<source_nid<<"-->"<<target_nid;*/
+        // ofstream hout(all_pair_file_name.c_str());
+        // map<string, int> nodes_in_mincut;
+        //         // hout << "<!DOCTYPE html>" << endl;
+        // hout << "<html>" << endl;
+        // hout << "<head>" << endl;
+        // hout << "<title>All pair min cuts</title>" << endl;
+        // hout << "</head>" << endl;
+        // // hout<<"<body style=\"background-color:powderblue;\">"<<endl;
+        // hout << "<body style=\"background-color:#FFFFF0;\">" << endl;
+        //         // hout << "<h2 style=\"color:red;text-align:center;font-family:courier;\">Min cuts</h2>" << endl;
+        //         // hout << "\n\n"
+        // << endl;
+        // hout << "<p style=\"text-align:left;\">";
+        // hout << "<br> <br> To disconnect <b>" << source_name << "</b> ";
+        // hout << "from <b> " << target_name << "</b>";
+        // hout << "<br>remove all of the following edges <br>" << endl;
+        // hout << "<br>" << endl;
+        //         // set<string> written_edges;
+        // for (vector<pair<int, int>>::iterator itr = balanced_cut_edges.begin(); itr != balanced_cut_edges.end(); itr++)
+        // graph->write_mincut_edge_to_html(graph_man->get_node_from_src_tgt(itr->first, itr->second, map_src_tgt_to_eid_org), hout, up_reg_rep_ids, down_reg_rep_ids, nodes_in_mincut, nodes_in_all_mincuts, written_edges);
+        //         // hout << "</p>" << endl;
+        //         // hout << "<br>" << endl;
+        // hout << "</body>" << endl;
+        // hout << "</html>" << endl;
+        // }
 
-            if (graphnum == 0)
-                graphnum = graph_man->graph_id_count;
+        // DEAD CODE: unroll — DAG unrolling, not in core workflow
+        // (lines 7579-7653 commented out)
+        // else if (command == "unroll")
+        // {
+        // int graphnum;
+        // string source_id;
+        // string target_id;
+        // int levels;
+        //         // int cmd_index = 1;
+        //         // if (!b_mode)
+        // {
+        // cin >> graphnum;
+        // cout << "\nEnter source node hsa-id: ";
+        // cin >> source_id;
+        // cout << "\nEnter target node hsa-id: ";
+        // cin >> target_id;
+        // cout << "\nEnter levels of unrolling: ";
+        // cin >> levels;
+        // }
+        //         // else
+        // {
+        // graphnum = stoi(token_cmd[cmd_index++]);
+        // source_id = token_cmd[cmd_index++];
+        // target_id = token_cmd[cmd_index++];
+        // levels = stoi(token_cmd[cmd_index++]);
+        // }
+        //         // if (graphnum == 0)
+        // graphnum = graph_man->graph_id_count;
+        //         // GraphNew *graph = graph_man->get_graph(graphnum);
+        // string source_repid;
+        // string target_repid;
+        // int source_nid;
+        // int target_nid;
+        // if (graph == NULL)
+        // {
+        // cerr << "No such graph" << endl;
+        // }
+        // else
+        // {
+        // source_repid = graph->get_rep_id_from_id(source_id);
+        // if (source_repid == "")
+        // {
+        // cerr << "No valid source rep-id in graph" << endl;
+        // }
+        // source_nid = graph->get_nid_from_rep_id(source_repid);
+        // if (source_nid == -1)
+        // {
+        // cerr << "No valid source nid in graph" << endl;
+        // }
+        //         // target_repid = graph->get_rep_id_from_id(target_id);
+        // if (target_repid == "")
+        // {
+        // cerr << "No valid target rep-id in graph" << endl;
+        // }
+        // target_nid = graph->get_nid_from_rep_id(target_repid);
+        // if (target_nid == -1)
+        // {
+        // cerr << "No valid target nid in graph" << endl;
+        // }
+        //         // int unrolled_gid = graph_man->compute_unrolled_DAG(graphnum, source_nid, target_nid, levels, map_nid_to_unrolled_graph_nids, map_eid_to_unrolled_graph_eids);
+        // if (unrolled_gid == -1)
+        // {
+        // cerr << "Invalid unrolled graph" << endl;
+        // }
+        // else
+        // {
+        // cout << "Unrolled graph id: " << unrolled_gid << endl;
+        // }
+        // }
+        // }
 
-            GraphNew *graph = graph_man->get_graph(graphnum);
-            if (graph == NULL)
-            {
-                cout << "No such graph" << endl;
-                continue;
-            }
-
-            int num_of_nodes = graph->get_node_ids().size();
-#ifdef DEBUG_FLAG
-            debug_log << "--------------------------------" << endl;
-            debug_log << "Dominating factor calculations" << endl;
-            debug_log << "Num of nodes = " << num_of_nodes << endl;
-#endif
-            // get dominating factor for every node
-            vector<int> nids = graph->get_node_ids();
-            for (vector<int>::iterator vec_itr = nids.begin(); vec_itr != nids.end(); vec_itr++)
-            {
-                int curr_nid = *vec_itr;
-                // get [x] for every x in nids
-                // in our case, it is the degree
-                // for now, also considering dummy edges to calculate degree
-                int degree = graph->get_inlist(curr_nid).size() + graph->get_outlist(curr_nid).size();
-                // degree = degree/2;
-                long network_degree = degree / 2;
-                int dom_factor = (ceil(network_degree) == network_degree) ? (network_degree) + 1 : ceil(network_degree);
-#ifdef DEBUG_FLAG
-                debug_log << "nid = " << curr_nid << " degree = " << degree << " dom factor = " << dom_factor << endl;
-#endif
-            }
-        }
-        else if (command == "cbc" || command == "cal_betweenness_centrality")
-        {
-            int graphnum;
-            int cmd_index = 1;
-            if (!b_mode)
-            {
-                cin >> graphnum;
-            }
-            else
-            {
-                graphnum = stoi(token_cmd[cmd_index++]);
-            }
-
-            GraphNew *graph = graph_man->get_graph(graphnum);
-            if (graph == NULL)
-            {
-                cout << "No such graph!!!";
-                continue;
-            }
-
-#ifdef DEBUG_FLAG
-            debug_log << "--------------------------------" << endl;
-            debug_log << "Betweenness centrality calculations" << endl;
-#endif
-            vector<int> node_ids;
-            vector<int> gomoryhu_parents;
-            graph->preprocess_graph_for_mincut(node_ids, gomoryhu_parents);
-
-            map<pair<int, int>, double> CB_edge;
-            graph_man->compute_Betweenness_centrality(graph, CB_edge);
-        }
-        else if (command == "ford")
-        {
-            int graphnum, src, target;
-            int cmd_index = 1;
-            if (!b_mode)
-            {
-                cin >> graphnum;
-                cout << "provide the source id: ";
-                cin >> src;
-                cout << "provide the target id: ";
-                cin >> target;
-            }
-            else
-            {
-                graphnum = stoi(token_cmd[cmd_index++]);
-                src = stoi(token_cmd[cmd_index++]);
-                target = stoi(token_cmd[cmd_index++]);
-            }
-            // preprocess the graph
-            GraphNew *graph = graph_man->get_graph(graphnum);
-            if (graph == NULL)
-            {
-                cout << "No such graph!!!";
-                continue;
-            }
-
-#ifdef DEBUG_FLAG
-            debug_log << "--------------------------------" << endl;
-            debug_log << "Balanced partition calculations" << endl;
-#endif
-            vector<int> node_ids;
-            vector<int> gomoryhu_parents;
-            graph->preprocess_graph_for_mincut(node_ids, gomoryhu_parents);
-
-            // calculate max flow
-            set<int> cut_edges, set_s;
-            GraphNew *res_graph;
-            map<int, int> map_nseq_to_res_graph_nid;
-            map<string, long int> map_src_tgt_to_eid_res;
-            map<string, long int> map_src_tgt_to_eid_org;
-            int start_node_id = node_ids[0];
-            // populate the map_src_tgt_to_eid_org
-            // graph_man->populate_map_src_tgt_to_eid(graph, map_src_tgt_to_eid_org, start_node_id);
-            // int current_size = graph_man->mincut_ford(graph, src, target, node_ids.size(), cut_edges, set_s);
-            // cout<<current_size;
-            graph_man->mincut_excess_scaling(graph, src, target, node_ids.size(), cut_edges, set_s, 1);
-        }
-        else if (command == "cbp")
-        {
-            map<string, int> nodes_in_all_mincuts; // added by sukanya on 16 May 2017
-            string source_str, target_str;
-            int src_nid, target_nid;
-            int graphnum, src_seq, target_seq;
-            int cmd_index = 1;
-            if (!b_mode)
-            {
-                cin >> graphnum;
-
-                cout << "Source(e.g. hsa100):";
-                cin >> source_str;
-                cout << endl;
-
-                cout << "Target(e.g. hsa200): ";
-                cin >> target_str;
-                cout << endl;
-            }
-            else
-            {
-                graphnum = stoi(token_cmd[cmd_index++]);
-                source_str = token_cmd[cmd_index++];
-                target_str = token_cmd[cmd_index++];
-
-                // src = stoi(token_cmd[cmd_index++]);
-                // target = stoi(token_cmd[cmd_index++]);
-            }
-            // Get the graph
-            GraphNew *graph = graph_man->get_graph(graphnum);
-            string source_name, target_name;
-
-            if (graph == NULL)
-            {
-                cout << "No such graph!!!";
-                continue;
-            }
-
-#ifdef DEBUG_FLAG
-            debug_log << "--------------------------------" << endl;
-            debug_log << "Balanced partition calculations" << endl;
-#endif
-            vector<int> node_ids;
-            vector<int> gomoryhu_parents;
-
-            // preprocess the graph
-            graph->preprocess_graph_for_mincut(node_ids, gomoryhu_parents);
-            const int num_of_nodes = node_ids.size();
-            const int arrsize = num_of_nodes * num_of_nodes;
-            // calculate max flow
-            set<int> cut_edges, set_s;
-            GraphNew *res_graph;
-            map<int, int> map_nseq_to_res_graph_nid;
-            map<string, long int> map_src_tgt_to_eid_res;
-            map<string, long int> map_src_tgt_to_eid_org;
-            int start_node_id = node_ids[0];
-            vector<bool> path_flag_dyn(num_of_nodes);
-            vector<bool> path_flag(num_of_nodes);
-            map<int, int> eid_to_path_map_dyn;
-            map<int, int> eid_to_path_map;
-            src_nid = graph->get_nid_from_rep_id(graph->get_rep_id_from_id(source_str));
-            src_seq = GET_NODE_SEQ_NUM(graph, src_nid);
-            source_name = graph->get_all_display_ids_of_node(src_nid)[0];
-            target_nid = graph->get_nid_from_rep_id(graph->get_rep_id_from_id(target_str));
-            target_seq = GET_NODE_SEQ_NUM(graph, target_nid);
-            target_name = graph->get_all_display_ids_of_node(target_nid)[0];
-
-            // populate the map_src_tgt_to_eid_org
-            graph_man->populate_map_src_tgt_to_eid(graph, map_src_tgt_to_eid_org, start_node_id);
-            int current_size = graph_man->mincut_ford_extended(graph, &res_graph, src_seq, target_seq, node_ids.size(), set_s, map_nseq_to_res_graph_nid, map_src_tgt_to_eid_res, path_flag, eid_to_path_map);
-            // calculate Betweenness_centrality
-            map<pair<int, int>, double> CB_edge;
-            graph_man->compute_Betweenness_centrality(graph, CB_edge);
-            // collect the CB_edges in a struct and sort them
-            struct a
-            {
-                double num1;
-                pair<int, int> num2;
-            };
-
-            vector<a> sorted_edge;
-            // assign the elements in the map to the struct
-            int i = 0;
-            for (map<pair<int, int>, double>::iterator itr = CB_edge.begin(); itr != CB_edge.end(); itr++)
-            {
-                sorted_edge.push_back(a());
-                sorted_edge[i].num1 = itr->second;
-                sorted_edge[i++].num2 = itr->first;
-            }
-            // sort the array of struct
-            // sort(array, array+i, array[0]);
-            sort(sorted_edge.begin(), sorted_edge.end(), [](a lhs, a rhs)
-                 { return lhs.num1 > rhs.num1; });
-            int next_max_index = 0;
-            vector<pair<int, int>> balanced_cut_edges;
-            bool flag = true;
-            while (flag)
-            {
-                cut_edges.clear();
-                // get the maximum weighted edge
-                int src_node_org = get<0>(sorted_edge[next_max_index].num2);
-                int target_node_org = get<1>(sorted_edge[next_max_index++].num2);
-                // get the edge from it
-                int eid = graph_man->get_node_from_src_tgt(src_node_org, target_node_org, map_src_tgt_to_eid_org);
-                // get the path number
-                // cout<<eid<<"->";
-                int path_no = eid_to_path_map[eid]; // path_no == 0 means the eid is not assigned to any path
-                // If the edge is not belongs to any of the class of path leave it
-                //---//For the path, we use a path_flag(boolean) vector
-                // If the edge belongs to any class then check deleting this edge reduce mincut value -- no - non-delete the edge, yes - take this edge
-                // If the path exists
-                if (path_flag[path_no])
-                {
-                    graph->add_subtype_for_edge(eid, "deleted");
-                    int mincut_value = graph_man->mincut_ford_extended(graph, &res_graph, src_seq, target_seq, node_ids.size(), set_s, map_nseq_to_res_graph_nid, map_src_tgt_to_eid_res, path_flag_dyn, eid_to_path_map_dyn);
-                    if (mincut_value == 0)
-                    {
-                        balanced_cut_edges.push_back(make_pair(src_node_org, target_node_org));
-                        flag = false;
-                    }
-                    else if (current_size > mincut_value)
-                    {
-                        balanced_cut_edges.push_back(make_pair(src_node_org, target_node_org));
-                        current_size = mincut_value;
-                        path_flag[path_no] = false; // to skip all the edges that belongs to the same path
-                    }
-                    else
-                        graph->add_subtype_for_edge(eid, "non-deleted");
-                    // continue;
-                }
-            }
-            cout << "Node id pairs" << endl;
-            for (vector<pair<int, int>>::iterator itr = balanced_cut_edges.begin(); itr != balanced_cut_edges.end(); itr++)
-                cout << itr->first << "-" << itr->second << "(" << graph_man->get_node_from_src_tgt(itr->first, itr->second, map_src_tgt_to_eid_org) << ")" << endl;
-            // writing to the html file
-            string up_reg_filename, down_reg_filename;
-            if (!b_mode)
-            {
-                cout << "\nEnter file for up regulated entries: ";
-                cin >> up_reg_filename;
-                cout << "\nEnter file for down regulated entries: ";
-                cin >> down_reg_filename;
-            }
-            else
-            {
-                up_reg_filename = token_cmd[cmd_index++];
-                down_reg_filename = token_cmd[cmd_index++];
-            }
-
-            string id;
-            ifstream ifs_up(up_reg_filename.c_str()), ifs_down(down_reg_filename.c_str());
-            set<string> up_reg_rep_ids, down_reg_rep_ids;
-
-            if (!ifs_up.is_open())
-            {
-                cerr << "Error: file " + up_reg_filename + " can't be opened, returning without any microarray assertions..." << endl;
-            }
-            if (!ifs_down.is_open())
-            {
-                cerr << "Error: file " + down_reg_filename + " can't be opened, returning without any microarray assertions..." << endl;
-            }
-            while (ifs_up >> id)
-            {
-                string repid = graph->get_rep_id_from_id(id);
-                if (repid != "")
-                {
-                    up_reg_rep_ids.insert(repid);
-                }
-            }
-            ifs_up.close();
-            while (ifs_down >> id)
-            {
-                string repid = graph->get_rep_id_from_id(id);
-                if (repid != "")
-                {
-                    down_reg_rep_ids.insert(repid);
-                }
-            }
-            ifs_down.close();
-
-            string all_pair_file_name;
-            if (!b_mode)
-            {
-                cout << "Enter all pair output file name: ";
-                cin >> all_pair_file_name;
-            }
-            else
-            {
-                all_pair_file_name = token_cmd[cmd_index++];
-            }
-
-            // cout<<source_nid<<"-->"<<target_nid;*/
-            ofstream hout(all_pair_file_name.c_str());
-            map<string, int> nodes_in_mincut;
-
-            hout << "<!DOCTYPE html>" << endl;
-            hout << "<html>" << endl;
-            hout << "<head>" << endl;
-            hout << "<title>All pair min cuts</title>" << endl;
-            hout << "</head>" << endl;
-            // hout<<"<body style=\"background-color:powderblue;\">"<<endl;
-            hout << "<body style=\"background-color:#FFFFF0;\">" << endl;
-
-            hout << "<h2 style=\"color:red;text-align:center;font-family:courier;\">Min cuts</h2>" << endl;
-
-            hout << "\n\n"
-                 << endl;
-            hout << "<p style=\"text-align:left;\">";
-            hout << "<br> <br> To disconnect <b>" << source_name << "</b> ";
-            hout << "from <b> " << target_name << "</b>";
-            hout << "<br>remove all of the following edges <br>" << endl;
-            hout << "<br>" << endl;
-
-            set<string> written_edges;
-            for (vector<pair<int, int>>::iterator itr = balanced_cut_edges.begin(); itr != balanced_cut_edges.end(); itr++)
-                graph->write_mincut_edge_to_html(graph_man->get_node_from_src_tgt(itr->first, itr->second, map_src_tgt_to_eid_org), hout, up_reg_rep_ids, down_reg_rep_ids, nodes_in_mincut, nodes_in_all_mincuts, written_edges);
-
-            hout << "</p>" << endl;
-
-            hout << "<br>" << endl;
-            hout << "</body>" << endl;
-            hout << "</html>" << endl;
-        }
-
-        else if (command == "unroll")
-        {
-            int graphnum;
-            string source_id;
-            string target_id;
-            int levels;
-
-            int cmd_index = 1;
-
-            if (!b_mode)
-            {
-                cin >> graphnum;
-                cout << "\nEnter source node hsa-id: ";
-                cin >> source_id;
-                cout << "\nEnter target node hsa-id: ";
-                cin >> target_id;
-                cout << "\nEnter levels of unrolling: ";
-                cin >> levels;
-            }
-
-            else
-            {
-                graphnum = stoi(token_cmd[cmd_index++]);
-                source_id = token_cmd[cmd_index++];
-                target_id = token_cmd[cmd_index++];
-                levels = stoi(token_cmd[cmd_index++]);
-            }
-
-            if (graphnum == 0)
-                graphnum = graph_man->graph_id_count;
-
-            GraphNew *graph = graph_man->get_graph(graphnum);
-            string source_repid;
-            string target_repid;
-            int source_nid;
-            int target_nid;
-            if (graph == NULL)
-            {
-                cerr << "No such graph" << endl;
-            }
-            else
-            {
-                source_repid = graph->get_rep_id_from_id(source_id);
-                if (source_repid == "")
-                {
-                    cerr << "No valid source rep-id in graph" << endl;
-                }
-                source_nid = graph->get_nid_from_rep_id(source_repid);
-                if (source_nid == -1)
-                {
-                    cerr << "No valid source nid in graph" << endl;
-                }
-
-                target_repid = graph->get_rep_id_from_id(target_id);
-                if (target_repid == "")
-                {
-                    cerr << "No valid target rep-id in graph" << endl;
-                }
-                target_nid = graph->get_nid_from_rep_id(target_repid);
-                if (target_nid == -1)
-                {
-                    cerr << "No valid target nid in graph" << endl;
-                }
-
-                int unrolled_gid = graph_man->compute_unrolled_DAG(graphnum, source_nid, target_nid, levels, map_nid_to_unrolled_graph_nids, map_eid_to_unrolled_graph_eids);
-                if (unrolled_gid == -1)
-                {
-                    cerr << "Invalid unrolled graph" << endl;
-                }
-                else
-                {
-                    cout << "Unrolled graph id: " << unrolled_gid << endl;
-                }
-            }
-        }
-
-        else if (command == "frank")
-        {
-            int original_graphnum;
-            int unrolled_graphnum;
-            string file_prefix;
-            string source_id;
-            string target_id;
-            int path_length;
-
-            int cmd_index = 1;
-
-            if (!b_mode)
-            {
-                cout << "\nEnter original graph number: ";
-                cin >> original_graphnum;
-                cout << "\nEnter unrolled graph number: ";
-                cin >> unrolled_graphnum;
-                cout << "\nEnter file prefix: ";
-                cin >> file_prefix;
-                cout << "\nEnter source node hsa-id: ";
-                cin >> source_id;
-                cout << "\nEnter target node hsa-id: ";
-                cin >> target_id;
-                cout << "\nEnter maximum path length: ";
-                cin >> path_length;
-            }
-
-            else
-            {
-                original_graphnum = stoi(token_cmd[cmd_index++]);
-                unrolled_graphnum = stoi(token_cmd[cmd_index++]);
-                file_prefix = token_cmd[cmd_index++];
-                source_id = token_cmd[cmd_index++];
-                target_id = token_cmd[cmd_index++];
-                path_length = stoi(token_cmd[cmd_index++]);
-            }
-
-            GraphNew *original_graph = graph_man->get_graph(original_graphnum);
-            GraphNew *unrolled_graph = graph_man->get_graph(unrolled_graphnum);
-            string source_repid;
-            string target_repid;
-            int source_nid;
-            int target_nid;
-            if (unrolled_graph == NULL)
-            {
-                cerr << "No such graph" << endl;
-            }
-            else
-            {
-                // source_repid = graph->get_rep_id_from_id(source_id);
-                source_repid = source_id;
-                if (source_repid == "")
-                {
-                    cerr << "No valid source rep-id in graph" << endl;
-                }
-                source_nid = original_graph->get_nid_from_rep_id(source_repid);
-                if (source_nid == -1)
-                {
-                    cerr << "No valid source nid in graph" << endl;
-                }
-
-                // target_repid = graph->get_rep_id_from_id(target_id);
-                target_repid = target_id;
-                if (target_repid == "")
-                {
-                    cerr << "No valid target rep-id in graph" << endl;
-                }
-                target_nid = original_graph->get_nid_from_rep_id(target_repid);
-                if (target_nid == -1)
-                {
-                    cerr << "No valid target nid in graph" << endl;
-                }
-
-                int num_of_nodes = unrolled_graph->get_node_ids().size();
-                int num_of_edges = unrolled_graph->get_edge_ids().size();
-
-                vector<vector<int>> PathsVertices(num_of_nodes, vector<int>(path_length + 1, 0));
-                vector<vector<int>> PathsEdges(num_of_edges, vector<int>(path_length + 1, 0));
-
-                unrolled_graph->preprocess_graph_for_node_edge_seq_num();
-                original_graph->preprocess_graph_for_node_edge_seq_num();
-
-                string orig_src_repid = original_graph->get_rep_id_from_nid(source_nid);
-                string orig_tgt_repid = original_graph->get_rep_id_from_nid(target_nid);
-
-                string unrolled_src_repid = orig_src_repid + "_0";
-                string unrolled_tgt_repid = orig_tgt_repid;
-
-                int unrolled_src_nid = unrolled_graph->get_nid_from_rep_id(unrolled_src_repid);
-                if (unrolled_src_nid == -1)
-                {
-                    cerr << "Source node not found in unrolled graph" << endl;
-                }
-
-                int unrolled_tgt_nid = unrolled_graph->get_nid_from_rep_id(unrolled_tgt_repid);
-                if (unrolled_tgt_nid == -1)
-                {
-                    cerr << "Target node not found in unrolled graph" << endl;
-                }
-
-                graph_man->count_paths_through_vertex(unrolled_graph, unrolled_src_nid, unrolled_tgt_nid, path_length, PathsVertices, PathsEdges);
-
-                int total_paths = 0;
-                graph_man->print_nodes_ranked_by_fraction_of_paths(file_prefix, original_graph, unrolled_graph, source_nid, target_nid, path_length, total_paths, PathsVertices, PathsEdges, map_nid_to_unrolled_graph_nids);
-                graph_man->print_edges_ranked_by_fraction_of_paths(file_prefix, original_graph, unrolled_graph, source_nid, target_nid, path_length, total_paths, PathsVertices, PathsEdges, map_eid_to_unrolled_graph_eids);
-            }
-        }
+        // DEAD CODE: frank — fraction-of-paths ranking, not in core workflow
+        // (lines 7655-7761 commented out)
+        // else if (command == "frank")
+        // {
+        // int original_graphnum;
+        // int unrolled_graphnum;
+        // string file_prefix;
+        // string source_id;
+        // string target_id;
+        // int path_length;
+        //         // int cmd_index = 1;
+        //         // if (!b_mode)
+        // {
+        // cout << "\nEnter original graph number: ";
+        // cin >> original_graphnum;
+        // cout << "\nEnter unrolled graph number: ";
+        // cin >> unrolled_graphnum;
+        // cout << "\nEnter file prefix: ";
+        // cin >> file_prefix;
+        // cout << "\nEnter source node hsa-id: ";
+        // cin >> source_id;
+        // cout << "\nEnter target node hsa-id: ";
+        // cin >> target_id;
+        // cout << "\nEnter maximum path length: ";
+        // cin >> path_length;
+        // }
+        //         // else
+        // {
+        // original_graphnum = stoi(token_cmd[cmd_index++]);
+        // unrolled_graphnum = stoi(token_cmd[cmd_index++]);
+        // file_prefix = token_cmd[cmd_index++];
+        // source_id = token_cmd[cmd_index++];
+        // target_id = token_cmd[cmd_index++];
+        // path_length = stoi(token_cmd[cmd_index++]);
+        // }
+        //         // GraphNew *original_graph = graph_man->get_graph(original_graphnum);
+        // GraphNew *unrolled_graph = graph_man->get_graph(unrolled_graphnum);
+        // string source_repid;
+        // string target_repid;
+        // int source_nid;
+        // int target_nid;
+        // if (unrolled_graph == NULL)
+        // {
+        // cerr << "No such graph" << endl;
+        // }
+        // else
+        // {
+        // // source_repid = graph->get_rep_id_from_id(source_id);
+        // source_repid = source_id;
+        // if (source_repid == "")
+        // {
+        // cerr << "No valid source rep-id in graph" << endl;
+        // }
+        // source_nid = original_graph->get_nid_from_rep_id(source_repid);
+        // if (source_nid == -1)
+        // {
+        // cerr << "No valid source nid in graph" << endl;
+        // }
+        //         // // target_repid = graph->get_rep_id_from_id(target_id);
+        // target_repid = target_id;
+        // if (target_repid == "")
+        // {
+        // cerr << "No valid target rep-id in graph" << endl;
+        // }
+        // target_nid = original_graph->get_nid_from_rep_id(target_repid);
+        // if (target_nid == -1)
+        // {
+        // cerr << "No valid target nid in graph" << endl;
+        // }
+        //         // int num_of_nodes = unrolled_graph->get_node_ids().size();
+        // int num_of_edges = unrolled_graph->get_edge_ids().size();
+        //         // vector<vector<int>> PathsVertices(num_of_nodes, vector<int>(path_length + 1, 0));
+        // vector<vector<int>> PathsEdges(num_of_edges, vector<int>(path_length + 1, 0));
+        //         // unrolled_graph->preprocess_graph_for_node_edge_seq_num();
+        // original_graph->preprocess_graph_for_node_edge_seq_num();
+        //         // string orig_src_repid = original_graph->get_rep_id_from_nid(source_nid);
+        // string orig_tgt_repid = original_graph->get_rep_id_from_nid(target_nid);
+        //         // string unrolled_src_repid = orig_src_repid + "_0";
+        // string unrolled_tgt_repid = orig_tgt_repid;
+        //         // int unrolled_src_nid = unrolled_graph->get_nid_from_rep_id(unrolled_src_repid);
+        // if (unrolled_src_nid == -1)
+        // {
+        // cerr << "Source node not found in unrolled graph" << endl;
+        // }
+        //         // int unrolled_tgt_nid = unrolled_graph->get_nid_from_rep_id(unrolled_tgt_repid);
+        // if (unrolled_tgt_nid == -1)
+        // {
+        // cerr << "Target node not found in unrolled graph" << endl;
+        // }
+        //         // graph_man->count_paths_through_vertex(unrolled_graph, unrolled_src_nid, unrolled_tgt_nid, path_length, PathsVertices, PathsEdges);
+        //         // int total_paths = 0;
+        // graph_man->print_nodes_ranked_by_fraction_of_paths(file_prefix, original_graph, unrolled_graph, source_nid, target_nid, path_length, total_paths, PathsVertices, PathsEdges, map_nid_to_unrolled_graph_nids);
+        // graph_man->print_edges_ranked_by_fraction_of_paths(file_prefix, original_graph, unrolled_graph, source_nid, target_nid, path_length, total_paths, PathsVertices, PathsEdges, map_eid_to_unrolled_graph_eids);
+        // }
+        // }
 
         else
         {
