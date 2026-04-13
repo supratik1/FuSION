@@ -104,7 +104,7 @@ $(BUILD_DIR)/lex.yy.o : $(SOURCE_DIR)/lex.yy.c $(INCLUDE_DIR)/rules_parser_datat
 	$(CC) -c -g $(OPTFLAGS) $(SOURCE_DIR)/lex.yy.c -o $(BUILD_DIR)/lex.yy.o
 
 $(BUILD_DIR)/rules_parser.tab.o : $(SOURCE_DIR)/rules_parser.tab.c $(INCLUDE_DIR)/rules_parser.tab.h
-	$(CC) -c -g $(OPTFLAGS) $(SOURCE_DIR)/rules_parser.tab.c -o $(BUILD_DIR)/rules_parser.tab.o
+	cp $(INCLUDE_DIR)/rules_parser.tab.h $(SOURCE_DIR)/rules_parser.tab.h; $(CC) -c -g $(OPTFLAGS) $(SOURCE_DIR)/rules_parser.tab.c -o $(BUILD_DIR)/rules_parser.tab.o
 
 $(INCLUDE_DIR)/rules_parser.tab.h $(SOURCE_DIR)/rules_parser.tab.c: $(SOURCE_DIR)/rules_parser.y
 	bison -d $(SOURCE_DIR)/rules_parser.y -o $(SOURCE_DIR)/rules_parser.tab.c  && cp $(SOURCE_DIR)/rules_parser.tab.h $(INCLUDE_DIR)/
