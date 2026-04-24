@@ -15,6 +15,11 @@ public class ScriptFile{
         // Load template
         String template = Files.readString(Path.of("advtempscript.txt")); // path to your template
 
+        File emptyFile = File.createTempFile("empty_file", ".txt");
+        emptyFile.deleteOnExit(); // optional cleanup
+
+        String emptyPath = emptyFile.getAbsolutePath();
+
         // Example input map (this can be built from your UserInput object)
         Map<String, String> replacements = new HashMap<>();
         replacements.put("%__1__%", user.getWorkingDirectory());
@@ -46,11 +51,11 @@ public class ScriptFile{
         replacements.put("%__a6__%", edges[0]);
         replacements.put("%__a7__%", edges[1]);
         replacements.put("%__a8__%", edges[2]);
-        replacements.put("%__a9__%", user.isOverrideEmpty(4)?"/home/neeraj/FuSION/example/empty_file.txt":String.join("," ,user.getOverride(4)));
-        replacements.put("%__a10__%", user.isOverrideEmpty(0)?"/home/neeraj/FuSION/example/empty_file.txt":String.join("," ,user.getOverride(0)));
+        replacements.put("%__a9__%", user.isOverrideEmpty(4)?emptyPath:String.join("," ,user.getOverride(4)));
+        replacements.put("%__a10__%", user.isOverrideEmpty(0)?emptyPath:String.join("," ,user.getOverride(0)));
 
-        replacements.put("%__a11__%", user.isOverrideEmpty(2)?"/home/neeraj/FuSION/example/empty_file.txt":String.join("," ,user.getOverride(2)));
-        replacements.put("%__a12__%", user.isOverrideEmpty(5)?"/home/neeraj/FuSION/example/empty_file.txt":String.join("," ,user.getOverride(5)));
+        replacements.put("%__a11__%", user.isOverrideEmpty(2)?emptyPath:String.join("," ,user.getOverride(2)));
+        replacements.put("%__a12__%", user.isOverrideEmpty(5)?emptyPath:String.join("," ,user.getOverride(5)));
         replacements.put("%__a13__%", edges[3]);
         replacements.put("%__a14__%", edges[4]);
         
