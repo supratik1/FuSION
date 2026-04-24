@@ -6,7 +6,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 import javax.swing.*;
-import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -14,7 +13,7 @@ public class IdEntryPanel extends RoundedPanel {
 
     private JTextField inputField1, inputField2, inputField3;
     private JComboBox<String> suggestions1, suggestions2, suggestions3;
-    private Map<String, String> idMap = new HashMap<>();
+    Map<String, List<String>> idMap = new HashMap<>();
     private File idMappingFile;
 
     public IdEntryPanel(CardLayout cardLayout, JPanel cardPanel, UserInput user) {
@@ -384,13 +383,16 @@ public class IdEntryPanel extends RoundedPanel {
 
     private boolean performExactMatch(JTextField field) {
         String input = field.getText().trim().toLowerCase();
-        for (Map.Entry<String, String> entry : idMap.entrySet()) {
-            String commonName = entry.getKey().toLowerCase();
-            String id = entry.getValue().toLowerCase();
-            if (input.equals(commonName) || input.equals(id)) {
-                String display = entry.getValue() + " - " + entry.getKey();
-                field.setText(display);
-                return true;
+        for (Map.Entry<String, List<String>> entry : idMap.entrySet()) {
+
+            String commonName = entry.getKey();
+
+            for (String id : entry.getValue()) {
+
+                if (input.equals(commonName) || input.equals(id)) {
+                    field.setText(id + " - " + commonName);
+                    return true;
+                }
             }
         }
         JOptionPane.showMessageDialog(field, "No exact match found.");
@@ -399,19 +401,24 @@ public class IdEntryPanel extends RoundedPanel {
 
     private void loadMappingFile(File file) {
         idMap.clear();
+
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
+
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
-                if (line.isEmpty())
-                    continue;
+                if (line.isEmpty()) continue;
+
                 String[] parts = line.split("\\s+");
+
                 if (parts.length >= 2) {
                     String id = parts[0].trim();
                     String commonName = String.join(" ", Arrays.copyOfRange(parts, 1, parts.length)).toLowerCase();
-                    idMap.put(commonName, id);
+
+                    idMap.computeIfAbsent(commonName, k -> new ArrayList<>()).add(id);
                 }
             }
+
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(this, "Error reading mapping file: " + ex.getMessage());
         }
@@ -450,14 +457,20 @@ public class IdEntryPanel extends RoundedPanel {
                 return;
             List<String> exactMatches = new ArrayList<>();
             List<String> partialMatches = new ArrayList<>();
-            for (Map.Entry<String, String> entry : idMap.entrySet()) {
+            for (Map.Entry<String, List<String>> entry : idMap.entrySet()) {
+
                 String commonName = entry.getKey();
-                String id = entry.getValue().toLowerCase();
-                String display = entry.getValue() + " - " + commonName;
-                if (commonName.equals(input) || id.equals(input)) {
-                    exactMatches.add(display);
-                } else if (commonName.contains(input) || id.contains(input)) {
-                    partialMatches.add(display);
+                List<String> ids = entry.getValue();
+
+                for (String id : ids) {
+
+                    String display = id + " - " + commonName;
+
+                    if (commonName.equals(input) || id.equals(input)) {
+                        exactMatches.add(display);
+                    } else if (commonName.contains(input) || id.contains(input)) {
+                        partialMatches.add(display);
+                    }
                 }
             }
             for (String match : exactMatches)
