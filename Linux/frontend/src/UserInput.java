@@ -11,6 +11,8 @@ import org.json.JSONObject;
 public class UserInput {
     private int index;
 
+    private String kegg;
+
     private String userName;
     private String sessionName;
     private String workingDirectory;
@@ -49,7 +51,7 @@ public class UserInput {
                 String workDir = obj.optString("workingDirectory", System.getProperty("user.home"));
                 String logFold = obj.optString("logFold", "");
                 
-                String dThres = obj.optString("dThreshold", ""+0);
+                String dThres = obj.optString("dThreshold", "0");
                 String uThres = obj.optString("uThreshold", "0");
                 String nodeLB = obj.optString("nodeLBound", "20");
                 String nodeUB = obj.optString("nodeUBound", "80");
@@ -79,9 +81,11 @@ public class UserInput {
                 String hsaNot = obj.optString("HSANotMerged", "");
 
                 String hsaToGene= obj.optString("HsaToGene", "hsa_to_gene_symbol_map_6334.txt");
-                String hsaToPath = obj.optString("HsaToPath", "hsa_path_to_path_name_map_2822.txt");
+                String hsaToPath = obj.optString("HsaToPath", " hsa_path_to_path_name_map_2822.txt");
 
                 String interDB= obj.optString("InterDB", "");
+
+                String kegg= obj.optString("KEGG", "");
 
 
 
@@ -115,6 +119,7 @@ public class UserInput {
                 this.mappingFile= mappingFile;
 
                 this.hsaNotMerged= hsaNot;
+                this.kegg= kegg;
 
             
         } catch (Exception e) {
@@ -122,6 +127,15 @@ public class UserInput {
         }
 
     }
+
+    public void setKegg(String k){
+        this.kegg= k;
+    }
+
+    public String getKegg(){
+        return kegg;
+    }
+    
 
     public int getIndex(){
         return index;
@@ -352,6 +366,7 @@ public class UserInput {
                 sessionData.put("HsaToGene", mappingFile[0]);
                 sessionData.put("HsaToPath", mappingFile[1]);
                 sessionData.put("InterDB", mappingFile[2]);
+                sessionData.put("KEGG", kegg);
                  
                 try (FileWriter fw = new FileWriter(fileName)) {
                     fw.write(sessionsArray.toString(2)); // Pretty print with 2 spaces
@@ -364,8 +379,9 @@ public class UserInput {
             }
     }
 
-    
+    @Override
+    public String toString() {
+        return "" + userName + " " + workingDirectory + " " + logFoldChangesFile + " " + downThreshold + " " + upThreshold + " " + nodeLBound + " " + nodeUBound + " " + edgeLBound + " " + " " + edgeUBound + " ";
+    }
 
 }
-
-
