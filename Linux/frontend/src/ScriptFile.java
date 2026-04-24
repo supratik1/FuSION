@@ -2,6 +2,7 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
+
 public class ScriptFile{
 
     public ScriptFile(UserInput user) throws IOException{
@@ -17,18 +18,18 @@ public class ScriptFile{
         // Example input map (this can be built from your UserInput object)
         Map<String, String> replacements = new HashMap<>();
         replacements.put("%__1__%", user.getWorkingDirectory());
-        replacements.put("%__2__%", user.getSourceHsaID());
-        replacements.put("%__3__%", user.getTargeHsaID());
-        replacements.put("%__4__%",  user.getCandidateID());
+        replacements.put("%__2__%", user.getSourceHsaID().replaceFirst("^hsa", ""));
+        replacements.put("%__3__%", user.getTargeHsaID().replaceFirst("^hsa", ""));
+        replacements.put("%__4__%",  user.getCandidateID().replaceFirst("^hsa", ""));
         replacements.put("%__5__%", ""+user.getSignallingPathLength());
         replacements.put("%__6__%", ""+relax[2]);
 
         replacements.put("%__7__%", ""+relax[3]);
         replacements.put("%__8__%", ""+relax[0]);
         replacements.put("%__9__%", ""+relax[1]);
-        replacements.put("%__10__%", user.getLogFoldChangesFile());
+        replacements.put("%__10__%", Paths.get(user.getLogFoldChangesFile()).getFileName().toString());
 
-        replacements.put("%__11__%", edges[0]);
+        replacements.put("%__11__%", Paths.get(edges[0]).getFileName().toString());
         replacements.put("%__12__%", ""+user.getUpThreshold());
         replacements.put("%__13__%", ""+user.getDownThreshold());
         replacements.put("%__14__%", restrict[user.getEdgeRestriction()]);
@@ -45,11 +46,11 @@ public class ScriptFile{
         replacements.put("%__a6__%", edges[0]);
         replacements.put("%__a7__%", edges[1]);
         replacements.put("%__a8__%", edges[2]);
-        replacements.put("%__a9__%", user.isOverrideEmpty(4)?"":String.join("," ,user.getOverride(4)));
-        replacements.put("%__a10__%", user.isOverrideEmpty(0)?"":String.join("," ,user.getOverride(0)));
+        replacements.put("%__a9__%", user.isOverrideEmpty(4)?"/home/neeraj/FuSION/example/empty_file.txt":String.join("," ,user.getOverride(4)));
+        replacements.put("%__a10__%", user.isOverrideEmpty(0)?"/home/neeraj/FuSION/example/empty_file.txt":String.join("," ,user.getOverride(0)));
 
-        replacements.put("%__a11__%", user.isOverrideEmpty(2)?"":String.join("," ,user.getOverride(2)));
-        replacements.put("%__a12__%", user.isOverrideEmpty(5)?"":String.join("," ,user.getOverride(5)));
+        replacements.put("%__a11__%", user.isOverrideEmpty(2)?"/home/neeraj/FuSION/example/empty_file.txt":String.join("," ,user.getOverride(2)));
+        replacements.put("%__a12__%", user.isOverrideEmpty(5)?"/home/neeraj/FuSION/example/empty_file.txt":String.join("," ,user.getOverride(5)));
         replacements.put("%__a13__%", edges[3]);
         replacements.put("%__a14__%", edges[4]);
         
@@ -62,6 +63,8 @@ public class ScriptFile{
         replacements.put("%__a18__%",""+ user.getTxtFile());
         replacements.put("%__a19__%", ""+user.getXMLFile());
         replacements.put("%__a20__%", user.gethsaNotFile());
+
+        replacements.put("%__c__%", user.getKegg());
 
 
         // Replace all placeholders
