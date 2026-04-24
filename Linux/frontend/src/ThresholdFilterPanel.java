@@ -481,7 +481,7 @@ public class ThresholdFilterPanel extends RoundedPanel {
         try (BufferedReader br = new BufferedReader(new FileReader(user.getLogFoldChangesFile()))) {
             String line;
             while ((line = br.readLine()) != null) {
-                String[] parts = line.split("\t+");
+                String[] parts = line.split("\\s+");
                 if (parts.length == 2) {
                     String filename = parts[0].trim();
                     double score = Double.parseDouble(parts[1].trim());
