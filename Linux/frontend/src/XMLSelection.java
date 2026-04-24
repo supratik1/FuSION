@@ -122,6 +122,8 @@ public class XMLSelection extends RoundedPanel {
             xmlFile = null;
             user.setXMLFile(null);
             fileNameLabel2.setText("No file selected");
+
+            user.setKegg("");
         });
 
         chooseFile2Radio.addActionListener(e -> {
@@ -130,6 +132,8 @@ public class XMLSelection extends RoundedPanel {
             txtFile = null;
             user.setTxtFile(null);
             fileNameLabel1.setText("No file selected");
+
+            user.setKegg(";;");
         });
 
         // Add components to center panel
