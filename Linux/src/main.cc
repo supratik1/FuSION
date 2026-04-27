@@ -11,6 +11,7 @@
 #include <fstream>
 #include <sstream>
 #include <limits>
+#include <chrono>
 #include "../include/GraphManager.h"
 #include "../include/GraphManagerNew.h"
 #include "../include/XMLParser.h"
@@ -859,45 +860,19 @@ extern list<rule_t *> list_of_rules;
 void display_commands()
 {
     cout << endl;
-    cout << "Commands and usage: " << endl;
+    cout << "Commands available in this (debloated) build: " << endl;
     cout << endl;
     cout << "help \t(or h) " << endl;
-    cout << "read_graph_xml \t(or rgx) \t<filename>" << endl;
-    cout << "read_graph_sbml (or rgs) \t<filename>" << endl;
-    cout << "read_graph_ppin (or rgp) \t<filename>" << endl;
-    cout << "read_graph_htri (or rgh) \t<filename>" << endl;
-    cout << "read_graph_reactome_all (or rgr) \t<filename>" << endl;
-    cout << "read_phenotypes (or pheno)" << endl;
+    cout << "let \t<var_name> \t<value>" << endl;
+    cout << "exec \t<shell_command ...>" << endl;
+    cout << "start \t<inter_db_map> \t<exception_merge_file> \t<hsa_to_symbol_map> \t<hsa_path_to_name_map>" << endl;
+    cout << "cudf \t<log_fold_change_file> \t<up_thresh> \t<down_thresh> \t<up_reg_out> \t<down_reg_out>" << endl;
+    cout << "merge_from_file \t(or mff) \t<list_of_xml_file> \txml \t<node_split_threshold> \t<y|n> \t<inter_db_map> \t<graph-id>" << endl;
+    cout << "write_graph_xml \t(or wgx) \t<graph-id> \t<output_xml> \t<pathway_tag>" << endl;
+    cout << "read_graph_xml \t(or rgx) \t<filename> \t<merge_flag> \t<node_split_threshold>" << endl;
     cout << "size \t(or sz) \t<graph-id>" << endl;
-    cout << "find_intersecting_nodes (or fin) \t<graph-id1> \t<graph-id2>" << endl;
-    cout << "find_node \t(or fn)" << endl;
-    cout << "display \t(or dis) \t<graph-id>" << endl;
-    cout << "convert \t(or cnv) \t<graph-id>" << endl; // written by uddipaan
-    cout << "reach \t(or rch) \t<graph-id>" << endl;
-    cout << "print_graph_info \t(or pgi) \t<graph-id>" << endl;
-    cout << "print_graph_man_info \t(or pgmi) " << endl;
-    cout << "merge \t(or mg)" << endl;
-    cout << "merge_from_file (or mff) \t<filename>" << endl;
-    cout << "genesis \t(or gen) \t<graph-id>" << endl;
-    cout << "write_graph_xml (or wgx) \t<graph-id>" << endl;
-    cout << "read_rules \t(or rr) \t<rule_file>" << endl;
-    cout << "generate_constraints \t(or gencn) " << endl;
-    cout << "solve" << endl;
-    cout << "print_GErels \t(or pgrel) \t<graph-id>" << endl;
-    cout << "subgraph \t\t(or sg) \t<graph-id> \t<file_name>" << endl;
-    cout << "select \t(or sel) \t<graph-id> \t<file_name>" << endl;
-    cout << "get_assignments_z3 \t(or get_assg_z3) \t<z3_cnf_result_file> \t<output_file>" << endl;
-    cout << "get_all_solutions \t(or get_all_solns) " << endl;
-    cout << "call_ApproxMC \t\t(or approxmc)" << endl;
-    cout << "process_microarr_data \t(or pmd) \t<graph-id>" << endl;
-    cout << "add_projected_variables \t(or proj)" << endl;
-    cout << "clear_expression_maps \t\t(or clxm)" << endl;
-    cout << "fwd_bkwd_rch \t\t\t(or fb_rch) \t<graph-id>" << endl;
-    cout << "kegg_consistency_check \t\t(or kcc) \t<graph-id>" << endl;
-    cout << "list_pathways_with_nodes \t(or lpwn ) \t<filename>" << endl;
-    cout << "mincut \t(or mc) \t<graoh-id>" << endl;
-    cout << "connect \t<graph-id>" << endl;
-    cout << "clr" << endl;
+    cout << "fwd_bkwd_rch \t(or fb_rch) \t<graph-id> \t<src> \t<-1> \t<tgt> \t<-1> \t<-1> \t<path_bound> \t<edges_to_tgt>" << endl;
+    cout << "pathz3 \t(or get_path_with_z3) \t<args ...> \t[coexpression_csv] \t[coexpr_threshold] \t[exp_score_threshold]" << endl;
     cout << "exit" << endl;
     cout << endl;
 }
@@ -1396,6 +1371,8 @@ int main(int argc, char *argv[])
         //            graph_man->create_map_from_sbml(filename);
         //        }
 
+// ===== DEBLOATED (advtempscript.txt workflow): block 1/7 begin =====
+#if 0
         else if (command == "create_kegg_map_from_graph" || command == "kmap")
         {
             int graphnum;
@@ -1566,6 +1543,8 @@ int main(int argc, char *argv[])
             }
         }
 
+#endif
+// ===== DEBLOATED: block 1/7 end =====
         else if (command == "size" || command == "sz")
         {
             int graphnum;
@@ -1630,6 +1609,8 @@ int main(int argc, char *argv[])
             }
         }
 
+// ===== DEBLOATED: block 2/7 begin =====
+#if 0
         else if (command == "display" || command == "dis")
         {
             int graphnum;
@@ -2090,6 +2071,8 @@ int main(int argc, char *argv[])
             }
         }
 
+#endif
+// ===== DEBLOATED: block 2/7 end =====
         else if (command == "fb_rch")
         {
             int graphnum;
@@ -2215,6 +2198,8 @@ int main(int argc, char *argv[])
             }
         }
 
+// ===== DEBLOATED: block 3/7 begin =====
+#if 0
         else if (command == "print_graph_info" || command == "pgi")
         {
             int graphnum;
@@ -2307,6 +2292,8 @@ int main(int argc, char *argv[])
             }
         }
 
+#endif
+// ===== DEBLOATED: block 3/7 end =====
         else if (command == "merge_from_file" || command == "mff")
         {
             int cmd_index = 1;
@@ -2458,6 +2445,8 @@ int main(int argc, char *argv[])
             //            }
         }
 
+// ===== DEBLOATED: block 4/7 begin =====
+#if 0
         else if (command == "list_pathways_with_nodes" || command == "lpwn")
         {
             string filename;
@@ -2558,6 +2547,8 @@ int main(int argc, char *argv[])
             graph_man->print_genesis_new(graphnum, cout);
         }
 
+#endif
+// ===== DEBLOATED: block 4/7 end =====
         else if (command == "write_graph_xml" || command == "wgx")
         {
             int graphnum;
@@ -2674,6 +2665,8 @@ int main(int argc, char *argv[])
             }
         }
 
+// ===== DEBLOATED: block 5/7 begin =====
+#if 0
         else if (command == "generate_constraints" || command == "gencn")
         {
             int graphnum;
@@ -4334,8 +4327,11 @@ int main(int argc, char *argv[])
             }
         }
 
+#endif
+// ===== DEBLOATED: block 5/7 end =====
         else if (command == "get_path_with_z3" || command == "pathz3")
         {
+            auto pathz3_wall_t0 = std::chrono::steady_clock::now();
 
             int graphnum;
 
@@ -4482,6 +4478,30 @@ int main(int argc, char *argv[])
                         PO_points_input_file = token_cmd[cmd_index++];
                     }
                 }
+
+                // optional: coexpression + frozen-edge constraints (appended trailing args)
+                // token_cmd is pre-sized to 1e6 empty strings; guard on empty, not size().
+                string coexpression_csv_filename = "";
+                float coexp_threshold = -1.0f;
+                float exp_score_threshold = -1.0f;
+                if (b_mode)
+                {
+                    if (cmd_index < (int)token_cmd.size() && !token_cmd[cmd_index].empty())
+                        coexpression_csv_filename = token_cmd[cmd_index++];
+                    if (cmd_index < (int)token_cmd.size() && !token_cmd[cmd_index].empty())
+                    {
+                        try { coexp_threshold = stof(token_cmd[cmd_index]); cmd_index++; }
+                        catch (...) { /* leave default */ }
+                    }
+                    if (cmd_index < (int)token_cmd.size() && !token_cmd[cmd_index].empty())
+                    {
+                        try { exp_score_threshold = stof(token_cmd[cmd_index]); cmd_index++; }
+                        catch (...) { /* leave default */ }
+                    }
+                }
+
+                set<pair<int, int>> coexp_pairs;
+                graph_man->load_coexpression_pairs_from_csv(graph, coexpression_csv_filename, coexp_threshold, coexp_pairs);
 
                 file_prefix = OUTPUT_FILES_DIR_PREFIX + file_prefix;
 
@@ -4669,7 +4689,7 @@ int main(int argc, char *argv[])
 
                 cout << "Beginning to generate constraints" << endl;
 
-                graph_man->get_connectivity_with_z3(c, s, var_to_expr_map, graphnum, graphnum_undirected, closure_matrix, cut_edges, gomoryhu_parents, call_level_matrix, edge_level_matrix, call_count_matrix, edge_count_matrix, connect_pairs, path_bound, nids_as_source, nids_as_target, up_reg_nids_to_use, down_reg_nids_to_use, essential_nids, avoid_nids, essential_eids, avoid_eids, active_nids, inactive_nids, confirmed_up_reg_nids, confirmed_down_reg_nids, relaxed_nids, nonrelaxed_nids, relaxed_eids, nonrelaxed_eids, fold_change_filename, file_prefix);
+                graph_man->get_connectivity_with_z3(c, s, var_to_expr_map, graphnum, graphnum_undirected, closure_matrix, cut_edges, gomoryhu_parents, call_level_matrix, edge_level_matrix, call_count_matrix, edge_count_matrix, connect_pairs, path_bound, nids_as_source, nids_as_target, up_reg_nids_to_use, down_reg_nids_to_use, essential_nids, avoid_nids, essential_eids, avoid_eids, active_nids, inactive_nids, confirmed_up_reg_nids, confirmed_down_reg_nids, relaxed_nids, nonrelaxed_nids, relaxed_eids, nonrelaxed_eids, fold_change_filename, file_prefix, coexp_pairs, exp_score_threshold);
 
                 cout << "Finished generating constraints" << endl;
 
@@ -4972,8 +4992,15 @@ int main(int argc, char *argv[])
                 soln_out.close();
                 relax_out.close();
             }
+
+            auto pathz3_wall_t1 = std::chrono::steady_clock::now();
+            double pathz3_wall_ms = std::chrono::duration<double, std::milli>(pathz3_wall_t1 - pathz3_wall_t0).count();
+            cout << "[pathz3 timing] Total wall-clock time: "
+                 << (pathz3_wall_ms / 1000.0) << " s (" << pathz3_wall_ms << " ms)" << endl;
         }
 
+// ===== DEBLOATED: block 6/7 begin =====
+#if 0
         else if (command == "rank")
         {
             int graphnum;
@@ -5556,6 +5583,8 @@ int main(int argc, char *argv[])
             }
         }
 
+#endif
+// ===== DEBLOATED: block 6/7 end =====
         else if (command == "help" || command == "h")
         {
             display_commands();
@@ -5575,6 +5604,8 @@ int main(int argc, char *argv[])
         // read_z3_output(z3_result, output_assigns);
         // }
 
+// ===== DEBLOATED: block 7/7 begin =====
+#if 0
         else if (command == "undir" || command == "u")
         {
             int graphnum;
@@ -7565,6 +7596,8 @@ int main(int argc, char *argv[])
         // }
         // }
 
+#endif
+// ===== DEBLOATED: block 7/7 end =====
         else
         {
             cout << "Did you enter one of the following valid commands?" << endl;
