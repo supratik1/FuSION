@@ -1,0 +1,87 @@
+;; Baseline batch (unconstrained). Two-phase FSC analysis, advtempscript-style.
+;; Pipeline: start -> rgx -> fb_rch -> pathz3 (FSC included)
+;;                        -> fb_rch -> pathz3 (FSC excluded) -> gnuplot
+;; Source hsa1950 (EGF), target hsa7422 (VEGFA), FSC node hsa4609 (MYC).
+;; 10x10 relaxation Pareto sweep on KEGG hsa05200.
+
+let $XML_FILE /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/mapk.xml
+let $FOLD_CHANGE /home/ks-149-u24/Desktop/arjun/FuSION/test_example/fold_change.tsv
+let $EMPTY /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/empty_file
+
+let $SRC_NODE hsa1950
+let $TGT_NODE hsa7422
+let $FSC_NODE hsa4609
+let $REACH_PATH_BOUND 15
+let $EDGE_RELAX_LB 0
+let $EDGE_RELAX_UB 10
+let $NODE_RELAX_LB 0
+let $NODE_RELAX_UB 10
+let $NODE_SPLIT_THRESHOLD 1
+let $CONSTR_SOLVER_TIMEOUT1 60000
+let $CONSTR_SOLVER_TIMEOUT2 300000
+let $NUM_SOLNS_TO_COUNT 200
+let $NUM_SOLNS_TO_EXPLORE 100
+
+let $UP_REG_FILE /home/ks-149-u24/Desktop/arjun/FuSION/test_example/up_reg
+let $DOWN_REG_FILE /home/ks-149-u24/Desktop/arjun/FuSION/test_example/down_reg
+let $CONNECT_PAIRS_FILE /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/connect_pairs
+let $SRC_FILE /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/src_file
+let $TGT_FILE /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/tgt_file
+let $ACTIVE_W /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/active_w
+let $ACTIVE_WO /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/active_wo
+let $NONRELAX_W /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/nonrelax_w
+let $NONRELAX_WO /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/nonrelax_wo
+let $ESSENTIAL_W /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/essential_w
+let $ESSENTIAL_WO /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/essential_wo
+let $AVOID_WO /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/avoid_wo
+let $EXCEPTION_TO_NODE_MERGE_FILE /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/exception_file
+
+exec touch $EMPTY
+exec echo $SRC_NODE > $SRC_FILE
+exec echo $TGT_NODE > $TGT_FILE
+exec echo $SRC_NODE $TGT_NODE > $CONNECT_PAIRS_FILE
+exec cat $UP_REG_FILE $DOWN_REG_FILE $SRC_FILE $TGT_FILE > $EXCEPTION_TO_NODE_MERGE_FILE
+exec echo $FSC_NODE >> $EXCEPTION_TO_NODE_MERGE_FILE
+
+;; FSC-included files (essential / active / nonrelaxed contain FSC node)
+exec cat $SRC_FILE $TGT_FILE > $ACTIVE_W
+exec echo $FSC_NODE >> $ACTIVE_W
+exec cat $SRC_FILE $TGT_FILE > $NONRELAX_W
+exec echo $FSC_NODE >> $NONRELAX_W
+exec cat $SRC_FILE $TGT_FILE > $ESSENTIAL_W
+exec echo $FSC_NODE >> $ESSENTIAL_W
+
+;; FSC-excluded files (avoid file contains FSC node)
+exec cat $SRC_FILE $TGT_FILE > $ACTIVE_WO
+exec cat $SRC_FILE $TGT_FILE > $NONRELAX_WO
+exec cat $SRC_FILE $TGT_FILE > $ESSENTIAL_WO
+exec echo $FSC_NODE > $AVOID_WO
+
+start $EMPTY $EXCEPTION_TO_NODE_MERGE_FILE $EMPTY $EMPTY
+
+rgx $XML_FILE n $NODE_SPLIT_THRESHOLD
+size 0
+let $MERGED_GRAPH_NUM #LASTGRAPHNUM
+
+;; ---------- Phase 1: FSC node INCLUDED ----------
+fb_rch 0 $SRC_NODE -1 $TGT_NODE -1 -1 $REACH_PATH_BOUND 0
+size 0
+
+pathz3 0 0 $CONNECT_PAIRS_FILE $EDGE_RELAX_LB $NODE_RELAX_LB $EDGE_RELAX_UB $NODE_RELAX_UB $REACH_PATH_BOUND po_w $UP_REG_FILE $DOWN_REG_FILE $ESSENTIAL_W $EMPTY $EMPTY $EMPTY $ACTIVE_W $EMPTY $EMPTY $EMPTY $EMPTY $NONRELAX_W $EMPTY $EMPTY $FOLD_CHANGE $NUM_SOLNS_TO_COUNT $NUM_SOLNS_TO_EXPLORE $CONSTR_SOLVER_TIMEOUT1 $CONSTR_SOLVER_TIMEOUT2
+
+exec mv PO.dat po_w.dat
+exec mv limits_timefile.txt po_w_limits_timefile.txt
+
+;; ---------- Phase 2: FSC node EXCLUDED ----------
+fb_rch $MERGED_GRAPH_NUM $SRC_NODE -1 $TGT_NODE -1 -1 $REACH_PATH_BOUND 0
+size 0
+
+pathz3 0 0 $CONNECT_PAIRS_FILE $EDGE_RELAX_LB $NODE_RELAX_LB $EDGE_RELAX_UB $NODE_RELAX_UB $REACH_PATH_BOUND po_wo $UP_REG_FILE $DOWN_REG_FILE $ESSENTIAL_WO $AVOID_WO $EMPTY $EMPTY $ACTIVE_WO $EMPTY $EMPTY $EMPTY $EMPTY $NONRELAX_WO $EMPTY $EMPTY $FOLD_CHANGE $NUM_SOLNS_TO_COUNT $NUM_SOLNS_TO_EXPLORE $CONSTR_SOLVER_TIMEOUT1 $CONSTR_SOLVER_TIMEOUT2
+
+exec mv PO.dat po_wo.dat
+exec mv limits_timefile.txt po_wo_limits_timefile.txt
+
+;; ---------- Plot: two PO curves (w / wo FSC) on one PNG ----------
+exec gnuplot -p -e "set term png size 900,650; set output 'pareto.png'; set title 'Pareto frontier: hsa1950 -> hsa7422 (FSC hsa4609)'; set xlabel 'Node relaxn'; set ylabel 'Edge relaxn'; set xrange [-0.5:10.5]; set yrange [-0.5:10.5]; set grid; plot 'po_w.dat' with lp lw 2 pt 7 ps 1.5 linecolor 'blue' title 'with FSC (hsa4609)', 'po_wo.dat' with lp lw 2 pt 5 ps 1.3 linecolor 'red' title 'without FSC (hsa4609)'; exit"
+
+exit
