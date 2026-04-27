@@ -1,0 +1,1157 @@
+Entering batch mode
+No configuration provided.
+Log Manager Object is created
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                  "let" to be used with macro key starting with $
+/home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/active_wOdoesn't start with $; Skipping ...
+"let" to be used with macro key starting with $
+/home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/nonrelax_wOdoesn't start with $; Skipping ...
+"let" to be used with macro key starting with $
+/home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/essential_wOdoesn't start with $; Skipping ...
+exec touch /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/empty_file 
+-------------------------------
+exec echo hsa1950 > /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/src_file 
+-------------------------------
+exec echo hsa7422 > /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/tgt_file 
+-------------------------------
+exec echo hsa1950 hsa7422 > /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/connect_pairs 
+-------------------------------
+exec cat /home/ks-149-u24/Desktop/arjun/FuSION/test_example/up_reg /home/ks-149-u24/Desktop/arjun/FuSION/test_example/down_reg /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/src_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/tgt_file > /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/exception_file 
+-------------------------------
+exec echo hsa4609 >> /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/exception_file 
+-------------------------------
+exec cat /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/src_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/tgt_file > /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/active_w 
+-------------------------------
+exec echo hsa4609 >> /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/active_w 
+-------------------------------
+exec cat /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/src_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/tgt_file > /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/nonrelax_w 
+-------------------------------
+exec echo hsa4609 >> /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/nonrelax_w 
+-------------------------------
+exec cat /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/src_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/tgt_file > /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/essential_w 
+-------------------------------
+exec echo hsa4609 >> /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/essential_w 
+-------------------------------
+exec cat /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/src_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/tgt_file > /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/active_wO 
+-------------------------------
+exec cat /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/src_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/tgt_file > /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/nonrelax_wO 
+-------------------------------
+exec cat /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/src_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/tgt_file > /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/essential_wO 
+-------------------------------
+exec echo hsa4609 > /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/avoid_wo 
+-------------------------------
+start /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/empty_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/exception_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/empty_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/empty_file 
+-------------------------------
+----------------------------
+/home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/exception_file -1 
+----------------------------
+0
+0
+rgx /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/mapk.xml n 1 
+-------------------------------
+Creating graph...
+Read graph: 1 from file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/mapk.xml
+Done!
+New graph id: 1
+Time taken (in sec): 0.00
+size 0 
+-------------------------------
+Number of nodes: 521 (433 genes, 65 complexes, 23 compounds, 0 others) 0 isolated
+Number of edges: 2136
+fb_rch 0 hsa1950 -1 hsa7422 -1 -1 15 0 
+-------------------------------
+Bound: 15
+0 out of 6 edges to target excluded due to choice of activation/expression edges to target.
+fwd nodes 128
+eids 2136
+edges 335
+Forward reachable graph id: 2 has 135 nodes 335 edges 
+New graph 3 has 59 nodes 159 edges
+Reachability Graph: 3
+size 0 
+-------------------------------
+Number of nodes: 59 (56 genes, 0 complexes, 3 compounds, 0 others) 0 isolated
+Number of edges: 159
+pathz3 0 0 /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/connect_pairs 0 0 10 10 15 po_w /home/ks-149-u24/Desktop/arjun/FuSION/test_example/up_reg /home/ks-149-u24/Desktop/arjun/FuSION/test_example/down_reg /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/essential_w /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/empty_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/empty_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/empty_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/active_w /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/empty_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/empty_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/empty_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/empty_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/nonrelax_w /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/empty_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/empty_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/fold_change.tsv 200 100 60000 300000 
+-------------------------------
+1 connect pairs
+Nodes to avoid: 0
+Edges to avoid: 0
+Nodes to be active: 3
+Nodes to be inactive: 0
+Nodes not to relax: 3
+Edges not to relax: 0
+
+Up: 19 Down: 27
+Beginning to generate constraints
+Source: (hsa1950) Target: (hsa7422)
+Finished generating constraints
+Not printing matrices in the current run
+Solving constraints to generate PO points...
+This may take some time ... See limits_timefile.txt to check progress
+(1, 1)
+(0, 7)
+(6, 0)
+3 PO points found
+(0 ,7) is not dominated
+(1 ,1) is not dominated
+(6 ,0) is not dominated
+Solution 1
+Solution 2
+Solution 3
+Solution 4
+Solution 5
+Solution 6
+Solution 7
+Solution 8
+Solution 9
+Solution 10
+Solution 11
+Solution 12
+Solution 13
+Solution 14
+Solution 15
+Solution 16
+Solution 17
+Solution 18
+Solution 19
+Solution 20
+Solution 21
+Solution 22
+Solution 23
+Solution 24
+Solution 25
+Solution 26
+Solution 27
+Solution 28
+Solution 29
+Solution 30
+Solution 31
+Solution 32
+Solution 33
+Solution 34
+Solution 35
+Solution 36
+Solution 37
+Solution 38
+Solution 39
+Solution 40
+Solution 41
+Solution 42
+Solution 43
+Solution 44
+Solution 45
+Solution 46
+Solution 47
+Solution 48
+Solution 49
+Solution 50
+Solution 51
+Solution 52
+Solution 53
+Solution 54
+Solution 55
+Solution 56
+Solution 57
+Solution 58
+Solution 59
+Solution 60
+Solution 61
+Solution 62
+Solution 63
+Solution 64
+Solution 65
+Solution 66
+Solution 67
+Solution 68
+Solution 69
+Solution 70
+Solution 71
+Solution 72
+Solution 73
+Solution 74
+Solution 75
+Solution 76
+Solution 77
+Solution 78
+Solution 79
+Solution 80
+Solution 81
+Solution 82
+Solution 83
+Solution 84
+Solution 85
+Solution 86
+Solution 87
+Solution 88
+Solution 89
+Solution 90
+Solution 91
+Solution 92
+Solution 93
+Solution 94
+Solution 95
+Solution 96
+Solution 97
+Solution 98
+Solution 99
+Solution 100
+Solution 101
+Solution 102
+Solution 103
+Solution 104
+Solution 105
+Solution 106
+Solution 107
+Solution 108
+Solution 109
+Solution 110
+Solution 111
+Solution 112
+Solution 113
+Solution 114
+Solution 115
+Solution 116
+Solution 117
+Solution 118
+Solution 119
+Solution 120
+Solution 121
+Solution 122
+Solution 123
+Solution 124
+Solution 125
+Solution 126
+Solution 127
+Solution 128
+Solution 129
+Solution 130
+Solution 131
+Solution 132
+Solution 133
+Solution 134
+Solution 135
+Solution 136
+Solution 137
+Solution 138
+Solution 139
+Solution 140
+Solution 141
+Solution 142
+Solution 143
+Solution 144
+Solution 145
+Solution 146
+Solution 147
+Solution 148
+Solution 149
+Solution 150
+Solution 151
+Solution 152
+Solution 153
+Solution 154
+Solution 155
+Solution 156
+Solution 157
+Solution 158
+Solution 159
+Solution 160
+Solution 161
+Solution 162
+Solution 163
+Solution 164
+Solution 165
+Solution 166
+Solution 167
+Solution 168
+Solution 169
+Solution 170
+Solution 171
+Solution 172
+Solution 173
+Solution 174
+Solution 175
+Solution 176
+Solution 177
+Solution 178
+Solution 179
+Solution 180
+Solution 181
+Solution 182
+Solution 183
+Solution 184
+Solution 185
+Solution 186
+Solution 187
+Solution 188
+Solution 189
+Solution 190
+Solution 191
+Solution 192
+Solution 193
+Solution 194
+Solution 195
+Solution 196
+Solution 197
+Solution 198
+Solution 199
+Solution 200
+Solution 201
+Solution 1
+Solution 2
+Solution 3
+Solution 4
+Solution 5
+Solution 6
+Solution 7
+Solution 8
+Solution 9
+Solution 10
+Solution 11
+Solution 12
+Solution 13
+Solution 14
+Solution 15
+Solution 16
+Solution 17
+Solution 18
+Solution 19
+Solution 20
+Solution 21
+Solution 22
+Solution 23
+Solution 24
+Solution 25
+Solution 26
+Solution 27
+Solution 28
+Solution 29
+Solution 30
+Solution 31
+Solution 32
+Solution 33
+Solution 34
+Solution 35
+Solution 36
+Solution 37
+Solution 38
+Solution 39
+Solution 40
+Solution 41
+Solution 42
+Solution 43
+Solution 44
+Solution 45
+Solution 46
+Solution 47
+Solution 48
+Solution 49
+Solution 50
+Solution 51
+Solution 52
+Solution 53
+Solution 54
+Solution 55
+Solution 56
+Solution 57
+Solution 58
+Solution 59
+Solution 60
+Solution 61
+Solution 62
+Solution 63
+Solution 64
+Solution 65
+Solution 66
+Solution 67
+Solution 68
+Solution 69
+Solution 70
+Solution 71
+Solution 72
+Solution 73
+Solution 74
+Solution 75
+Solution 76
+Solution 77
+Solution 78
+Solution 79
+Solution 80
+Solution 81
+Solution 82
+Solution 83
+Solution 84
+Solution 85
+Solution 86
+Solution 87
+Solution 88
+Solution 89
+Solution 90
+Solution 91
+Solution 92
+Solution 93
+Solution 94
+Solution 95
+Solution 96
+Solution 97
+Solution 98
+Solution 99
+Solution 100
+Solution 101
+Solution 102
+Solution 103
+Solution 104
+Solution 105
+Solution 106
+Solution 107
+Solution 108
+Solution 109
+Solution 110
+Solution 111
+Solution 112
+Solution 113
+Solution 114
+Solution 115
+Solution 116
+Solution 117
+Solution 118
+Solution 119
+Solution 120
+Solution 121
+Solution 122
+Solution 123
+Solution 124
+Solution 125
+Solution 126
+Solution 127
+Solution 128
+Solution 129
+Solution 130
+Solution 131
+Solution 132
+Solution 133
+Solution 134
+Solution 135
+Solution 136
+Solution 137
+Solution 138
+Solution 139
+Solution 140
+Solution 141
+Solution 142
+Solution 143
+Solution 144
+Solution 145
+Solution 146
+Solution 147
+Solution 148
+Solution 149
+Solution 150
+Solution 151
+Solution 152
+Solution 153
+Solution 154
+Solution 155
+Solution 156
+Solution 157
+Solution 158
+Solution 159
+Solution 160
+Solution 161
+Solution 162
+Solution 163
+Solution 164
+Solution 165
+Solution 166
+Solution 167
+Solution 168
+Solution 169
+Solution 170
+Solution 171
+Solution 172
+Solution 173
+Solution 174
+Solution 175
+Solution 176
+Solution 177
+Solution 178
+Solution 179
+Solution 180
+Solution 181
+Solution 182
+Solution 183
+Solution 184
+Solution 185
+Solution 186
+Solution 187
+Solution 188
+Solution 189
+Solution 190
+Solution 191
+Solution 192
+Solution 193
+Solution 194
+Solution 195
+Solution 196
+Solution 197
+Solution 198
+Solution 199
+Solution 200
+Solution 201
+Solution 1
+Solution 2
+Solution 3
+Solution 4
+Solution 5
+Solution 6
+Solution 7
+Solution 8
+Solution 9
+Solution 10
+Solution 11
+Solution 12
+Solution 13
+Solution 14
+Solution 15
+Solution 16
+Solution 17
+Solution 18
+Solution 19
+Solution 20
+Solution 21
+Solution 22
+Solution 23
+Solution 24
+Solution 25
+Solution 26
+Solution 27
+Solution 28
+Solution 29
+Solution 30
+Solution 31
+Solution 32
+Solution 33
+Solution 34
+Solution 35
+Solution 36
+Solution 37
+Solution 38
+Solution 39
+Solution 40
+Solution 41
+Solution 42
+Solution 43
+Solution 44
+Solution 45
+Solution 46
+Solution 47
+Solution 48
+Solution 49
+Solution 50
+Solution 51
+Solution 52
+Solution 53
+Solution 54
+Solution 55
+Solution 56
+Solution 57
+Solution 58
+Solution 59
+Solution 60
+Solution 61
+Solution 62
+Solution 63
+Solution 64
+Solution 65
+Solution 66
+Solution 67
+Solution 68
+Solution 69
+Solution 70
+Solution 71
+Solution 72
+Solution 73
+Solution 74
+Solution 75
+Solution 76
+Solution 77
+Solution 78
+Solution 79
+Solution 80
+Solution 81
+Solution 82
+Solution 83
+Solution 84
+Solution 85
+Solution 86
+Solution 87
+Solution 88
+Solution 89
+Solution 90
+Solution 91
+Solution 92
+Solution 93
+Solution 94
+Solution 95
+Solution 96
+Solution 97
+Solution 98
+Solution 99
+Solution 100
+Solution 101
+Solution 102
+Solution 103
+Solution 104
+Solution 105
+Solution 106
+Solution 107
+Solution 108
+Solution 109
+Solution 110
+Solution 111
+Solution 112
+Solution 113
+Solution 114
+Solution 115
+Solution 116
+Solution 117
+Solution 118
+Solution 119
+Solution 120
+Solution 121
+Solution 122
+Solution 123
+Solution 124
+Solution 125
+Solution 126
+Solution 127
+Solution 128
+Solution 129
+Solution 130
+Solution 131
+Solution 132
+Solution 133
+Solution 134
+Solution 135
+Solution 136
+Solution 137
+Solution 138
+Solution 139
+Solution 140
+Solution 141
+Solution 142
+Solution 143
+Solution 144
+Solution 145
+Solution 146
+Solution 147
+Solution 148
+Solution 149
+Solution 150
+Solution 151
+Solution 152
+Solution 153
+Solution 154
+Solution 155
+Solution 156
+Solution 157
+Solution 158
+Solution 159
+Solution 160
+Solution 161
+Solution 162
+Solution 163
+Solution 164
+Solution 165
+Solution 166
+Solution 167
+Solution 168
+Solution 169
+Solution 170
+Solution 171
+Solution 172
+Solution 173
+Solution 174
+Solution 175
+Solution 176
+Solution 177
+Solution 178
+Solution 179
+Solution 180
+Solution 181
+Solution 182
+Solution 183
+Solution 184
+Solution 185
+Solution 186
+Solution 187
+Solution 188
+Solution 189
+Solution 190
+Solution 191
+Solution 192
+Solution 193
+Solution 194
+Solution 195
+Solution 196
+Solution 197
+Solution 198
+Solution 199
+Solution 200
+Solution 201
+[pathz3 timing] Total wall-clock time: 11.79 s (11791.46 ms)
+exec mv PO.dat po_w.dat 
+-------------------------------
+exec mv limits_timefile.txt po_w_limits_timefile.txt 
+-------------------------------
+fb_rch 1 hsa1950 -1 hsa7422 -1 -1 15 0 
+-------------------------------
+Bound: 15
+0 out of 6 edges to target excluded due to choice of activation/expression edges to target.
+fwd nodes 128
+eids 2136
+edges 335
+Forward reachable graph id: 5 has 135 nodes 335 edges 
+New graph 6 has 59 nodes 159 edges
+Reachability Graph: 6
+size 0 
+-------------------------------
+Number of nodes: 59 (56 genes, 0 complexes, 3 compounds, 0 others) 0 isolated
+Number of edges: 159
+pathz3 0 0 /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/connect_pairs 0 0 10 10 15 po_wo /home/ks-149-u24/Desktop/arjun/FuSION/test_example/up_reg /home/ks-149-u24/Desktop/arjun/FuSION/test_example/down_reg /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/essential_wO /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/avoid_wo /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/empty_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/empty_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/active_wO /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/empty_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/empty_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/empty_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/empty_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/nonrelax_wO /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/empty_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/realistic_mapk/empty_file /home/ks-149-u24/Desktop/arjun/FuSION/test_example/fold_change.tsv 200 100 60000 300000 
+-------------------------------
+1 connect pairs
+Nodes to avoid: 1
+Edges to avoid: 0
+Nodes to be active: 2
+Nodes to be inactive: 0
+Nodes not to relax: 2
+Edges not to relax: 0
+
+Up: 18 Down: 27
+Beginning to generate constraints
+Source: (hsa1950) Target: (hsa7422)
+Finished generating constraints
+Not printing matrices in the current run
+Solving constraints to generate PO points...
+This may take some time ... See limits_timefile.txt to check progress
+(3, 6)
+(0, 7)
+2 PO points found
+(0 ,7) is not dominated
+(3 ,6) is not dominated
+Solution 1
+Solution 2
+Solution 3
+Solution 4
+Solution 5
+Solution 6
+Solution 7
+Solution 8
+Solution 9
+Solution 10
+Solution 11
+Solution 12
+Solution 13
+Solution 14
+Solution 15
+Solution 16
+Solution 17
+Solution 18
+Solution 19
+Solution 20
+Solution 21
+Solution 22
+Solution 23
+Solution 24
+Solution 25
+Solution 26
+Solution 27
+Solution 28
+Solution 29
+Solution 30
+Solution 31
+Solution 32
+Solution 33
+Solution 34
+Solution 35
+Solution 36
+Solution 37
+Solution 38
+Solution 39
+Solution 40
+Solution 41
+Solution 42
+Solution 43
+Solution 44
+Solution 45
+Solution 46
+Solution 47
+Solution 48
+Solution 49
+Solution 50
+Solution 51
+Solution 52
+Solution 53
+Solution 54
+Solution 55
+Solution 56
+Solution 57
+Solution 58
+Solution 59
+Solution 60
+Solution 61
+Solution 62
+Solution 63
+Solution 64
+Solution 65
+Solution 66
+Solution 67
+Solution 68
+Solution 69
+Solution 70
+Solution 71
+Solution 72
+Solution 73
+Solution 74
+Solution 75
+Solution 76
+Solution 77
+Solution 78
+Solution 79
+Solution 80
+Solution 81
+Solution 82
+Solution 83
+Solution 84
+Solution 85
+Solution 86
+Solution 87
+Solution 88
+Solution 89
+Solution 90
+Solution 91
+Solution 92
+Solution 93
+Solution 94
+Solution 95
+Solution 96
+Solution 97
+Solution 98
+Solution 99
+Solution 100
+Solution 101
+Solution 102
+Solution 103
+Solution 104
+Solution 105
+Solution 106
+Solution 107
+Solution 108
+Solution 109
+Solution 110
+Solution 111
+Solution 112
+Solution 113
+Solution 114
+Solution 115
+Solution 116
+Solution 117
+Solution 118
+Solution 119
+Solution 120
+Solution 121
+Solution 122
+Solution 123
+Solution 124
+Solution 125
+Solution 126
+Solution 127
+Solution 128
+Solution 129
+Solution 130
+Solution 131
+Solution 132
+Solution 133
+Solution 134
+Solution 135
+Solution 136
+Solution 137
+Solution 138
+Solution 139
+Solution 140
+Solution 141
+Solution 142
+Solution 143
+Solution 144
+Solution 145
+Solution 146
+Solution 147
+Solution 148
+Solution 149
+Solution 150
+Solution 151
+Solution 152
+Solution 153
+Solution 154
+Solution 155
+Solution 156
+Solution 157
+Solution 158
+Solution 159
+Solution 160
+Solution 161
+Solution 162
+Solution 163
+Solution 164
+Solution 165
+Solution 166
+Solution 167
+Solution 168
+Solution 169
+Solution 170
+Solution 171
+Solution 172
+Solution 173
+Solution 174
+Solution 175
+Solution 176
+Solution 177
+Solution 178
+Solution 179
+Solution 180
+Solution 181
+Solution 182
+Solution 183
+Solution 184
+Solution 185
+Solution 186
+Solution 187
+Solution 188
+Solution 189
+Solution 190
+Solution 191
+Solution 192
+Solution 193
+Solution 194
+Solution 195
+Solution 196
+Solution 197
+Solution 198
+Solution 199
+Solution 200
+Solution 201
+Solution 1
+Solution 2
+Solution 3
+Solution 4
+Solution 5
+Solution 6
+Solution 7
+Solution 8
+Solution 9
+Solution 10
+Solution 11
+Solution 12
+Solution 13
+Solution 14
+Solution 15
+Solution 16
+Solution 17
+Solution 18
+Solution 19
+Solution 20
+Solution 21
+Solution 22
+Solution 23
+Solution 24
+Solution 25
+Solution 26
+Solution 27
+Solution 28
+Solution 29
+Solution 30
+Solution 31
+Solution 32
+Solution 33
+Solution 34
+Solution 35
+Solution 36
+Solution 37
+Solution 38
+Solution 39
+Solution 40
+Solution 41
+Solution 42
+Solution 43
+Solution 44
+Solution 45
+Solution 46
+Solution 47
+Solution 48
+Solution 49
+Solution 50
+Solution 51
+Solution 52
+Solution 53
+Solution 54
+Solution 55
+Solution 56
+Solution 57
+Solution 58
+Solution 59
+Solution 60
+Solution 61
+Solution 62
+Solution 63
+Solution 64
+Solution 65
+Solution 66
+Solution 67
+Solution 68
+Solution 69
+Solution 70
+Solution 71
+Solution 72
+Solution 73
+Solution 74
+Solution 75
+Solution 76
+Solution 77
+Solution 78
+Solution 79
+Solution 80
+Solution 81
+Solution 82
+Solution 83
+Solution 84
+Solution 85
+Solution 86
+Solution 87
+Solution 88
+Solution 89
+Solution 90
+Solution 91
+Solution 92
+Solution 93
+Solution 94
+Solution 95
+Solution 96
+Solution 97
+Solution 98
+Solution 99
+Solution 100
+Solution 101
+Solution 102
+Solution 103
+Solution 104
+Solution 105
+Solution 106
+Solution 107
+Solution 108
+Solution 109
+Solution 110
+Solution 111
+Solution 112
+Solution 113
+Solution 114
+Solution 115
+Solution 116
+Solution 117
+Solution 118
+Solution 119
+Solution 120
+Solution 121
+Solution 122
+Solution 123
+Solution 124
+Solution 125
+Solution 126
+Solution 127
+Solution 128
+Solution 129
+Solution 130
+Solution 131
+Solution 132
+Solution 133
+Solution 134
+Solution 135
+Solution 136
+Solution 137
+Solution 138
+Solution 139
+Solution 140
+Solution 141
+Solution 142
+Solution 143
+Solution 144
+Solution 145
+Solution 146
+Solution 147
+Solution 148
+Solution 149
+Solution 150
+Solution 151
+Solution 152
+Solution 153
+Solution 154
+Solution 155
+Solution 156
+Solution 157
+Solution 158
+Solution 159
+Solution 160
+Solution 161
+Solution 162
+Solution 163
+Solution 164
+Solution 165
+Solution 166
+Solution 167
+Solution 168
+Solution 169
+Solution 170
+Solution 171
+Solution 172
+Solution 173
+Solution 174
+Solution 175
+Solution 176
+Solution 177
+Solution 178
+Solution 179
+Solution 180
+Solution 181
+Solution 182
+Solution 183
+Solution 184
+Solution 185
+Solution 186
+Solution 187
+Solution 188
+Solution 189
+Solution 190
+Solution 191
+Solution 192
+Solution 193
+Solution 194
+Solution 195
+Solution 196
+Solution 197
+Solution 198
+Solution 199
+Solution 200
+Solution 201
+[pathz3 timing] Total wall-clock time: 6.20 s (6203.04 ms)
+exec mv PO.dat po_wo.dat 
+-------------------------------
+exec mv limits_timefile.txt po_wo_limits_timefile.txt 
+-------------------------------
+exec gnuplot -p -e "set term png size 900,650; set output 'pareto.png'; set title 'Pareto frontier: hsa1950 -> hsa7422 (FSC hsa4609)'; set xlabel 'Node relaxn'; set ylabel 'Edge relaxn'; set xrange [-0.5:10.5]; set yrange [-0.5:10.5]; set grid; plot 'po_w.dat' with lp lw 2 pt 7 ps 1.5 linecolor 'blue' title 'with FSC (hsa4609)', 'po_wo.dat' with lp lw 2 pt 5 ps 1.3 linecolor 'red' title 'without FSC (hsa4609)'; exit" 
+-------------------------------
+exit 
+-------------------------------
+Number of Log entries made totally:0
+
+ LogManager Object is deleted 
+
+
