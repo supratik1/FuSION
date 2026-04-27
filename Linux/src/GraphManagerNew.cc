@@ -268,6 +268,8 @@ EdgeNew::EdgeNew()
     weight_tuple.push_back(0);
     weight_tuple.push_back(0);
     weight_tuple.push_back(0);
+
+    weight_f = 0.0f;
 }
 
 inline int EdgeNew::get_edge_id()
@@ -27287,7 +27289,7 @@ void GraphManagerNew::compute_min_cut_for_ghtree_relabel_to_front(GraphNew *orig
         var_to_expr_map.insert(pair<string, z3::expr>(var, curr_expr));
     }
 
-    void GraphManagerNew::get_connectivity_with_z3(z3::context & c, z3::solver & s, map<string, z3::expr> & all_z3_var_to_expr_map, int graph_gid, int ugraph_gid, vector<vector<bool>> &closure_matrix, vector<set<int>> &cut_edges, vector<int> &gomoryhu_parents, vector<vector<int>> &call_level_matrix, vector<vector<int>> &edge_level_matrix, vector<vector<int>> &call_count_matrix, vector<vector<int>> &edge_count_matrix, vector<pair<int, int>> &connect_pairs, int path_bound, set<int> &nids_as_source, set<int> &nids_as_target, set<int> &up_reg_nids_to_use, set<int> &down_reg_nids_to_use, set<int> &essential_nids, set<int> &avoid_nids, set<int> &essential_eids, set<int> &avoid_eids, set<int> &active_nids, set<int> &inactive_nids, set<int> &confirmed_up_reg_nids, set<int> &confirmed_down_reg_nids, set<int> &relaxed_nids, set<int> &nonrelaxed_nids, set<int> &relaxed_eids, set<int> &nonrelaxed_eids, string fold_change_filename, string file_prefix)
+    void GraphManagerNew::get_connectivity_with_z3(z3::context & c, z3::solver & s, map<string, z3::expr> & all_z3_var_to_expr_map, int graph_gid, int ugraph_gid, vector<vector<bool>> &closure_matrix, vector<set<int>> &cut_edges, vector<int> &gomoryhu_parents, vector<vector<int>> &call_level_matrix, vector<vector<int>> &edge_level_matrix, vector<vector<int>> &call_count_matrix, vector<vector<int>> &edge_count_matrix, vector<pair<int, int>> &connect_pairs, int path_bound, set<int> &nids_as_source, set<int> &nids_as_target, set<int> &up_reg_nids_to_use, set<int> &down_reg_nids_to_use, set<int> &essential_nids, set<int> &avoid_nids, set<int> &essential_eids, set<int> &avoid_eids, set<int> &active_nids, set<int> &inactive_nids, set<int> &confirmed_up_reg_nids, set<int> &confirmed_down_reg_nids, set<int> &relaxed_nids, set<int> &nonrelaxed_nids, set<int> &relaxed_eids, set<int> &nonrelaxed_eids, string fold_change_filename, string file_prefix, const set<pair<int, int>> & coexp_pairs, float exp_score_threshold)
     {
 
         GraphNew *graph = get_graph(graph_gid);
@@ -27304,10 +27306,10 @@ void GraphManagerNew::compute_min_cut_for_ghtree_relabel_to_front(GraphNew *orig
             return;
         }
 
-        generate_connectivity_constraints_with_z3(c, s, all_z3_var_to_expr_map, graph, ugraph, closure_matrix, cut_edges, gomoryhu_parents, call_level_matrix, edge_level_matrix, call_count_matrix, edge_count_matrix, connect_pairs, path_bound, nids_as_source, nids_as_target, up_reg_nids_to_use, down_reg_nids_to_use, essential_nids, avoid_nids, essential_eids, avoid_eids, active_nids, inactive_nids, confirmed_up_reg_nids, confirmed_down_reg_nids, relaxed_nids, nonrelaxed_nids, relaxed_eids, nonrelaxed_eids, fold_change_filename, file_prefix);
+        generate_connectivity_constraints_with_z3(c, s, all_z3_var_to_expr_map, graph, ugraph, closure_matrix, cut_edges, gomoryhu_parents, call_level_matrix, edge_level_matrix, call_count_matrix, edge_count_matrix, connect_pairs, path_bound, nids_as_source, nids_as_target, up_reg_nids_to_use, down_reg_nids_to_use, essential_nids, avoid_nids, essential_eids, avoid_eids, active_nids, inactive_nids, confirmed_up_reg_nids, confirmed_down_reg_nids, relaxed_nids, nonrelaxed_nids, relaxed_eids, nonrelaxed_eids, fold_change_filename, file_prefix, coexp_pairs, exp_score_threshold);
     }
 
-    void GraphManagerNew::generate_connectivity_constraints_with_z3(z3::context & c, z3::solver & s, map<string, z3::expr> & all_z3_var_to_expr_map, GraphNew * graph, GraphNew * ugraph, vector<vector<bool>> & closure_matrix, vector<set<int>> & cut_edges, vector<int> & gomoryhu_parents, vector<vector<int>> & call_level_matrix, vector<vector<int>> & edge_level_matrix, vector<vector<int>> & call_count_matrix, vector<vector<int>> & edge_count_matrix, vector<pair<int, int>> & connect_pairs, int path_bound, set<int> &nids_as_source, set<int> &nids_as_target, set<int> &up_reg_nids_to_use, set<int> &down_reg_nids_to_use, set<int> &essential_nids, set<int> &avoid_nids, set<int> &essential_eids, set<int> &avoid_eids, set<int> &active_nids, set<int> &inactive_nids, set<int> &confirmed_up_reg_nids, set<int> &confirmed_down_reg_nids, set<int> &relaxed_nids, set<int> &nonrelaxed_nids, set<int> &relaxed_eids, set<int> &nonrelaxed_eids, string fold_change_filename, string file_prefix)
+    void GraphManagerNew::generate_connectivity_constraints_with_z3(z3::context & c, z3::solver & s, map<string, z3::expr> & all_z3_var_to_expr_map, GraphNew * graph, GraphNew * ugraph, vector<vector<bool>> & closure_matrix, vector<set<int>> & cut_edges, vector<int> & gomoryhu_parents, vector<vector<int>> & call_level_matrix, vector<vector<int>> & edge_level_matrix, vector<vector<int>> & call_count_matrix, vector<vector<int>> & edge_count_matrix, vector<pair<int, int>> & connect_pairs, int path_bound, set<int> &nids_as_source, set<int> &nids_as_target, set<int> &up_reg_nids_to_use, set<int> &down_reg_nids_to_use, set<int> &essential_nids, set<int> &avoid_nids, set<int> &essential_eids, set<int> &avoid_eids, set<int> &active_nids, set<int> &inactive_nids, set<int> &confirmed_up_reg_nids, set<int> &confirmed_down_reg_nids, set<int> &relaxed_nids, set<int> &nonrelaxed_nids, set<int> &relaxed_eids, set<int> &nonrelaxed_eids, string fold_change_filename, string file_prefix, const set<pair<int, int>> & coexp_pairs, float exp_score_threshold)
     {
 
         string all_pair_file_name = file_prefix + "_mincuts";
@@ -27351,6 +27353,9 @@ void GraphManagerNew::compute_min_cut_for_ghtree_relabel_to_front(GraphNew *orig
         get_every_path_has_diff_exp_node_constraints_with_z3(c, s, all_z3_var_to_expr_map, graph, nids_to_consider, eids_to_consider, up_reg_nids_to_use, down_reg_nids_to_use, nids_as_source, nids_as_target);
 
         get_edge_activation_status_relaxation_constraints_with_z3(c, s, all_z3_var_to_expr_map, graph, eids_to_consider, up_reg_nids_to_use, down_reg_nids_to_use);
+
+        get_coexpression_constraints_with_z3(c, s, all_z3_var_to_expr_map, graph, coexp_pairs, nids_to_consider);
+        get_frozen_edge_constraints_with_z3(c, s, all_z3_var_to_expr_map, graph, eids_to_consider, exp_score_threshold);
 
         // Currently asserting single source node must be active
         string main_src_active_var = "__nodeactive_" + IntToString(main_src_nid);
@@ -28144,6 +28149,118 @@ void GraphManagerNew::compute_min_cut_for_ghtree_relabel_to_front(GraphNew *orig
         }
 
         s.add(ule(to_ADD, all_z3_var_to_expr_map.at(edge_bound_var)));
+    }
+
+    void GraphManagerNew::load_coexpression_pairs_from_csv(GraphNew * graph, const string & csv_filename, float threshold, set<pair<int, int>> & out_pairs)
+    {
+        if (csv_filename.empty() || threshold < 0)
+            return;
+
+        ifstream in(csv_filename.c_str());
+        if (!in.is_open())
+        {
+            cerr << "Coexpression CSV " + csv_filename + " could not be opened." << endl;
+            return;
+        }
+
+        string line;
+        if (!getline(in, line))
+            return;
+
+        while (getline(in, line))
+        {
+            int comma_count = 0;
+            size_t col2_start = 0, col3_start = 0, col4_start = 0;
+            
+            for (size_t i = 0; i < line.length(); ++i) {
+                if (line[i] == ',') {
+                    comma_count++;
+                    if (comma_count == 2) col2_start = i + 1;
+                    else if (comma_count == 3) col3_start = i + 1;
+                    else if (comma_count == 4) col4_start = i + 1;
+                }
+            }
+
+            if (comma_count < 4) continue;
+
+            float score;
+            try { score = stof(line.substr(col4_start)); } 
+            catch (...) { continue; }
+            
+            if (score <= threshold) continue;
+
+            string hsa1 = line.substr(col2_start, col3_start - col2_start - 1);
+            string hsa2 = line.substr(col3_start, col4_start - col3_start - 1);
+
+            hsa1.erase(std::remove(hsa1.begin(), hsa1.end(), ':'), hsa1.end());
+            hsa2.erase(std::remove(hsa2.begin(), hsa2.end(), ':'), hsa2.end());
+
+            string ra = graph->get_rep_id_from_id(hsa1);
+            string rb = graph->get_rep_id_from_id(hsa2);
+            if (ra.empty() || rb.empty()) continue;
+
+            int nu = graph->get_nid_from_rep_id(ra);
+            int nv = graph->get_nid_from_rep_id(rb);
+            
+            if (nu < 0 || nv < 0 || nu == nv) continue;
+
+            if (nu > nv) std::swap(nu, nv);
+            
+            out_pairs.insert(make_pair(nu, nv));
+        }
+        in.close();
+
+        cout << "Loaded " << out_pairs.size() << " coexpression pairs from " << csv_filename
+             << " at threshold > " << threshold << endl;
+    }
+
+    void GraphManagerNew::get_coexpression_constraints_with_z3(z3::context & c, z3::solver & s, map<string, z3::expr> & all_z3_var_to_expr_map, GraphNew * graph, const set<pair<int, int>> & coexp_pairs, set<int> & nids_to_consider)
+    {
+        size_t added = 0;
+        for (auto & pr : coexp_pairs)
+        {
+            int u = pr.first;
+            int v = pr.second;
+            if (!nids_to_consider.count(u) || !nids_to_consider.count(v))
+                continue;
+
+            string pu_key = "__node_" + IntToString(u);
+            string pv_key = "__node_" + IntToString(v);
+            string au_key = "__nodeactive_" + IntToString(u);
+            string av_key = "__nodeactive_" + IntToString(v);
+
+            auto pu = all_z3_var_to_expr_map.find(pu_key);
+            auto pv = all_z3_var_to_expr_map.find(pv_key);
+            auto au = all_z3_var_to_expr_map.find(au_key);
+            auto av = all_z3_var_to_expr_map.find(av_key);
+            if (pu == all_z3_var_to_expr_map.end() || pv == all_z3_var_to_expr_map.end()
+                || au == all_z3_var_to_expr_map.end() || av == all_z3_var_to_expr_map.end())
+                continue;
+
+            s.add(z3::implies(pu->second && pv->second, au->second == av->second));
+            added++;
+        }
+        cerr << "[coexpression] emitted " << added << " clauses" << endl;
+    }
+
+    void GraphManagerNew::get_frozen_edge_constraints_with_z3(z3::context & c, z3::solver & s, map<string, z3::expr> & all_z3_var_to_expr_map, GraphNew * graph, set<int> & eids_to_consider, float exp_score_threshold)
+    {
+        if (exp_score_threshold < 0)
+            return;
+
+        size_t added = 0;
+        for (int eid : eids_to_consider)
+        {
+            if (graph->get_edge_weight_float(eid) <= exp_score_threshold)
+                continue;
+            string rk = "__edgerelax_" + IntToString(eid);
+            auto it = all_z3_var_to_expr_map.find(rk);
+            if (it == all_z3_var_to_expr_map.end())
+                continue;
+            s.add(!it->second);
+            added++;
+        }
+        cerr << "[frozen-edge] emitted " << added << " clauses" << endl;
     }
 
     void GraphManagerNew::get_every_path_has_diff_exp_node_constraints_with_z3(z3::context & c, z3::solver & s, map<string, z3::expr> & all_z3_var_to_expr_map, GraphNew * graph, set<int> & nids_to_consider, set<int> & eids_to_consider, set<int> & up_reg_nids, set<int> & down_reg_nids, set<int> & nids_as_source, set<int> & nids_as_target)

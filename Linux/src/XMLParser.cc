@@ -1503,14 +1503,21 @@ void XMLParser::process_edge(GraphNew* graph_ptr, int source_node_id, int target
 		for(vector<string>::iterator subt_itr = subtype.begin(); subt_itr != subtype.end(); subt_itr++){
 			graph_ptr->add_subtype_for_edge(eid, *subt_itr);
 		}
-                
-                
+
+		{
+			string exp_score_str = edgeElement->get_attribute_value("experiment_score");
+			if (!exp_score_str.empty()) {
+				try { graph_ptr->set_edge_weight_float(eid, stof(exp_score_str)); }
+				catch (...) { /* malformed -> leave default 0.0f */ }
+			}
+		}
+
 #ifdef DUMMY_EDGE_FLAG
                 if(is_undirected && !tool_written){
                         if (graph_ptr->get_rep_id_from_nid(source_node_id) > graph_ptr->get_rep_id_from_nid(target_node_id))
                                 graph_ptr->add_subtype_for_edge(eid, "dummy_u_to_d");
                 }
-#endif                
+#endif
 
 		if(tool_written){
 			string all_pathways_str = edgeElement->get_attribute_value("pathways");
@@ -1555,6 +1562,14 @@ void XMLParser::process_edge(GraphNew* graph_ptr, int source_node_id, int target
                         for(vector<string>::iterator subt_itr = subtype.begin(); subt_itr != subtype.end(); subt_itr++){
 				graph_ptr->add_subtype_for_edge(eid, *subt_itr);
  			}
+
+			{
+				string exp_score_str = edgeElement->get_attribute_value("experiment_score");
+				if (!exp_score_str.empty()) {
+					try { graph_ptr->set_edge_weight_float(eid, stof(exp_score_str)); }
+					catch (...) { /* malformed -> leave default 0.0f */ }
+				}
+			}
 #ifdef DUMMY_EDGE_FLAG
                         if (graph_ptr->get_rep_id_from_nid(target_node_id) > graph_ptr->get_rep_id_from_nid(source_node_id))
                                 graph_ptr->add_subtype_for_edge(eid, "dummy_u_to_d");
