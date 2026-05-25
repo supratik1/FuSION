@@ -484,6 +484,20 @@ public:
         void set_unique_prefix(std::string u_prefix);
         std::string get_unique_prefix();
 
+        // Per-run subdirectory for s.to_smt2() debug dumps. Empty (default) = write to CWD,
+        // matching legacy behaviour. Includes the trailing '/' when set, so call sites
+        // can do `get_smt_dump_dir() + "PO_constraints_..."` unconditionally.
+        std::string smt_dump_dir;
+        void set_smt_dump_dir(std::string d);
+        std::string get_smt_dump_dir();
+
+        // Pinned z3 random seed for reproducibility. -1 (default) = unset (no
+        // (set-option :smt.random-seed ...) line is prepended to dumps and no
+        // param is set on the solver). Set from main.cc on a per-pathz3-call basis.
+        int z3_random_seed;
+        void set_z3_random_seed(int seed);
+        int get_z3_random_seed();
+
 private:
         // unique_prefix and get_unique_prefix need to be public probably.
         // std::string unique_prefix; // Added by Supratik to prevent race between
@@ -798,8 +812,8 @@ public:
         void create_bool_expressions_two_ids_with_z3(z3::context &c, vector<pair<int, int>> &id_pairs, string var_prefix, string delimiter, map<string, z3::expr> &var_to_expr_map);
         void create_bv_expressions_one_id_with_z3(z3::context &c, vector<int> &ids, string var_prefix, int width, map<string, z3::expr> &var_to_expr_map);
         void create_bv_expression_single_var_with_z3(z3::context &c, string var, int width, map<string, z3::expr> &var_to_expr_map);
-        void get_connectivity_with_z3(z3::context &c, z3::solver &s, map<string, z3::expr> &all_z3_var_to_expr_map, int graph_gid, int ugraph_gid, vector<vector<bool>> &closure_matrix, vector<set<int>> &cut_edges, vector<int> &gomoryhu_parents, vector<vector<int>> &call_level_matrix, vector<vector<int>> &edge_level_matrix, vector<vector<int>> &call_count_matrix, vector<vector<int>> &edge_count_matrix, vector<pair<int, int>> &connect_pairs, int path_bound, set<int> &nids_as_source, set<int> &nids_as_target, set<int> &up_reg_nids_to_use, set<int> &down_reg_nids_to_use, set<int> &essential_nids, set<int> &avoid_nids, set<int> &essential_eids, set<int> &avoid_eids, set<int> &active_nids, set<int> &inactive_nids, set<int> &confirmed_up_reg_nids, set<int> &confirmed_down_reg_nids, set<int> &relaxed_nids, set<int> &nonrelaxed_nids, set<int> &relaxed_eids, set<int> &nonrelaxed_eids, string fold_change_filename, string file_prefix, const set<pair<int, int>> &coexp_pairs, float exp_score_threshold);
-        void generate_connectivity_constraints_with_z3(z3::context &c, z3::solver &s, map<string, z3::expr> &all_z3_var_to_expr_map, GraphNew *graph, GraphNew *ugraph, vector<vector<bool>> &closure_matrix, vector<set<int>> &cut_edges, vector<int> &gomoryhu_parents, vector<vector<int>> &call_level_matrix, vector<vector<int>> &edge_level_matrix, vector<vector<int>> &call_count_matrix, vector<vector<int>> &edge_count_matrix, vector<pair<int, int>> &connect_pairs, int path_bound, set<int> &nids_as_source, set<int> &nids_as_target, set<int> &up_reg_nids_to_use, set<int> &down_reg_nids_to_use, set<int> &essential_nids, set<int> &avoid_nids, set<int> &essential_eids, set<int> &avoid_eids, set<int> &active_nids, set<int> &inactive_nids, set<int> &confirmed_up_reg_nids, set<int> &confirmed_down_reg_nids, set<int> &relaxed_nids, set<int> &nonrelaxed_nids, set<int> &relaxed_eids, set<int> &nonrelaxed_eids, string fold_change_filename, string file_prefix, const set<pair<int, int>> &coexp_pairs, float exp_score_threshold);
+        void get_connectivity_with_z3(z3::context &c, z3::solver &s, map<string, z3::expr> &all_z3_var_to_expr_map, int graph_gid, int ugraph_gid, vector<vector<bool>> &closure_matrix, vector<set<int>> &cut_edges, vector<int> &gomoryhu_parents, vector<vector<int>> &call_level_matrix, vector<vector<int>> &edge_level_matrix, vector<vector<int>> &call_count_matrix, vector<vector<int>> &edge_count_matrix, vector<pair<int, int>> &connect_pairs, int path_bound, set<int> &nids_as_source, set<int> &nids_as_target, set<int> &up_reg_nids_to_use, set<int> &down_reg_nids_to_use, set<int> &essential_nids, set<int> &avoid_nids, set<int> &essential_eids, set<int> &avoid_eids, set<int> &active_nids, set<int> &inactive_nids, set<int> &confirmed_up_reg_nids, set<int> &confirmed_down_reg_nids, set<int> &relaxed_nids, set<int> &nonrelaxed_nids, set<int> &relaxed_eids, set<int> &nonrelaxed_eids, string fold_change_filename, string file_prefix, const set<pair<int, int>> &coexp_pairs, float exp_score_threshold, bool new_constraints_enabled);
+        void generate_connectivity_constraints_with_z3(z3::context &c, z3::solver &s, map<string, z3::expr> &all_z3_var_to_expr_map, GraphNew *graph, GraphNew *ugraph, vector<vector<bool>> &closure_matrix, vector<set<int>> &cut_edges, vector<int> &gomoryhu_parents, vector<vector<int>> &call_level_matrix, vector<vector<int>> &edge_level_matrix, vector<vector<int>> &call_count_matrix, vector<vector<int>> &edge_count_matrix, vector<pair<int, int>> &connect_pairs, int path_bound, set<int> &nids_as_source, set<int> &nids_as_target, set<int> &up_reg_nids_to_use, set<int> &down_reg_nids_to_use, set<int> &essential_nids, set<int> &avoid_nids, set<int> &essential_eids, set<int> &avoid_eids, set<int> &active_nids, set<int> &inactive_nids, set<int> &confirmed_up_reg_nids, set<int> &confirmed_down_reg_nids, set<int> &relaxed_nids, set<int> &nonrelaxed_nids, set<int> &relaxed_eids, set<int> &nonrelaxed_eids, string fold_change_filename, string file_prefix, const set<pair<int, int>> &coexp_pairs, float exp_score_threshold, bool new_constraints_enabled);
 
         void load_coexpression_pairs_from_csv(GraphNew *graph, const string &csv_filename, float threshold, set<pair<int, int>> &out_pairs);
         void get_coexpression_constraints_with_z3(z3::context &c, z3::solver &s, map<string, z3::expr> &all_z3_var_to_expr_map, GraphNew *graph, const set<pair<int, int>> &coexp_pairs, set<int> &nids_to_consider);

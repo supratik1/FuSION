@@ -25,6 +25,8 @@
 
 // #include "../include/Rules.h"
 #include <ctime>
+#include <sys/stat.h>  // mkdir for per-run SMT2 dump directory
+#include <cerrno>
 #include <unistd.h>
 #include <math.h> // required for 'sleep' on gcc version >= 4.7
 #include <vector>
@@ -857,6 +859,33 @@ extern int yyparse();
 extern FILE *yyin;
 extern list<rule_t *> list_of_rules;
 
+// Returns "<basename(fc) without extension>_smt-files_<YYYYMMDD_HHMMSS>/" and
+// mkdir's it under CWD. Always returns a non-empty string with trailing '/'.
+// If mkdir fails for any reason other than EEXIST, returns "" so call sites
+// fall back to legacy CWD-relative writes.
+static std::string make_smt_dump_dir_for(const std::string &fold_change_filename)
+{
+    std::string fc_base = fold_change_filename;
+    size_t slash = fc_base.find_last_of('/');
+    if (slash != std::string::npos) fc_base = fc_base.substr(slash + 1);
+    size_t dot = fc_base.find_last_of('.');
+    if (dot != std::string::npos) fc_base = fc_base.substr(0, dot);
+    if (fc_base.empty()) fc_base = "fusion";
+
+    std::time_t now = std::time(nullptr);
+    char ts[32];
+    std::strftime(ts, sizeof(ts), "%Y%m%d_%H%M%S", std::localtime(&now));
+
+    std::string dir = fc_base + "_smt-files_" + ts;
+    if (mkdir(dir.c_str(), 0755) != 0 && errno != EEXIST)
+    {
+        std::cerr << "[smt-dump] could not create " << dir << " (errno=" << errno
+                  << "); falling back to CWD" << std::endl;
+        return "";
+    }
+    return dir + "/";
+}
+
 void display_commands()
 {
     cout << endl;
@@ -872,7 +901,8 @@ void display_commands()
     cout << "read_graph_xml \t(or rgx) \t<filename> \t<merge_flag> \t<node_split_threshold>" << endl;
     cout << "size \t(or sz) \t<graph-id>" << endl;
     cout << "fwd_bkwd_rch \t(or fb_rch) \t<graph-id> \t<src> \t<-1> \t<tgt> \t<-1> \t<-1> \t<path_bound> \t<edges_to_tgt>" << endl;
-    cout << "pathz3 \t(or get_path_with_z3) \t<args ...> \t[coexpression_csv] \t[coexpr_threshold] \t[exp_score_threshold]" << endl;
+    cout << "pathz3 \t(or get_path_with_z3) \t<args ...> \t[coexpression_csv] \t[coexpr_threshold] \t[exp_score_threshold] \t[new_constraints_enabled (0|1, default 0)] \t[z3_random_seed (default 42)]" << endl;
+    cout << "add \t<input_edges_file> \t<output_xml_file>" << endl;
     cout << "exit" << endl;
     cout << endl;
 }
@@ -4481,9 +4511,21 @@ int main(int argc, char *argv[])
 
                 // optional: coexpression + frozen-edge constraints (appended trailing args)
                 // token_cmd is pre-sized to 1e6 empty strings; guard on empty, not size().
+                //
+                // Trailing arg layout (all optional):
+                //   [coexpression_csv]  [coexp_threshold]  [exp_score_threshold]
+                //   [new_constraints_enabled (0|1, default 0)]
+                //   [z3_random_seed (uint, default 42)]
+                //
+                // new_constraints_enabled gates BOTH the coexpression and frozen-edge
+                // constraint emission as one combined toggle, for diff-based debugging.
+                // When 0, the SMT2 dump from this pathz3 call differs from a 1-run only
+                // by the new (assert ...) blocks (no declare-fun deltas).
                 string coexpression_csv_filename = "";
                 float coexp_threshold = -1.0f;
                 float exp_score_threshold = -1.0f;
+                bool new_constraints_enabled = false;
+                int z3_random_seed = 42;
                 if (b_mode)
                 {
                     if (cmd_index < (int)token_cmd.size() && !token_cmd[cmd_index].empty())
@@ -4498,12 +4540,38 @@ int main(int argc, char *argv[])
                         try { exp_score_threshold = stof(token_cmd[cmd_index]); cmd_index++; }
                         catch (...) { /* leave default */ }
                     }
+                    if (cmd_index < (int)token_cmd.size() && !token_cmd[cmd_index].empty())
+                    {
+                        try { new_constraints_enabled = (stoi(token_cmd[cmd_index]) != 0); cmd_index++; }
+                        catch (...) { /* leave default */ }
+                    }
+                    if (cmd_index < (int)token_cmd.size() && !token_cmd[cmd_index].empty())
+                    {
+                        try { z3_random_seed = stoi(token_cmd[cmd_index]); cmd_index++; }
+                        catch (...) { /* leave default */ }
+                    }
                 }
 
+                cout << "[new-constraints] enabled=" << (new_constraints_enabled ? 1 : 0)
+                     << " z3_random_seed=" << z3_random_seed << endl;
+
                 set<pair<int, int>> coexp_pairs;
-                graph_man->load_coexpression_pairs_from_csv(graph, coexpression_csv_filename, coexp_threshold, coexp_pairs);
+                if (new_constraints_enabled)
+                    graph_man->load_coexpression_pairs_from_csv(graph, coexpression_csv_filename, coexp_threshold, coexp_pairs);
 
                 file_prefix = OUTPUT_FILES_DIR_PREFIX + file_prefix;
+
+                // Per-run SMT2 dump directory: <fc_basename>_smt-files_<datetime>/
+                // s.to_smt2() debug dumps inside GraphManagerNew read this via get_smt_dump_dir().
+                graph_man->set_smt_dump_dir(make_smt_dump_dir_for(fold_change_filename));
+                if (!graph_man->get_smt_dump_dir().empty())
+                    cout << "[smt-dump] writing SMT2 dumps to " << graph_man->get_smt_dump_dir() << endl;
+
+                // Pin the z3 random seed for reproducibility. The same value is also
+                // prepended to every s.to_smt2() dump as `(set-option :smt.random-seed N)`
+                // so a standalone z3 invocation on the dumped SMT2 reproduces the
+                // in-process behaviour byte-for-byte.
+                graph_man->set_z3_random_seed(z3_random_seed);
 
                 set<int> nids_as_source;
                 set<int> nids_as_target;
@@ -4658,6 +4726,7 @@ int main(int argc, char *argv[])
 
                 p.set(":solver2_timeout", (unsigned)timeout1); // timeout for incremental solver
                 p.set(":timeout", (unsigned)timeout2);         // overall timeout
+                p.set("random_seed", (unsigned)z3_random_seed); // reproducibility
 
                 // p.set(":verbose", 15u); // verbosity level 15
                 s.set(p);
@@ -4689,7 +4758,7 @@ int main(int argc, char *argv[])
 
                 cout << "Beginning to generate constraints" << endl;
 
-                graph_man->get_connectivity_with_z3(c, s, var_to_expr_map, graphnum, graphnum_undirected, closure_matrix, cut_edges, gomoryhu_parents, call_level_matrix, edge_level_matrix, call_count_matrix, edge_count_matrix, connect_pairs, path_bound, nids_as_source, nids_as_target, up_reg_nids_to_use, down_reg_nids_to_use, essential_nids, avoid_nids, essential_eids, avoid_eids, active_nids, inactive_nids, confirmed_up_reg_nids, confirmed_down_reg_nids, relaxed_nids, nonrelaxed_nids, relaxed_eids, nonrelaxed_eids, fold_change_filename, file_prefix, coexp_pairs, exp_score_threshold);
+                graph_man->get_connectivity_with_z3(c, s, var_to_expr_map, graphnum, graphnum_undirected, closure_matrix, cut_edges, gomoryhu_parents, call_level_matrix, edge_level_matrix, call_count_matrix, edge_count_matrix, connect_pairs, path_bound, nids_as_source, nids_as_target, up_reg_nids_to_use, down_reg_nids_to_use, essential_nids, avoid_nids, essential_eids, avoid_eids, active_nids, inactive_nids, confirmed_up_reg_nids, confirmed_down_reg_nids, relaxed_nids, nonrelaxed_nids, relaxed_eids, nonrelaxed_eids, fold_change_filename, file_prefix, coexp_pairs, exp_score_threshold, new_constraints_enabled);
 
                 cout << "Finished generating constraints" << endl;
 
@@ -5593,6 +5662,100 @@ int main(int argc, char *argv[])
         else if (command == "exit")
         {
             break;
+        }
+
+        else if (command == "add")
+        {
+            // Port of macOS/add.cpp: read a plaintext edge file
+            // (src_hsa tgt_hsa edge_type edge_subtype per line) and emit a
+            // KEGG-format XML pathway suitable for downstream `rgx` ingestion.
+            string inp_filename, out_filename;
+            int cmd_index = 1;
+            if (!b_mode)
+            {
+                cout << "Input edges file: ";
+                cin >> inp_filename;
+                cout << "Output XML file: ";
+                cin >> out_filename;
+            }
+            else
+            {
+                inp_filename = token_cmd[cmd_index++];
+                out_filename = token_cmd[cmd_index++];
+            }
+
+            ifstream ifs(inp_filename.c_str());
+            if (!ifs.is_open())
+            {
+                cerr << "Error: couldn't open input file " << inp_filename << endl;
+            }
+            else
+            {
+                struct AddEdge { int src_id, tgt_id; string edge_type, edge_subtype; };
+                map<string, int> hsa_ids;
+                vector<AddEdge> edges;
+                int node_count = 0;
+
+                string mline;
+                while (std::getline(ifs, mline))
+                {
+                    std::istringstream nline(mline);
+                    string src_hsa, tgt_hsa, edge_type, edge_subtype;
+                    if (!(nline >> src_hsa >> tgt_hsa >> edge_type >> edge_subtype))
+                        continue; // skip blank / malformed lines
+
+                    if (edge_type != "PPRel")
+                    {
+                        cout << "Adding an edge of type " << edge_type
+                             << " (different from \"PPRel\")" << endl;
+                    }
+                    if (edge_subtype != "activation" && edge_subtype != "inhibition")
+                    {
+                        cout << "Adding an edge of subtype " << edge_subtype
+                             << " (different from \"inhibition\" or \"activation\")" << endl;
+                    }
+
+                    if (hsa_ids.find(src_hsa) == hsa_ids.end())
+                        hsa_ids[src_hsa] = node_count++;
+                    if (hsa_ids.find(tgt_hsa) == hsa_ids.end())
+                        hsa_ids[tgt_hsa] = node_count++;
+
+                    AddEdge e = {hsa_ids[src_hsa], hsa_ids[tgt_hsa], edge_type, edge_subtype};
+                    edges.push_back(e);
+                }
+                ifs.close();
+
+                ofstream ofs(out_filename.c_str());
+                if (!ofs.is_open())
+                {
+                    cerr << "Error: couldn't open output file " << out_filename << endl;
+                }
+                else
+                {
+                    ofs << "<?xml version=\"1.0\"?>" << endl;
+                    ofs << "<!DOCTYPE pathway SYSTEM \"Additional edges added\">" << endl;
+                    ofs << "<pathway name=\"KEGG\">" << endl;
+
+                    for (map<string, int>::iterator it = hsa_ids.begin(); it != hsa_ids.end(); ++it)
+                    {
+                        ofs << "\t<entry id=\"" << it->second << "\" name=\"" << it->first << "\" type=\"gene\">" << endl;
+                        ofs << "\t  <graphics name=\"" << it->first << "\"/>" << endl;
+                        ofs << "\t</entry>" << endl;
+                    }
+
+                    for (size_t i = 0; i < edges.size(); ++i)
+                    {
+                        ofs << "\t<relation entry1=\"" << edges[i].src_id
+                            << "\" entry2=\"" << edges[i].tgt_id
+                            << "\" type=\"" << edges[i].edge_type
+                            << "\" pathways=\"KEGG\">" << endl;
+                        ofs << "\t <subtype name=\"" << edges[i].edge_subtype << "\"/>" << endl;
+                        ofs << "\t</relation>" << endl;
+                    }
+                    ofs << "</pathway>" << endl;
+                    ofs.close();
+                }
+            }
         }
 
         // DEAD CODE: get_assignments_z3 — reads output of dead solve command
