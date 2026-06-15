@@ -116,7 +116,6 @@ let $CONNECT_PAIRS_FILE $WRITE_DIR/connect_pairs
 let $SRC_FILE $WRITE_DIR/src_file
 let $TGT_FILE $WRITE_DIR/tgt_file
 
-
 ;; **********************************************************************
 ;; create up-reg and down-reg files from fold change file and thresholds
 ;; **********************************************************************

@@ -16,10 +16,11 @@ public class LoginPage extends JFrame {
     private JTextField signupUsernameField;
     private JPasswordField signupPasswordField;
     private JTextField emailField;
-    private JButton loginButton;
-    private JButton signupButton;
+    private RoundedButton loginButton;
+    private RoundedButton signupButton;
     private static final String USER_DATA_FILE = "fusion_users.dat";
     private Map<String, UserData> userDatabase = new HashMap<>();
+    private final ImageIcon userIcon = new ImageIcon(getClass().getResource("/icons8-male-user-50.png"));
 
     public LoginPage() {
         initComponents();
@@ -29,13 +30,16 @@ public class LoginPage extends JFrame {
     private void initComponents() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setUndecorated(true);
+        setResizable(true);
         setSize(700, 850);
+        setMinimumSize(new Dimension(500, 600));
         setLocationRelativeTo(null);
 
         cardLayout = new CardLayout();
         mainPanel = new JPanel();
         mainPanel.setLayout(cardLayout);
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(100,100,100,100));
+        mainPanel.setBackground(Theme.BG);
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(80, 120, 80, 120));
 
         RoundedPanel loginPanel = createLoginPanel();
         RoundedPanel signupPanel = createSignupPanel();
@@ -55,12 +59,30 @@ public class LoginPage extends JFrame {
         JPanel header = new JPanel(new BorderLayout());
         header.setOpaque(false);
         JLabel appName = new JLabel("FuSION");
-        appName.setFont(new Font("Segoe UI Semibold", Font.BOLD, 36));
-        appName.setForeground(new Color(50, 50, 50));
+        appName.setFont(Theme.title(36));
+        appName.setForeground(Theme.PRIMARY);
 
-        JLabel closeIcon = new JLabel("\u2716"); // Unicode X
-        closeIcon.setFont(new Font("SansSerif", Font.BOLD, 24));
-        closeIcon.setForeground(Color.GRAY);
+        JLabel maxIcon = new JLabel("\u25a1");
+        maxIcon.setFont(new Font("SansSerif", Font.BOLD, 16));
+        maxIcon.setForeground(Theme.TEXT_LIGHT);
+        maxIcon.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        maxIcon.setToolTipText("Maximize / Restore");
+        maxIcon.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if ((LoginPage.this.getExtendedState() & JFrame.MAXIMIZED_BOTH) == JFrame.MAXIMIZED_BOTH) {
+                    LoginPage.this.setExtendedState(JFrame.NORMAL);
+                    maxIcon.setText("\u25a1");
+                } else {
+                    LoginPage.this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+                    maxIcon.setText("\u2750");
+                }
+            }
+        });
+
+        JLabel closeIcon = new JLabel("\u2716");
+        closeIcon.setFont(new Font("SansSerif", Font.BOLD, 18));
+        closeIcon.setForeground(Theme.TEXT_LIGHT);
         closeIcon.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         closeIcon.addMouseListener(new MouseAdapter() {
             @Override
@@ -69,8 +91,31 @@ public class LoginPage extends JFrame {
             }
         });
 
+        JPanel winControls = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        winControls.setOpaque(false);
+        winControls.add(maxIcon);
+        winControls.add(closeIcon);
+
+        final int[] loginDragStart = {0, 0};
+        header.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) { loginDragStart[0] = e.getX(); loginDragStart[1] = e.getY(); }
+            @Override
+            public void mouseClicked(MouseEvent e) { if (e.getClickCount() == 2) maxIcon.dispatchEvent(e); }
+        });
+        header.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if ((LoginPage.this.getExtendedState() & JFrame.MAXIMIZED_BOTH) == 0) {
+                    Point loc = LoginPage.this.getLocation();
+                    LoginPage.this.setLocation(loc.x + e.getX() - loginDragStart[0],
+                                               loc.y + e.getY() - loginDragStart[1]);
+                }
+            }
+        });
+
         header.add(appName, BorderLayout.CENTER);
-        header.add(closeIcon, BorderLayout.EAST);
+        header.add(winControls, BorderLayout.EAST);
 
         panel.add(header, BorderLayout.NORTH);
 
@@ -78,56 +123,67 @@ public class LoginPage extends JFrame {
         JPanel bodyPanel = new JPanel();
         bodyPanel.setOpaque(false);
         bodyPanel.setLayout(new BoxLayout(bodyPanel, BoxLayout.Y_AXIS));
-        bodyPanel.setBorder(BorderFactory.createEmptyBorder(60, 60, 20, 60));
+        bodyPanel.setBorder(BorderFactory.createEmptyBorder(30, 50, 20, 50));
 
-        JLabel iconLabel = new JLabel(new ImageIcon(getClass().getResource("/icons8-male-user-50.png")));
+        // Icon centered
+        JLabel iconLabel = new JLabel(userIcon);
         iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        bodyPanel.add(new JPanel(){{
-            add(iconLabel);
-            setBackground(Color.WHITE);
-        }});
-        bodyPanel.add(Box.createVerticalStrut(20));
+        bodyPanel.add(iconLabel);
+        bodyPanel.add(Box.createVerticalStrut(8));
 
-        // Username field
-        JLabel userLabel = new JLabel("username");
-        userLabel.setFont(new Font("Segoe UI", Font.PLAIN, 18));
-        userLabel.setForeground(Color.GRAY);
-        
-        bodyPanel.add(Box.createVerticalStrut(5));
+        JLabel subtitle = new JLabel("Sign in to your account");
+        subtitle.setFont(Theme.body(13));
+        subtitle.setForeground(Theme.TEXT_MED);
+        subtitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        bodyPanel.add(subtitle);
+        bodyPanel.add(Box.createVerticalStrut(24));
 
+        // Username field \u2014 label above field
+        JPanel usernameBlock = new JPanel();
+        usernameBlock.setLayout(new BoxLayout(usernameBlock, BoxLayout.Y_AXIS));
+        usernameBlock.setOpaque(false);
+        usernameBlock.setMaximumSize(new Dimension(310, 70));
+        usernameBlock.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JLabel userLabel = new JLabel("Username");
+        userLabel.setFont(Theme.body(13));
+        userLabel.setForeground(Theme.TEXT_MED);
+        userLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         loginUsernameField = createStyledTextField();
-        bodyPanel.add(new JPanel(new FlowLayout(FlowLayout.LEFT)){{
-            add(userLabel);
-            add(loginUsernameField);
-            
-            setOpaque(false);
-        }});
-        bodyPanel.add(Box.createVerticalStrut(15));
+        loginUsernameField.setAlignmentX(Component.LEFT_ALIGNMENT);
+        usernameBlock.add(userLabel);
+        usernameBlock.add(Box.createVerticalStrut(4));
+        usernameBlock.add(loginUsernameField);
+        bodyPanel.add(usernameBlock);
+        bodyPanel.add(Box.createVerticalStrut(16));
 
-        // Password field
-        JLabel passLabel = new JLabel("password");
-        passLabel.setFont(new Font("Segoe UI", Font.PLAIN, 18));
-        passLabel.setForeground(Color.GRAY);
-        
-        bodyPanel.add(Box.createVerticalStrut(5));
-
+        // Password field \u2014 label above field
+        JPanel passwordBlock = new JPanel();
+        passwordBlock.setLayout(new BoxLayout(passwordBlock, BoxLayout.Y_AXIS));
+        passwordBlock.setOpaque(false);
+        passwordBlock.setMaximumSize(new Dimension(310, 70));
+        passwordBlock.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JLabel passLabel = new JLabel("Password");
+        passLabel.setFont(Theme.body(13));
+        passLabel.setForeground(Theme.TEXT_MED);
+        passLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         loginPasswordField = createStyledPasswordField();
-        bodyPanel.add(new JPanel(new FlowLayout(FlowLayout.LEFT)){{
-            add(passLabel);
-            add(loginPasswordField);
-            setOpaque(false);
-        }});
-        bodyPanel.add(Box.createVerticalStrut(15));
+        loginPasswordField.setAlignmentX(Component.LEFT_ALIGNMENT);
+        passwordBlock.add(passLabel);
+        passwordBlock.add(Box.createVerticalStrut(4));
+        passwordBlock.add(loginPasswordField);
+        bodyPanel.add(passwordBlock);
+        bodyPanel.add(Box.createVerticalStrut(12));
 
         // Status label
         JLabel statusLabel = new JLabel(" ");
-        statusLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        statusLabel.setForeground(Color.RED);
+        statusLabel.setFont(Theme.body(13));
+        statusLabel.setForeground(Theme.DANGER);
+        statusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         bodyPanel.add(statusLabel);
-        bodyPanel.add(Box.createVerticalStrut(15));
+        bodyPanel.add(Box.createVerticalStrut(10));
 
         // Login button
-        loginButton = createStyledButton("Login");
+        loginButton = createStyledButton("Sign In");
         loginButton.addActionListener(e -> {
             String username = loginUsernameField.getText();
             String password = new String(loginPasswordField.getPassword());
@@ -161,10 +217,11 @@ public class LoginPage extends JFrame {
         bodyPanel.add(Box.createVerticalStrut(20));
 
         // Switch to signup
-        JLabel switchBtn = new JLabel("Don't have an account? SignUp!");
-        switchBtn.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        switchBtn.setForeground(new Color(100, 149, 237));
+        JLabel switchBtn = new JLabel("Don't have an account? Sign up");
+        switchBtn.setFont(Theme.body(13));
+        switchBtn.setForeground(Theme.PRIMARY);
         switchBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        switchBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
         switchBtn.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -187,12 +244,30 @@ public class LoginPage extends JFrame {
         JPanel header = new JPanel(new BorderLayout());
         header.setOpaque(false);
         JLabel appName = new JLabel("FuSION");
-        appName.setFont(new Font("Segoe UI Semibold", Font.BOLD, 36));
-        appName.setForeground(new Color(50, 50, 50));
+        appName.setFont(Theme.title(36));
+        appName.setForeground(Theme.PRIMARY);
+
+        JLabel maxIcon2 = new JLabel("\u25a1");
+        maxIcon2.setFont(new Font("SansSerif", Font.BOLD, 16));
+        maxIcon2.setForeground(Theme.TEXT_LIGHT);
+        maxIcon2.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        maxIcon2.setToolTipText("Maximize / Restore");
+        maxIcon2.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if ((LoginPage.this.getExtendedState() & JFrame.MAXIMIZED_BOTH) == JFrame.MAXIMIZED_BOTH) {
+                    LoginPage.this.setExtendedState(JFrame.NORMAL);
+                    maxIcon2.setText("\u25a1");
+                } else {
+                    LoginPage.this.setExtendedState(JFrame.MAXIMIZED_BOTH);
+                    maxIcon2.setText("\u2750");
+                }
+            }
+        });
 
         JLabel closeIcon = new JLabel("\u2716");
-        closeIcon.setFont(new Font("SansSerif", Font.BOLD, 24));
-        closeIcon.setForeground(Color.GRAY);
+        closeIcon.setFont(new Font("SansSerif", Font.BOLD, 18));
+        closeIcon.setForeground(Theme.TEXT_LIGHT);
         closeIcon.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         closeIcon.addMouseListener(new MouseAdapter() {
             @Override
@@ -201,8 +276,29 @@ public class LoginPage extends JFrame {
             }
         });
 
+        JPanel winControls2 = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        winControls2.setOpaque(false);
+        winControls2.add(maxIcon2);
+        winControls2.add(closeIcon);
+
+        final int[] signupDragStart = {0, 0};
+        header.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) { signupDragStart[0] = e.getX(); signupDragStart[1] = e.getY(); }
+        });
+        header.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if ((LoginPage.this.getExtendedState() & JFrame.MAXIMIZED_BOTH) == 0) {
+                    Point loc = LoginPage.this.getLocation();
+                    LoginPage.this.setLocation(loc.x + e.getX() - signupDragStart[0],
+                                               loc.y + e.getY() - signupDragStart[1]);
+                }
+            }
+        });
+
         header.add(appName, BorderLayout.WEST);
-        header.add(closeIcon, BorderLayout.EAST);
+        header.add(winControls2, BorderLayout.EAST);
 
         panel.add(header, BorderLayout.NORTH);
 
@@ -210,74 +306,99 @@ public class LoginPage extends JFrame {
         JPanel body = new JPanel();
         body.setOpaque(false);
         body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
-        body.setBorder(BorderFactory.createEmptyBorder(30, 60, 20, 60));
+        body.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
 
-        JLabel iconLabel = new JLabel(new ImageIcon(getClass().getResource("/icons8-male-user-50.png")));
+        JLabel iconLabel = new JLabel(userIcon);
         iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         body.add(iconLabel);
-        body.add(Box.createVerticalStrut(20));
+        body.add(Box.createVerticalStrut(6));
+
+        JLabel subtitle2 = new JLabel("Create a new account");
+        subtitle2.setFont(Theme.body(13));
+        subtitle2.setForeground(Theme.TEXT_MED);
+        subtitle2.setAlignmentX(Component.CENTER_ALIGNMENT);
+        body.add(subtitle2);
+        body.add(Box.createVerticalStrut(18));
 
         // Username
-        JLabel signuserLabel = new JLabel("username");
-        signuserLabel.setFont(new Font("Segoe UI", Font.PLAIN, 18));
-        signuserLabel.setForeground(Color.GRAY);
-
+        JPanel userBlock = new JPanel();
+        userBlock.setLayout(new BoxLayout(userBlock, BoxLayout.Y_AXIS));
+        userBlock.setOpaque(false);
+        userBlock.setMaximumSize(new Dimension(310, 70));
+        userBlock.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JLabel signuserLabel = new JLabel("Username");
+        signuserLabel.setFont(Theme.body(13));
+        signuserLabel.setForeground(Theme.TEXT_MED);
+        signuserLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         signupUsernameField = createStyledTextField();
-
-        body.add(new JPanel(new FlowLayout(FlowLayout.LEFT)){{
-            add(signuserLabel);
-            add(signupUsernameField);
-            setOpaque(false);
-        }});
-
-        body.add(Box.createVerticalStrut(15));
+        signupUsernameField.setAlignmentX(Component.LEFT_ALIGNMENT);
+        userBlock.add(signuserLabel);
+        userBlock.add(Box.createVerticalStrut(4));
+        userBlock.add(signupUsernameField);
+        body.add(userBlock);
+        body.add(Box.createVerticalStrut(12));
 
         // Email
-        JLabel emailLabel = new JLabel("email");
-        emailLabel.setFont(new Font("Segoe UI", Font.PLAIN, 18));
-        emailLabel.setForeground(Color.GRAY);
+        JPanel emailBlock = new JPanel();
+        emailBlock.setLayout(new BoxLayout(emailBlock, BoxLayout.Y_AXIS));
+        emailBlock.setOpaque(false);
+        emailBlock.setMaximumSize(new Dimension(310, 70));
+        emailBlock.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JLabel emailLabel = new JLabel("Email");
+        emailLabel.setFont(Theme.body(13));
+        emailLabel.setForeground(Theme.TEXT_MED);
+        emailLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         emailField = createStyledTextField();
-
-        body.add(new JPanel(new FlowLayout(FlowLayout.LEFT)){{
-            add(emailLabel);
-            add(emailField);
-            setOpaque(false);
-            
-        }});
-        body.add(Box.createVerticalStrut(15));
+        emailField.setAlignmentX(Component.LEFT_ALIGNMENT);
+        emailBlock.add(emailLabel);
+        emailBlock.add(Box.createVerticalStrut(4));
+        emailBlock.add(emailField);
+        body.add(emailBlock);
+        body.add(Box.createVerticalStrut(12));
 
         // Password
-        JLabel signpassLabel = new JLabel("password");
-        signpassLabel.setFont(new Font("Segoe UI", Font.PLAIN, 18));
-        signpassLabel.setForeground(Color.GRAY);
+        JPanel passBlock = new JPanel();
+        passBlock.setLayout(new BoxLayout(passBlock, BoxLayout.Y_AXIS));
+        passBlock.setOpaque(false);
+        passBlock.setMaximumSize(new Dimension(310, 70));
+        passBlock.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JLabel signpassLabel = new JLabel("Password");
+        signpassLabel.setFont(Theme.body(13));
+        signpassLabel.setForeground(Theme.TEXT_MED);
+        signpassLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         signupPasswordField = createStyledPasswordField();
-        body.add(new JPanel(new FlowLayout(FlowLayout.LEFT)){{
-            add(signpassLabel);
-            add(signupPasswordField);
-            setOpaque(false);
-            
-        }});
-        body.add(Box.createVerticalStrut(15));
+        signupPasswordField.setAlignmentX(Component.LEFT_ALIGNMENT);
+        passBlock.add(signpassLabel);
+        passBlock.add(Box.createVerticalStrut(4));
+        passBlock.add(signupPasswordField);
+        body.add(passBlock);
+        body.add(Box.createVerticalStrut(12));
 
         // Confirm password
-        JLabel cnfpassLabel = new JLabel("confirm password");
-        cnfpassLabel.setFont(new Font("Segoe UI", Font.PLAIN, 18));
-        cnfpassLabel.setForeground(Color.GRAY);
+        JPanel cnfBlock = new JPanel();
+        cnfBlock.setLayout(new BoxLayout(cnfBlock, BoxLayout.Y_AXIS));
+        cnfBlock.setOpaque(false);
+        cnfBlock.setMaximumSize(new Dimension(310, 70));
+        cnfBlock.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JLabel cnfpassLabel = new JLabel("Confirm Password");
+        cnfpassLabel.setFont(Theme.body(13));
+        cnfpassLabel.setForeground(Theme.TEXT_MED);
+        cnfpassLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         JPasswordField cnfpasswordField = createStyledPasswordField();
-        body.add(new JPanel(new FlowLayout(FlowLayout.LEFT)){{
-            add(cnfpassLabel);
-            add(cnfpasswordField);
-            setOpaque(false);
-            
-        }});
-        body.add(Box.createVerticalStrut(15));
+        cnfpasswordField.setAlignmentX(Component.LEFT_ALIGNMENT);
+        cnfBlock.add(cnfpassLabel);
+        cnfBlock.add(Box.createVerticalStrut(4));
+        cnfBlock.add(cnfpasswordField);
+        body.add(cnfBlock);
+        body.add(Box.createVerticalStrut(10));
 
         // Status
         JLabel statusLabel = new JLabel(" ");
-        statusLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        statusLabel.setForeground(Color.RED);
+        statusLabel.setFont(Theme.body(13));
+        statusLabel.setForeground(Theme.DANGER);
+        statusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         body.add(statusLabel);
-        body.add(Box.createVerticalStrut(15));
+        body.add(Box.createVerticalStrut(8));
 
         // Signup button
         signupButton = createStyledButton("Sign Up");
@@ -338,10 +459,11 @@ public class LoginPage extends JFrame {
         body.add(Box.createVerticalStrut(20));
 
         // Switch to login
-        JLabel switchBtn = new JLabel("Have an account? Login!");
-        switchBtn.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        switchBtn.setForeground(new Color(100, 149, 237));
+        JLabel switchBtn = new JLabel("Already have an account? Sign in");
+        switchBtn.setFont(Theme.body(13));
+        switchBtn.setForeground(Theme.PRIMARY);
         switchBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        switchBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
         switchBtn.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -354,7 +476,7 @@ public class LoginPage extends JFrame {
         return panel;
     }
 
-    // 🔹 Style helpers
+    // Style helpers
     private JTextField createStyledTextField() {
         JTextField tf = new JTextField();
         tf.setPreferredSize(new Dimension(310, 40));
@@ -362,11 +484,8 @@ public class LoginPage extends JFrame {
         tf.setForeground(Color.BLACK);
         tf.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         tf.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 2, 0, Color.GRAY),
-            BorderFactory.createEmptyBorder(5,10,5,10)
-            
-                
-        ));
+            BorderFactory.createMatteBorder(0, 0, 2, 0, Theme.PRIMARY),
+            BorderFactory.createEmptyBorder(5, 10, 5, 10)));
         return tf;
     }
 
@@ -377,23 +496,24 @@ public class LoginPage extends JFrame {
         pf.setForeground(Color.BLACK);
         pf.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         pf.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 2, 0, Color.GRAY),
-                BorderFactory.createEmptyBorder(5,10,5,10)
-        ));
+            BorderFactory.createMatteBorder(0, 0, 2, 0, Theme.PRIMARY),
+            BorderFactory.createEmptyBorder(5, 10, 5, 10)));
         return pf;
     }
 
-    private JButton createStyledButton(String text) {
-        JButton btn = new JButton(text);
-        btn.setBackground(new Color(100, 149, 237)); // soft blue
+    private RoundedButton createStyledButton(String text) {
+        // RoundedButton uses custom paintComponent so background/foreground
+        // work identically on all platforms (macOS Aqua L&F ignores setBackground
+        // on plain JButton, making white text invisible on white button).
+        RoundedButton btn = new RoundedButton(text, 20, new Dimension(310, 50));
+        btn.setBackground(Theme.PRIMARY);
         btn.setForeground(Color.WHITE);
         btn.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        btn.setFocusPainted(false);
-        btn.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        btn.setAlignmentX(Component.CENTER_ALIGNMENT);
         return btn;
     }
 
-    // 🔹 Authentication and persistence (unchanged)
+    // Authentication and persistence
     private boolean authenticateUser(String username, String password) {
         if (!userDatabase.containsKey(username)) return false;
         UserData user = userDatabase.get(username);

@@ -9,7 +9,7 @@ public class ThresholdFilterPanel extends RoundedPanel {
 
     private JTextField upperField;
     private JTextField lowerField;
-    private JButton filterButton;
+    private RoundedButton filterButton;
     private JTextArea aboveArea;
     private JTextArea betweenArea;
     private JTextArea belowArea;
@@ -18,77 +18,109 @@ public class ThresholdFilterPanel extends RoundedPanel {
     private JTextArea relaxedArea;
     private JTextArea nonrelaxedArea;
     private JTextField searchField;
-    private JButton searchButton;
+    private RoundedButton searchButton;
     private JTextArea[] resultAreas;
-    private JButton moveTo;
+    private RoundedButton moveTo;
     // private boolean[] selectedIndices;
     private String selectedText;
     // private boolean[] originalColumnIndex;
 
     private Map<String, boolean[]> override = new HashMap<>();
+    private Map<String, String> hsaToGene = new HashMap<>();
 
     public ThresholdFilterPanel(CardLayout cardLayout, JPanel cardPanel, UserInput user) {
+        loadGeneMap(user.getMappingFile()[0]);
         initComponents(cardLayout, cardPanel, user);
+    }
+
+    private void loadGeneMap(String mapFilePath) {
+        if (mapFilePath == null || mapFilePath.isEmpty()) return;
+        File f = new File(mapFilePath);
+        if (!f.exists()) return;
+        try (BufferedReader br = new BufferedReader(new FileReader(f))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.trim().split("\\s+", 2);
+                if (parts.length >= 2) {
+                    hsaToGene.put(parts[0].trim(), parts[1].trim());
+                }
+            }
+        } catch (IOException ex) { /* ignore */ }
     }
 
     private void initComponents(CardLayout cardLayout, JPanel cardPanel, UserInput user) {
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
+        setBackground(Theme.BG);
         setOpaque(true);
 
-        HeaderPanel header = new HeaderPanel(user.getUsername());
+        HeaderPanel header = new HeaderPanel(user.getUsername(), cardLayout, cardPanel, user);
 
-        JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        inputPanel.setBackground(Color.WHITE);
+        JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
+        inputPanel.setBackground(Theme.BG_CARD);
+        inputPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 1, 0, Theme.BORDER),
+            BorderFactory.createEmptyBorder(4, 10, 4, 10)));
 
-        JPanel searchPanel = new JPanel(new FlowLayout());
-        searchPanel.setBackground(Color.WHITE);
-        searchPanel.setOpaque(true);
+        JLabel downLabel = new JLabel("Down Threshold:");
+        downLabel.setFont(Theme.body(13));
+        downLabel.setForeground(Theme.TEXT_MED);
 
-        searchField = new JTextField(8);
-        searchButton = new JButton("Search");
-
-        moveTo = new JButton("Override");
-        moveTo.setEnabled(false);
-        searchPanel.add(searchField);
-        searchPanel.add(searchButton);
-        searchPanel.add(moveTo);
-
-        JLabel downLabel = new JLabel("Down Regulatory Threshold:");
-        downLabel.setForeground(Color.BLACK);
-
-        lowerField = new JTextField(5);
+        lowerField = new JTextField(6);
         lowerField.setText(String.valueOf(user.getDownThreshold()));
-        lowerField.setForeground(Color.BLACK);
-        lowerField.setCaretColor(Color.BLACK);
+        lowerField.setFont(Theme.body(13));
+        lowerField.setForeground(Theme.TEXT_DARK);
+        lowerField.setCaretColor(Theme.TEXT_DARK);
         lowerField.setOpaque(true);
         lowerField.setBackground(Color.WHITE);
-        lowerField.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1, true));
-        inputPanel.add(downLabel);
-        inputPanel.add(lowerField);
+        lowerField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Theme.BORDER, 1),
+            BorderFactory.createEmptyBorder(3, 6, 3, 6)));
 
-        JLabel upLabel = new JLabel("Up Regulatory Threshold:");
-        upLabel.setForeground(Color.BLACK);
+        JLabel upLabel = new JLabel("Up Threshold:");
+        upLabel.setFont(Theme.body(13));
+        upLabel.setForeground(Theme.TEXT_MED);
 
-        upperField = new JTextField(5);
-        upperField.setCaretColor(Color.BLACK);
+        upperField = new JTextField(6);
+        upperField.setCaretColor(Theme.TEXT_DARK);
         upperField.setText(String.valueOf(user.getUpThreshold()));
-        upperField.setForeground(Color.BLACK);
+        upperField.setFont(Theme.body(13));
+        upperField.setForeground(Theme.TEXT_DARK);
         upperField.setOpaque(true);
         upperField.setBackground(Color.WHITE);
-        upperField.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1, true));
+        upperField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Theme.BORDER, 1),
+            BorderFactory.createEmptyBorder(3, 6, 3, 6)));
+
+        filterButton = new RoundedButton("Filter", 14, new Dimension(90, 30));
+
+        JSeparator sep = new JSeparator(JSeparator.VERTICAL);
+        sep.setPreferredSize(new Dimension(1, 24));
+        sep.setForeground(Theme.BORDER);
+
+        searchField = new JTextField(10);
+        searchField.setFont(Theme.body(13));
+        searchField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Theme.BORDER, 1),
+            BorderFactory.createEmptyBorder(3, 6, 3, 6)));
+        searchButton = new RoundedButton("Search", 14, new Dimension(80, 30));
+        moveTo = new RoundedButton("Override", 14, new Dimension(90, 30));
+        moveTo.setEnabled(false);
+
+        inputPanel.add(downLabel);
+        inputPanel.add(lowerField);
         inputPanel.add(upLabel);
         inputPanel.add(upperField);
-
-        filterButton = new JButton("Filter Files");
         inputPanel.add(filterButton);
-        inputPanel.add(searchPanel);
+        inputPanel.add(sep);
+        inputPanel.add(searchField);
+        inputPanel.add(searchButton);
+        inputPanel.add(moveTo);
 
         add(header, BorderLayout.NORTH);
 
         JPanel resultPanel = new JPanel(new GridLayout(1, 7, 10, 10));
         resultPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        resultPanel.setBackground(Color.WHITE);
+        resultPanel.setBackground(Theme.BG);
 
         aboveArea = new JTextArea();
         betweenArea = new JTextArea();
@@ -114,40 +146,25 @@ public class ThresholdFilterPanel extends RoundedPanel {
         // --- Button panel style updates
         RoundedPanel buttonPanel = new RoundedPanel();
         buttonPanel.setLayout(new GridLayout(1, 2));
-        buttonPanel.setBackground(Color.WHITE);
+        buttonPanel.setBackground(Theme.BG);
 
-        RoundedButton nextButton = new RoundedButton("Next", 20, new Dimension(100, 40));
+        RoundedButton nextButton = Theme.navBtn("Next →", 110);
+        RoundedButton goToSessions = Theme.warningBtn("Sessions", 140);
+        RoundedButton prevButton = Theme.navBtn("← Prev", 110);
+        RoundedButton saveButton = Theme.successBtn("Save", 110);
 
-        nextButton.setBackground(new Color(100, 149, 237));
-        nextButton.setForeground(Color.WHITE);
-        nextButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        nextButton.setFocusPainted(false);
-
-        RoundedButton goToSessions = new RoundedButton("Go to Sessions", 20, new Dimension(170, 40));
-        goToSessions.setBackground(new Color(222, 129, 7));
-        goToSessions.setForeground(Color.WHITE);
-        goToSessions.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        goToSessions.setFocusPainted(false);
-
-        RoundedButton prevButton = new RoundedButton("Prev", 20, new Dimension(100, 40));
-        prevButton.setBackground(new Color(100, 149, 237));
-        prevButton.setForeground(Color.WHITE);
-        prevButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        prevButton.setFocusPainted(false);
-
-        RoundedButton saveButton = new RoundedButton("Save", 20, new Dimension(100, 40));
-        saveButton.setBackground(new Color(5, 161, 59));
-        saveButton.setForeground(Color.WHITE);
-        saveButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        saveButton.setFocusPainted(false);
-
-        for (JButton btn : new JButton[]{filterButton, searchButton, moveTo}) {
-            btn.setBackground(new Color(100, 149, 237)); // soft blue
-            btn.setForeground(Color.WHITE);              // white text
+        for (RoundedButton btn : new RoundedButton[]{filterButton, searchButton}) {
+            btn.setBackground(Theme.PRIMARY);
+            btn.setForeground(Color.WHITE);
+            btn.setFont(Theme.title(13));
             btn.setFocusPainted(false);
         }
+        moveTo.setBackground(Theme.WARNING);
+        moveTo.setForeground(Color.WHITE);
+        moveTo.setFont(Theme.title(13));
+        moveTo.setFocusPainted(false);
 
-        prevButton.addActionListener(e -> cardLayout.show(cardPanel, "relaxationPanel"));
+        prevButton.addActionListener(e -> cardLayout.show(cardPanel, "idEntry"));
 
         nextButton.addActionListener(e -> {
             user.clearOverride();
@@ -267,7 +284,7 @@ public class ThresholdFilterPanel extends RoundedPanel {
                     add(col1);
                     add(col2);
                     add(col3);
-                    setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                    setBorder(BorderFactory.createLineBorder(Theme.BORDER));
                 }
             });
 
@@ -276,7 +293,7 @@ public class ThresholdFilterPanel extends RoundedPanel {
                     add(new JLabel("Select Active or Inactive node"));
                     add(col4);
                     add(col5);
-                    setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                    setBorder(BorderFactory.createLineBorder(Theme.BORDER));
 
                 }
             });
@@ -286,7 +303,7 @@ public class ThresholdFilterPanel extends RoundedPanel {
                     add(new JLabel("Select Relaxed or Non-relaxed Node"));
                     add(col6);
                     add(col7);
-                    setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                    setBorder(BorderFactory.createLineBorder(Theme.BORDER));
 
                 }
             });
@@ -389,24 +406,24 @@ public class ThresholdFilterPanel extends RoundedPanel {
 
     JPanel createStickyPanel(String title, JTextArea textArea) {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Color.WHITE);
+        panel.setBackground(Theme.BG_CARD);
 
         JLabel label = new JLabel(title, SwingConstants.CENTER);
-        label.setForeground(Color.BLACK);
-        label.setFont(label.getFont().deriveFont(Font.BOLD, 12f));
-        label.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        label.setForeground(Theme.TEXT_DARK);
+        label.setFont(Theme.title(12));
+        label.setBorder(BorderFactory.createEmptyBorder(6, 4, 6, 4));
 
         textArea.setForeground(Color.BLACK);
         textArea.setOpaque(true);
-        textArea.setBackground(Color.WHITE);
+        textArea.setBackground(Theme.BG_CARD);
         textArea.setEditable(false);
 
         JScrollPane scrollPane = new JScrollPane(textArea);
         scrollPane.setOpaque(true);
-        scrollPane.setBackground(Color.WHITE);
+        scrollPane.setBackground(Theme.BG_CARD);
         scrollPane.getViewport().setOpaque(true);
-        scrollPane.getViewport().setBackground(Color.WHITE);
-        scrollPane.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        scrollPane.getViewport().setBackground(Theme.BG_CARD);
+        scrollPane.setBorder(BorderFactory.createLineBorder(Theme.BORDER));
 
         panel.setOpaque(true);
         panel.add(label, BorderLayout.NORTH);
@@ -444,25 +461,31 @@ public class ThresholdFilterPanel extends RoundedPanel {
         for (Map.Entry<String, Double> entry : fileScores.entrySet()) {
             String fileName = entry.getKey();
             Double score = entry.getValue();
+            String geneName = hsaToGene.get(fileName);
+            String display = (geneName != null && !geneName.isEmpty())
+                    ? fileName + " - " + geneName + " (" + score + ")"
+                    : fileName + " (" + score + ")";
 
             if (override.isEmpty() || !override.containsKey(fileName)) {
                 if (score >= upper) {
-                    aboveArea.append(fileName + " (" + score + ")\n");
+                    aboveArea.append(display + "\n");
                 } else if (score <= lower) {
-                    belowArea.append(fileName + " (" + score + ")\n");
+                    belowArea.append(display + "\n");
                 } else {
-                    betweenArea.append(fileName + " (" + score + ")\n");
+                    betweenArea.append(display + "\n");
                 }
             }
-
         }
         if (!override.isEmpty()) {
             for (Map.Entry<String, boolean[]> entry : override.entrySet()) {
                 String fileName = entry.getKey();
+                String geneName = hsaToGene.get(fileName);
+                String display = (geneName != null && !geneName.isEmpty())
+                        ? fileName + " - " + geneName : fileName;
                 boolean[] arr = entry.getValue();
                 for (int i = 0; i < 7; i++) {
                     if (arr[i]) {
-                        resultAreas[i].append(fileName + "\n");
+                        resultAreas[i].append(display + "\n");
                     }
                 }
             }

@@ -1,0 +1,25 @@
+Current PO point: 4 nodes, 1 edges relaxed
+timeout
+
+Current PO point: 3 nodes, 8 edges relaxed
+timeout
+
+Current PO point: 2 nodes, 9 edges relaxed
+Solution 1
+5087	hsa2919	CXCL1	up_reg	not_present	active
+5159	hsa6385	SDC4	up_reg	not_present	active
+
+16819	present	inhibition_phosphorylation	hsa5599	MAPK8	hsa4772	NFATC1	src_present	src_active	tgt_present	tgt_active [path:hsa04010]
+16954	present	activation	hsa10663	CXCR6	hsa3716	JAK1	src_present	src_active	tgt_present	tgt_inactive [path:hsa04062]
+17054	present	expression	hsa7157	TP53	hsa5728	PTEN	src_present	src_active	tgt_present	tgt_inactive [path:hsa04115]
+17085	present	activation	hsa3716	JAK1	hsa5290	PIK3CA	src_present	src_inactive	tgt_present	tgt_active [path:hsa04151 path:hsa04725]
+17151	not_present	inhibition	hsa10488	CREB3	hsa10488	CREB3	src_present	src_active	tgt_present	tgt_active [path:hsa04261]
+17367	present	activation_phosphorylation	hsa3716	JAK1	hsa5290	PIK3CA	src_present	src_inactive	tgt_present	tgt_active [path:hsa04630]
+17773	present	activation_indirect	hsa1432	MAPK14	hsa28227	PPP2R3B	src_present	src_active	tgt_present	tgt_inactive [path:hsa05142]
+17794	not_present	activation	hsa3460	IFNGR2	hsa3716	JAK1	src_present	src_active	tgt_present	tgt_inactive [path:hsa05152 path:hsa05200]
+17907	not_present	inhibition_indirect	hsa10000	AKT3	hsa3725	JUN	src_present	src_active	tgt_present	tgt_active [path:hsa05166]
+
+
+timeout
+
+Current PO point: 1 nodes, 11 edges relaxed

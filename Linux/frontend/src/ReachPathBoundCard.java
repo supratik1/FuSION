@@ -5,26 +5,23 @@ public class ReachPathBoundCard extends RoundedPanel {
 
     public ReachPathBoundCard(CardLayout cardLayout, JPanel cardPanel, UserInput user) {
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE);  // white background
+        setBackground(Theme.BG);
 
-        HeaderPanel header = new HeaderPanel(user.getUsername());
+        HeaderPanel header = new HeaderPanel(user.getUsername(), cardLayout, cardPanel, user);
 
         add(header, BorderLayout.NORTH);
 
         JPanel body = new JPanel(new GridLayout(3, 1, 20, 10));
-        body.setBackground(Color.WHITE);
+        body.setBackground(Theme.BG);
 
         // === Reach Path Bound Panel ===
         JPanel reachPanelWrapper = new JPanel(new BorderLayout());
         reachPanelWrapper.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        reachPanelWrapper.setBackground(Color.WHITE);
+        reachPanelWrapper.setBackground(Theme.BG);
 
         JPanel reachPanel = new JPanel(new BorderLayout());
-        reachPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(Color.BLACK),
-                "Maximum Signalling Path Length", 0, 0, null, Color.BLACK
-        ));
-        reachPanel.setBackground(Color.WHITE);
+        reachPanel.setBorder(Theme.section("Maximum Signalling Path Length"));
+        reachPanel.setBackground(Theme.BG_CARD);
 
         JSlider reachSlider = new JSlider(0, 100, user.getSignallingPathLength());
         reachSlider.setPaintTicks(true);
@@ -32,10 +29,10 @@ public class ReachPathBoundCard extends RoundedPanel {
         reachSlider.setMajorTickSpacing(10);
         reachSlider.setMinorTickSpacing(1);
         reachSlider.setForeground(Color.BLACK);
-        reachSlider.setBackground(Color.WHITE);
+        reachSlider.setBackground(Theme.BG_CARD);
 
         JPanel reachBoundValue = new JPanel(new FlowLayout());
-        reachBoundValue.setBackground(Color.WHITE);
+        reachBoundValue.setBackground(Theme.BG_CARD);
         JLabel reachValue = new JLabel("Value: ");
         reachValue.setForeground(Color.BLACK);
         reachBoundValue.add(reachValue);
@@ -72,14 +69,11 @@ public class ReachPathBoundCard extends RoundedPanel {
         // === Target Edges Panel ===
         JPanel targetPanelWrapper = new JPanel(new BorderLayout());
         targetPanelWrapper.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        targetPanelWrapper.setBackground(Color.WHITE);
+        targetPanelWrapper.setBackground(Theme.BG);
 
         JPanel targetPanel = new JPanel(new GridLayout(4, 1));
-        targetPanel.setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(Color.BLACK),
-                "Final Edges in pathways restricted to:", 0, 0, null, Color.BLACK
-        ));
-        targetPanel.setBackground(Color.WHITE);
+        targetPanel.setBorder(Theme.section("Final Edges in pathways restricted to:"));
+        targetPanel.setBackground(Theme.BG_CARD);
 
         JRadioButton rb1 = new JRadioButton("Activation edges only");
         JRadioButton rb2 = new JRadioButton("Expression edges only");
@@ -87,7 +81,7 @@ public class ReachPathBoundCard extends RoundedPanel {
 
         // Set foreground and transparent background for radio buttons
         for (JRadioButton rb : new JRadioButton[]{rb1, rb2, rb3}) {
-            rb.setBackground(Color.WHITE);
+            rb.setBackground(Theme.BG_CARD);
             rb.setForeground(Color.BLACK);
             rb.setOpaque(true);
             targetPanel.add(rb);
@@ -110,37 +104,41 @@ public class ReachPathBoundCard extends RoundedPanel {
         body.add(targetPanelWrapper);
 
         // === Backend solver configuration panel ===
-        JPanel configPanel = new JPanel(new FlowLayout());
-        JLabel configLabel = new JLabel("Would you like to change backend solver configuration?");
-        configLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        configLabel.setForeground(Color.BLACK);
-        configPanel.setBackground(Color.WHITE);
+        JPanel configPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 16, 0));
+        JLabel configLabel = new JLabel("Backend solver configuration:");
+        configLabel.setFont(Theme.body(14));
+        configLabel.setForeground(Theme.TEXT_MED);
+        configPanel.setBackground(Theme.BG);
 
-        JButton configButton = new JButton("Configure");
+        RoundedButton configButton = Theme.navBtn("Configure", 130);
         configPanel.add(configLabel);
         configPanel.add(configButton);
 
         configButton.addActionListener(e -> {
-            JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Change Configuration", true);
+            JDialog dialog = new JDialog((JFrame) SwingUtilities.getWindowAncestor(this), "Solver Configuration", true);
             dialog.setLayout(new BorderLayout(10, 10));
-            dialog.setSize(550, 450);
+            dialog.setSize(520, 380);
             dialog.setLocationRelativeTo(null);
+            dialog.getContentPane().setBackground(Theme.BG);
 
-            JPanel mainPanel = new JPanel(new GridLayout(6, 1));
+            JPanel mainPanel = new JPanel(new GridLayout(4, 1, 0, 8));
+            mainPanel.setBackground(Theme.BG);
+            mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 30, 10, 30));
             int[] solver = user.getSolverConfig();
             mainPanel.add(configPanel("Increment Solver Timeout", solver[0]));
             mainPanel.add(configPanel("Overall Solver Timeout", solver[1]));
             mainPanel.add(configPanel("Solutions to Count", solver[2]));
             mainPanel.add(configPanel("Solutions to Explore", solver[3]));
 
-            JPanel buttonPanel = new JPanel(new FlowLayout());
-            JButton okay = new JButton("Ok");
-            JButton cancel = new JButton("Cancel");
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 10));
+            buttonPanel.setBackground(Theme.BG);
+            RoundedButton okay = Theme.successBtn("OK", 100);
+            RoundedButton cancel = Theme.dangerBtn("Cancel", 100);
             buttonPanel.add(okay);
             buttonPanel.add(cancel);
 
-            mainPanel.add(buttonPanel);
-            dialog.add(mainPanel);
+            dialog.add(mainPanel, BorderLayout.CENTER);
+            dialog.add(buttonPanel, BorderLayout.SOUTH);
 
             okay.addActionListener(ev -> {
                 int arr[] = new int[4];
@@ -176,31 +174,12 @@ public class ReachPathBoundCard extends RoundedPanel {
         // === Bottom buttons panel ===
         RoundedPanel buttonPanel = new RoundedPanel();
         buttonPanel.setLayout(new GridLayout(1, 2));
-        buttonPanel.setBackground(Color.WHITE);
+        buttonPanel.setBackground(Theme.BG);
 
-        RoundedButton nextButton = new RoundedButton("Next", 20, new Dimension(100, 40));
-        nextButton.setBackground(new Color(100, 149, 237));
-        nextButton.setForeground(Color.WHITE);
-        nextButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        nextButton.setFocusPainted(false);
-
-        RoundedButton goToSessions = new RoundedButton("Go to Sessions", 20, new Dimension(170, 40));
-        goToSessions.setBackground(new Color(222, 129, 7));
-        goToSessions.setForeground(Color.WHITE);
-        goToSessions.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        goToSessions.setFocusPainted(false);
-
-        RoundedButton prevButton = new RoundedButton("Prev", 20, new Dimension(100, 40));
-        prevButton.setBackground(new Color(100, 149, 237));
-        prevButton.setForeground(Color.WHITE);
-        prevButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        prevButton.setFocusPainted(false);
-        
-        RoundedButton saveButton = new RoundedButton("Save", 20, new Dimension(100,40));
-        saveButton.setBackground(new Color(5, 161, 59));
-        saveButton.setForeground(Color.WHITE);
-        saveButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        saveButton.setFocusPainted(false);
+        RoundedButton nextButton = Theme.navBtn("Next →", 110);
+        RoundedButton goToSessions = Theme.warningBtn("Sessions", 140);
+        RoundedButton prevButton = Theme.navBtn("← Prev", 110);
+        RoundedButton saveButton = Theme.successBtn("Save", 110);
 
 
         
@@ -279,15 +258,23 @@ public class ReachPathBoundCard extends RoundedPanel {
     }
 
     public JPanel configPanel(String text, int value) {
-        JPanel panel = new JPanel(new FlowLayout());
-        panel.setBackground(Color.WHITE);
+        JPanel panel = new JPanel(new BorderLayout(12, 0));
+        panel.setBackground(Theme.BG_CARD);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Theme.BORDER, 1),
+            BorderFactory.createEmptyBorder(8, 14, 8, 14)));
         JLabel label = new JLabel(text);
-        label.setForeground(Color.BLACK);
-        JTextField textField = new JTextField(10);
+        label.setFont(Theme.body(14));
+        label.setForeground(Theme.TEXT_DARK);
+        JTextField textField = new JTextField(8);
         textField.setText(String.valueOf(value));
-        panel.add(label);
-        panel.add(textField);
-
+        textField.setFont(Theme.body(14));
+        textField.setHorizontalAlignment(JTextField.RIGHT);
+        textField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Theme.BORDER, 1),
+            BorderFactory.createEmptyBorder(4, 8, 4, 8)));
+        panel.add(label, BorderLayout.CENTER);
+        panel.add(textField, BorderLayout.EAST);
         return panel;
     }
 

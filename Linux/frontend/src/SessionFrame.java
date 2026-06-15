@@ -21,19 +21,17 @@ public class SessionFrame extends JFrame {
     public SessionFrame(String username) {
         setTitle("FuSiON");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setResizable(false);
-        setSize(1400, 800);
-        setMinimumSize(new Dimension(1400, 800));
-        setMaximumSize(new Dimension(1400, 800));
+        setResizable(true);
+        setSize(1200, 750);
+        setMinimumSize(new Dimension(900, 550));
         setUndecorated(true);
         setLocationRelativeTo(null);
 
         mainPanel = new JPanel();
         cardLayout = new CardLayout();
         mainPanel.setLayout(cardLayout);
-        mainPanel.setBackground(new Color(230, 242, 242));
-        mainPanel.setBorder(BorderFactory.createMatteBorder(10, 10, 10, 10, Color.WHITE));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(100, 100, 100, 100));
+        mainPanel.setBackground(Theme.BG);
+        mainPanel.setBorder(BorderFactory.createLineBorder(Theme.BORDER, 1));
 
         RoundedPanel sessionPanel = SessionPanel(username);
         mainPanel.add(sessionPanel, "sessions");
@@ -45,7 +43,7 @@ public class SessionFrame extends JFrame {
     private RoundedPanel SessionPanel(String username) {
         RoundedPanel panel = new RoundedPanel();
         panel.setLayout(new BorderLayout());
-        panel.setBackground(Color.WHITE);
+        panel.setBackground(Theme.BG_CARD);
 
         HeaderPanel header = new HeaderPanel(username);
         panel.add(header, BorderLayout.NORTH);
@@ -64,77 +62,73 @@ public class SessionFrame extends JFrame {
 
         public SessionSelectorPanel(String username) {
             setLayout(new BorderLayout(10, 10));
-            setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-            setBackground(Color.WHITE);
+            setBorder(BorderFactory.createEmptyBorder(24, 60, 16, 60));
+            setBackground(Theme.BG_CARD);
 
             // --- Title section ---
-            JLabel title = new JLabel("Previously Saved Sessions:");
-            title.setForeground(new Color(50, 50, 50)); // dark gray instead of pure black
-            title.setFont(new Font("Segoe UI", Font.BOLD, 20)); // modern font and size
+            JLabel title = new JLabel("Your Sessions");
+            title.setForeground(Theme.TEXT_DARK);
+            title.setFont(Theme.title(22));
 
-            JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 15));
-            titlePanel.setBackground(Color.WHITE);
+            JLabel titleSub = new JLabel("Select a session to continue or create a new one");
+            titleSub.setFont(Theme.body(14));
+            titleSub.setForeground(Theme.TEXT_MED);
+
+            JPanel titlePanel = new JPanel();
+            titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.Y_AXIS));
+            titlePanel.setBackground(Theme.BG_CARD);
+            titlePanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 16, 0));
+            title.setAlignmentX(Component.LEFT_ALIGNMENT);
+            titleSub.setAlignmentX(Component.LEFT_ALIGNMENT);
             titlePanel.add(title);
+            titlePanel.add(Box.createVerticalStrut(4));
+            titlePanel.add(titleSub);
             add(titlePanel, BorderLayout.NORTH);
 
-// --- Modern styled list ---
             listModel = new DefaultListModel<>();
             sessionList = new JList<>(listModel);
             sessionList.setOpaque(true);
-            sessionList.setBackground(Color.WHITE);
-            sessionList.setForeground(Color.DARK_GRAY);
-            sessionList.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+            sessionList.setBackground(Theme.BG_CARD);
+            sessionList.setForeground(Theme.TEXT_DARK);
+            sessionList.setFont(Theme.body(15));
             sessionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-            sessionList.setFixedCellHeight(36); // taller rows
-            sessionList.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-            sessionList.setSelectionBackground(new Color(100, 149, 237)); // soft blue
+            sessionList.setFixedCellHeight(40);
+            sessionList.setBorder(BorderFactory.createEmptyBorder(4, 12, 4, 12));
+            sessionList.setSelectionBackground(Theme.PRIMARY);
             sessionList.setSelectionForeground(Color.WHITE);
-            sessionList.setFocusable(false); // removes focus border
+            sessionList.setFocusable(false);
 
-// --- Scroll pane as card ---
             JScrollPane scrollPane = new JScrollPane(sessionList);
-            scrollPane.setBackground(Color.WHITE);
-            scrollPane.getViewport().setBackground(Color.WHITE);
-            scrollPane.setPreferredSize(new Dimension(1000, 220));
-            scrollPane.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(new Color(200, 200, 200), 1, true), // rounded outer
-                    BorderFactory.createEmptyBorder(5, 5, 5, 5) // padding inside
-            ));
+            scrollPane.setBackground(Theme.BG_CARD);
+            scrollPane.getViewport().setBackground(Theme.BG_CARD);
+            scrollPane.setBorder(BorderFactory.createLineBorder(Theme.BORDER, 1));
 
-// --- Holder panel with subtle background ---
-            JPanel scrollHolder = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 15));
-            scrollHolder.setBackground(new Color(245, 247, 250)); // very light gray
-            scrollHolder.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-            scrollHolder.add(scrollPane);
-
-            add(new JPanel(){{
-                add(scrollHolder);
-                setOpaque(false);
-                setBorder(BorderFactory.createEmptyBorder(0, 50 , 50, 50));
-            }}, BorderLayout.CENTER);
+            add(scrollPane, BorderLayout.CENTER);
 
             // Buttons
-            RoundedPanel buttons = new RoundedPanel();
-            buttons.setLayout(new GridLayout(1, 2));
-            buttons.setBackground(Color.WHITE);
+            JPanel buttons = new JPanel(new BorderLayout());
+            buttons.setBackground(Theme.BG_CARD);
+            buttons.setBorder(BorderFactory.createEmptyBorder(12, 0, 0, 0));
 
-            RoundedButton continueBtn = styledButton("Continue Session");
-            RoundedButton newBtn = styledButton("New Session");
-            RoundedButton logOut = styledButton("Log Out");
-            RoundedButton deleteBtn = styledButton("Delete Session");
+            RoundedButton continueBtn = Theme.navBtn("Configure →", 150);
+            RoundedButton submitBtn   = Theme.successBtn("▶  Submit", 140);
+            RoundedButton newBtn      = Theme.navBtn("New Session", 150);
+            RoundedButton logOut      = Theme.dangerBtn("Log Out", 120);
+            RoundedButton deleteBtn   = Theme.warningBtn("Delete", 120);
 
-            JPanel leftBtns = new JPanel(new FlowLayout(FlowLayout.LEFT));
+            JPanel leftBtns = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
             leftBtns.setOpaque(false);
             leftBtns.add(logOut);
 
-            JPanel rightBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            JPanel rightBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
             rightBtns.setOpaque(false);
-            rightBtns.add(continueBtn);
             rightBtns.add(deleteBtn);
+            rightBtns.add(continueBtn);
+            rightBtns.add(submitBtn);
             rightBtns.add(newBtn);
 
-            buttons.add(leftBtns);
-            buttons.add(rightBtns);
+            buttons.add(leftBtns, BorderLayout.WEST);
+            buttons.add(rightBtns, BorderLayout.EAST);
             add(buttons, BorderLayout.SOUTH);
 
             loadSessions(username);
@@ -151,6 +145,20 @@ public class SessionFrame extends JFrame {
                 MainPanel main = new MainPanel(username, user, cardLayout, mainPanel);
                 mainPanel.add(main, "Main");
                 cardLayout.show(mainPanel, "Main");
+            });
+
+            submitBtn.addActionListener(e -> {
+                index = sessionList.getSelectedIndex();
+                if (index == -1) {
+                    JOptionPane.showMessageDialog(this, "Kindly Select a Session");
+                    return;
+                }
+                String fileName = "frontend/sessions/" + username + ".json";
+                user = new UserInput(fileName, index);
+                user.setUsername(username);
+                Gui4Panel gui4Panel = new Gui4Panel(cardLayout, mainPanel, user);
+                mainPanel.add(gui4Panel, "gui4Direct");
+                cardLayout.show(mainPanel, "gui4Direct");
             });
 
             deleteBtn.addActionListener(e -> {
@@ -260,15 +268,6 @@ public class SessionFrame extends JFrame {
         }
     }
 
-    // Common styling for buttons
-    private RoundedButton styledButton(String text) {
-        RoundedButton btn = new RoundedButton(text, 20, new Dimension(170, 40));
-        btn.setBackground(new Color(100, 149, 237));
-        btn.setForeground(Color.WHITE);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        btn.setFocusPainted(false);
-        return btn;
-    }
 }
 
 

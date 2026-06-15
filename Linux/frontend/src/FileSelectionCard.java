@@ -12,66 +12,65 @@ public class FileSelectionCard extends RoundedPanel {
     public FileSelectionCard(CardLayout cardLayout, JPanel cardPanel, UserInput user) {
 
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
+        setBackground(Theme.BG);
         // setBorder(BorderFactory.createEmptyBorder(40, 40, 40, 40));
 
-        HeaderPanel header = new HeaderPanel(user.getUsername());
+        HeaderPanel header = new HeaderPanel(user.getUsername(), cardLayout, cardPanel, user);
 
         add(header, BorderLayout.NORTH);
 
 
-        JPanel top = new JPanel();
-        top.setBackground(Color.WHITE);
-        
-        JLabel jLabel1 = new JLabel("Select Log Fold Changes File");
-        jLabel1.setFont(new Font("Verdana", Font.BOLD, 34));
-        jLabel1.setForeground(Color.BLACK);
-
-        top.add(jLabel1);
-        
-
         JPanel body = new JPanel();
-        body.setBorder(BorderFactory.createEmptyBorder(40,40,40,40));
+        body.setBorder(BorderFactory.createEmptyBorder(40, 60, 40, 60));
         body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
-        body.setBackground(Color.WHITE);
-        body.add(top);
-        body.add(Box.createVerticalStrut(100));
+        body.setBackground(Theme.BG);
 
-        JPanel jPanel1 = new JPanel();
-        jPanel1.setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, Color.BLACK));
-        jPanel1.setOpaque(false);
-        jPanel1.setPreferredSize(new Dimension(500, 40));
+        JLabel jLabel1 = new JLabel("Log Fold Changes File");
+        jLabel1.setFont(Theme.title(26));
+        jLabel1.setForeground(Theme.TEXT_DARK);
+        jLabel1.setAlignmentX(Component.CENTER_ALIGNMENT);
+        body.add(jLabel1);
 
-        RoundedButton nextButton = new RoundedButton("Next", 20, new Dimension(100, 40));
+        JLabel jLabel1sub = new JLabel("Select the TSV file containing expression fold-change data");
+        jLabel1sub.setFont(Theme.body(14));
+        jLabel1sub.setForeground(Theme.TEXT_MED);
+        jLabel1sub.setAlignmentX(Component.CENTER_ALIGNMENT);
+        body.add(Box.createVerticalStrut(6));
+        body.add(jLabel1sub);
+        body.add(Box.createVerticalStrut(40));
+
+        RoundedButton nextButton = Theme.navBtn("Next →", 120);
         nextButton.setEnabled(false);
-        nextButton.setBackground(new Color(100, 149, 237));
-        nextButton.setForeground(Color.WHITE);
-        nextButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        nextButton.setFocusPainted(false);
 
+        // File display card
         selectedFileLabel = new JLabel();
         if (user.getLogFoldChangesFile() != null && !"".equals(user.getLogFoldChangesFile())) {
             selectedFileLabel.setText(user.getLogFoldChangesFile());
             nextButton.setEnabled(true);
         } else {
-            selectedFileLabel.setText("No File Selected");
+            selectedFileLabel.setText("No file selected");
         }
-        selectedFileLabel.setForeground(Color.BLACK);
-        jPanel1.add(selectedFileLabel);
+        selectedFileLabel.setFont(Theme.body(14));
+        selectedFileLabel.setForeground(Theme.TEXT_MED);
 
-        JPanel jp = new JPanel();
-        jp.add(jPanel1);
-        jp.setOpaque(false);
+        JPanel fileCard = new JPanel(new BorderLayout(12, 0));
+        fileCard.setBackground(Theme.BG_CARD);
+        fileCard.setMaximumSize(new Dimension(600, 52));
+        fileCard.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Theme.BORDER, 1),
+            BorderFactory.createEmptyBorder(10, 16, 10, 16)));
 
-        body.add(jp);
+        JLabel fileIcon = new JLabel("📄");
+        fileIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 18));
+        fileCard.add(fileIcon, BorderLayout.WEST);
+        fileCard.add(selectedFileLabel, BorderLayout.CENTER);
+        fileCard.setAlignmentX(Component.CENTER_ALIGNMENT);
+        body.add(fileCard);
+        body.add(Box.createVerticalStrut(16));
 
-        RoundedButton chooseButton = new RoundedButton("Choose File", 20, new Dimension(200, 50));
-        chooseButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        chooseButton.setBackground(new Color(100, 149, 237)); // cornflower blue
-        chooseButton.setForeground(Color.WHITE);
-        chooseButton.setFocusPainted(false);
+        RoundedButton chooseButton = Theme.navBtn("Choose File", 180);
 
-        JPanel choosePanel = new JPanel();
+        JPanel choosePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
         choosePanel.add(chooseButton);
         choosePanel.setOpaque(false);
         body.add(choosePanel);
@@ -89,23 +88,9 @@ public class FileSelectionCard extends RoundedPanel {
             }
         });
 
-        RoundedButton goToSessions = new RoundedButton("Go to Sessions", 20, new Dimension(170, 40));
-        goToSessions.setBackground(new Color(222, 129, 7));
-        goToSessions.setForeground(Color.WHITE);
-        goToSessions.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        goToSessions.setFocusPainted(false);
-
-        RoundedButton prevButton = new RoundedButton("Prev", 20, new Dimension(100, 40));
-        prevButton.setBackground(new Color(100, 149, 237));
-        prevButton.setForeground(Color.WHITE);
-        prevButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        prevButton.setFocusPainted(false);
-
-        RoundedButton saveButton = new RoundedButton("Save", 20, new Dimension(100,40));
-        saveButton.setBackground(new Color(5, 161, 59));
-        saveButton.setForeground(Color.WHITE);
-        saveButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        saveButton.setFocusPainted(false);
+        RoundedButton goToSessions = Theme.warningBtn("Sessions", 140);
+        RoundedButton prevButton = Theme.navBtn("← Prev", 110);
+        RoundedButton saveButton = Theme.successBtn("Save", 110);
 
         nextButton.addActionListener((ActionEvent evt) -> {
             XMLSelection xmlFile = new XMLSelection(cardLayout, cardPanel, user);
@@ -119,7 +104,7 @@ public class FileSelectionCard extends RoundedPanel {
 
         RoundedPanel buttonPanel = new RoundedPanel();
         buttonPanel.setLayout(new GridLayout(1, 2));
-        buttonPanel.setBackground(Color.WHITE);
+        buttonPanel.setBackground(Theme.BG);
 
         buttonPanel.add(new JPanel(new BorderLayout()) {
             {

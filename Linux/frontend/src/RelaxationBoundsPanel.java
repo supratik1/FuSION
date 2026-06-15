@@ -1,181 +1,215 @@
 import java.awt.*;
+import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 
-/**
- * A card that contains a dual-thumb RangeSlider with labels for bounds.
- */
 public class RelaxationBoundsPanel extends RoundedPanel {
 
-    private final RangeSlider nodeSlider;
-    private final RangeSlider edgeSlider;
-    private final JLabel lowerLabel1, lowerLabel2;
-    private final JLabel upperLabel, upperLabel2;
-
     public RelaxationBoundsPanel(CardLayout cardLayout, JPanel cardPanel, UserInput user) {
-        setLayout(new BorderLayout(10, 10));
-        setBackground(Color.WHITE);
+        setLayout(new BorderLayout(0, 0));
+        setBackground(Theme.BG);
 
-        int arr[] = user.getRelaxationBounds();
+        int[] arr = user.getRelaxationBounds(); // [nodeLB, nodeUB, edgeLB, edgeUB]
 
-        HeaderPanel header = new HeaderPanel(user.getUsername());
+        HeaderPanel header = new HeaderPanel(user.getUsername(), cardLayout, cardPanel, user);
         add(header, BorderLayout.NORTH);
 
-        JLabel title = new JLabel("Node and Edge Relaxation Bounds", JLabel.CENTER);
-        title.setFont(new Font("Arial", Font.BOLD, 28));
-        title.setForeground(Color.BLACK);
-        title.setBackground(Color.WHITE);
+        // ── Title ────────────────────────────────────────────────────────
+        JLabel title = new JLabel("Relaxation Bounds", JLabel.CENTER);
+        title.setFont(Theme.title(24));
+        title.setForeground(Theme.TEXT_DARK);
+        title.setBorder(BorderFactory.createEmptyBorder(20, 0, 16, 0));
 
-        edgeSlider = new RangeSlider();
-        edgeSlider.setMinimum(0);
-        edgeSlider.setMaximum(100);
-        edgeSlider.setValue(arr[2]);
-        edgeSlider.setUpperValue(arr[3]);
-        edgeSlider.setOpaque(false); // Let background show through
-        edgeSlider.setPaintTicks(true);
-        edgeSlider.setPaintLabels(true);
-        edgeSlider.setMajorTickSpacing(10);
-        edgeSlider.setMinorTickSpacing(1);
-        edgeSlider.setForeground(Color.BLACK);
-        edgeSlider.setPreferredSize(new Dimension(300, edgeSlider.getPreferredSize().height));
+        // ── Range sliders (synced with steppers) ─────────────────────────
+        RangeSlider nodeSlider = makeSlider(arr[0], arr[1]);
+        RangeSlider edgeSlider = makeSlider(arr[2], arr[3]);
 
-        nodeSlider = new RangeSlider();
-        nodeSlider.setMinimum(0);
-        nodeSlider.setMaximum(100);
-        nodeSlider.setValue(arr[0]);
-        nodeSlider.setUpperValue(arr[1]);
-        nodeSlider.setOpaque(false);
-        nodeSlider.setPaintTicks(true);
-        nodeSlider.setPaintLabels(true);
-        nodeSlider.setMajorTickSpacing(10);
-        nodeSlider.setMinorTickSpacing(1);
-        nodeSlider.setForeground(Color.BLACK);
-        nodeSlider.setPreferredSize(new Dimension(200, nodeSlider.getPreferredSize().height));
+        // ── Bound cards ───────────────────────────────────────────────────
+        JPanel nodeCard = makeBoundCard("Node Relaxation Bounds",
+                arr, 0, 1, nodeSlider);
+        JPanel edgeCard = makeBoundCard("Edge Relaxation Bounds",
+                arr, 2, 3, edgeSlider);
 
-        lowerLabel1 = new JLabel("Lower Bound: " + nodeSlider.getValue());
-        lowerLabel1.setForeground(Color.BLACK);
-        upperLabel = new JLabel("Upper Bound: " + nodeSlider.getUpperValue());
-        upperLabel.setForeground(Color.BLACK);
+        JPanel cardsPanel = new JPanel(new GridLayout(2, 1, 0, 16));
+        cardsPanel.setOpaque(false);
+        cardsPanel.add(nodeCard);
+        cardsPanel.add(edgeCard);
 
-        lowerLabel2 = new JLabel("Lower Bound: " + edgeSlider.getValue());
-        upperLabel2 = new JLabel("Upper Bound: " + edgeSlider.getUpperValue());
-        lowerLabel2.setForeground(Color.BLACK);
-        upperLabel2.setForeground(Color.BLACK);
+        JPanel center = new JPanel(new BorderLayout());
+        center.setOpaque(false);
+        center.setBorder(BorderFactory.createEmptyBorder(0, 48, 16, 48));
+        center.add(title, BorderLayout.NORTH);
+        center.add(cardsPanel, BorderLayout.CENTER);
+        add(center, BorderLayout.CENTER);
 
-        nodeSlider.addChangeListener((ChangeEvent e) -> {
-            lowerLabel1.setText("Lower Bound: " + nodeSlider.getValue());
-            upperLabel.setText("Upper Bound: " + nodeSlider.getUpperValue());
-            arr[0] = nodeSlider.getValue();
-            arr[1] = nodeSlider.getUpperValue();
-        });
-
-        edgeSlider.addChangeListener((ChangeEvent e) -> {
-            lowerLabel2.setText("Lower Bound: " + edgeSlider.getValue());
-            upperLabel2.setText("Upper Bound: " + edgeSlider.getUpperValue());
-            arr[2] = edgeSlider.getValue();
-            arr[3] = edgeSlider.getUpperValue();
-        });
-
-        JPanel nodeSliderPanel = new JPanel();
-        nodeSliderPanel.setLayout(new BoxLayout(nodeSliderPanel, BoxLayout.Y_AXIS));
-        nodeSliderPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        nodeSliderPanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(Color.BLACK), 
-            "Node Relaxation Bounds", 0, 0, null, Color.BLACK));
-        nodeSliderPanel.setBackground(Color.WHITE);
-
-        nodeSliderPanel.add(lowerLabel1);
-        nodeSliderPanel.add(upperLabel);
-        nodeSliderPanel.add(Box.createVerticalStrut(30));
-        nodeSliderPanel.add(nodeSlider);
-
-        JPanel edgeSliderPanel = new JPanel();
-        edgeSliderPanel.setLayout(new BoxLayout(edgeSliderPanel, BoxLayout.Y_AXIS));
-        edgeSliderPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); 
-        edgeSliderPanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createLineBorder(Color.BLACK), 
-            "Edge Relaxation Bounds", 0, 0, null, Color.BLACK));
-        edgeSliderPanel.setBackground(Color.WHITE);
-
-        edgeSliderPanel.add(lowerLabel2);
-        edgeSliderPanel.add(upperLabel2);
-        edgeSliderPanel.add(Box.createVerticalStrut(30));
-        edgeSliderPanel.add(edgeSlider);
-
-        JPanel sliderPanel = new JPanel(new GridLayout(2, 1));
-        
-        sliderPanel.add(nodeSliderPanel);
-        sliderPanel.add(edgeSliderPanel);
-        sliderPanel.setBackground(Color.WHITE);
-
-        RoundedButton nextButton = new RoundedButton("Next", 20, new Dimension(100, 40));
-        nextButton.setBackground(new Color(100, 149, 237));
-        nextButton.setForeground(Color.WHITE);
-        nextButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        nextButton.setFocusPainted(false);
-
-        RoundedButton goToSessions = new RoundedButton("Go to Sessions", 20, new Dimension(170, 40));
-        goToSessions.setBackground(new Color(222, 129, 7));
-        goToSessions.setForeground(Color.WHITE);
-        goToSessions.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        goToSessions.setFocusPainted(false);
-
-        RoundedButton prevButton = new RoundedButton("Prev", 20, new Dimension(100, 40));
-        prevButton.setBackground(new Color(100, 149, 237));
-        prevButton.setForeground(Color.WHITE);
-        prevButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        prevButton.setFocusPainted(false);
-        
-        RoundedButton saveButton = new RoundedButton("Save", 20, new Dimension(100,40));
-        saveButton.setBackground(new Color(5, 161, 59));
-        saveButton.setForeground(Color.WHITE);
-        saveButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        saveButton.setFocusPainted(false);
-
-
+        // ── Buttons ───────────────────────────────────────────────────────
+        RoundedButton nextButton   = Theme.navBtn("Next →", 110);
+        RoundedButton prevButton   = Theme.navBtn("← Prev", 110);
+        RoundedButton saveButton   = Theme.successBtn("Save", 110);
+        RoundedButton sessionBtn   = Theme.warningBtn("Sessions", 140);
 
         nextButton.addActionListener(e -> {
             user.setRelaxationBounds(arr);
-            ThresholdFilterPanel threshold = new ThresholdFilterPanel(cardLayout, cardPanel, user);
-            cardPanel.add(threshold, "threshold");
-            cardLayout.show(cardPanel, "threshold");
+            IdEntryPanel idEntry = new IdEntryPanel(cardLayout, cardPanel, user);
+            cardPanel.add(idEntry, "idEntry");
+            cardLayout.show(cardPanel, "idEntry");
         });
-
-        
         prevButton.addActionListener(e -> cardLayout.show(cardPanel, "reachBound"));
-
-        
-        saveButton.addActionListener(e -> {
-            user.setRelaxationBounds(arr);
-            user.saveData();
-        });
-
-        
-        goToSessions.addActionListener(e -> cardLayout.show(cardPanel, "sessions"));
+        saveButton.addActionListener(e -> { user.setRelaxationBounds(arr); user.saveData(); });
+        sessionBtn.addActionListener(e -> cardLayout.show(cardPanel, "sessions"));
 
         RoundedPanel buttonPanel = new RoundedPanel();
         buttonPanel.setLayout(new GridLayout(1, 2));
+        buttonPanel.setBackground(Theme.BG);
         buttonPanel.add(new JPanel(new BorderLayout()) {{
             setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            add(sessionBtn, BorderLayout.WEST);
             add(prevButton, BorderLayout.EAST);
-            add(goToSessions, BorderLayout.WEST);
             setOpaque(false);
         }});
-
         buttonPanel.add(new JPanel(new BorderLayout()) {{
             setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
             add(nextButton, BorderLayout.WEST);
             add(saveButton, BorderLayout.EAST);
             setOpaque(false);
         }});
-        buttonPanel.setBackground(Color.WHITE);
-
-        add(new JPanel(new BorderLayout()){{
-            add(title, BorderLayout.NORTH);
-            add(sliderPanel, BorderLayout.CENTER);
-            setBorder(BorderFactory.createEmptyBorder(10, 40, 10, 40));
-            setOpaque(false);
-        }}, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
+    }
+
+    // ── Card: section title + two inline steppers + range slider ─────────
+
+    private JPanel makeBoundCard(String title, int[] arr, int lbIdx, int ubIdx,
+                                  RangeSlider slider) {
+        JPanel card = new JPanel(new BorderLayout(0, 12));
+        card.setBackground(Theme.BG_CARD);
+        card.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Theme.BORDER, 1),
+            BorderFactory.createEmptyBorder(16, 20, 18, 20)));
+
+        // Section title
+        JLabel titleLabel = new JLabel(title);
+        titleLabel.setFont(Theme.title(14));
+        titleLabel.setForeground(Theme.TEXT_DARK);
+
+        // Steppers row
+        JPanel steppers = new JPanel(new GridLayout(1, 2, 24, 0));
+        steppers.setOpaque(false);
+        steppers.add(makeStepper("Lower Bound", arr, lbIdx, slider, true));
+        steppers.add(makeStepper("Upper Bound", arr, ubIdx, slider, false));
+
+        // Slider row
+        JPanel sliderRow = new JPanel(new BorderLayout(8, 0));
+        sliderRow.setOpaque(false);
+        JLabel minLbl = new JLabel("0");
+        JLabel maxLbl = new JLabel("100");
+        minLbl.setFont(Theme.body(11));
+        maxLbl.setFont(Theme.body(11));
+        minLbl.setForeground(Theme.TEXT_LIGHT);
+        maxLbl.setForeground(Theme.TEXT_LIGHT);
+        sliderRow.add(minLbl,  BorderLayout.WEST);
+        sliderRow.add(slider,  BorderLayout.CENTER);
+        sliderRow.add(maxLbl,  BorderLayout.EAST);
+
+        card.add(titleLabel, BorderLayout.NORTH);
+        card.add(steppers,   BorderLayout.CENTER);
+        card.add(sliderRow,  BorderLayout.SOUTH);
+
+        return card;
+    }
+
+    // ── Single stepper: label + [−] [field] [+] ──────────────────────────
+
+    private JPanel makeStepper(String label, int[] arr, int idx,
+                                RangeSlider slider, boolean isLower) {
+        JPanel panel = new JPanel(new BorderLayout(0, 6));
+        panel.setOpaque(false);
+
+        JLabel lbl = new JLabel(label);
+        lbl.setFont(Theme.body(12));
+        lbl.setForeground(Theme.TEXT_MED);
+
+        JTextField field = new JTextField(String.valueOf(arr[idx]), 4);
+        field.setFont(Theme.title(15));
+        field.setForeground(Theme.TEXT_DARK);
+        field.setHorizontalAlignment(JTextField.CENTER);
+        field.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Theme.BORDER, 1),
+            BorderFactory.createEmptyBorder(4, 8, 4, 8)));
+
+        RoundedButton minus = makeStepBtn("−");
+        RoundedButton plus  = makeStepBtn("+");
+        plus.setBackground(Theme.PRIMARY);
+        plus.setForeground(Color.WHITE);
+
+        // sync field → arr + slider
+        Runnable syncFromField = () -> {
+            try {
+                int v = Integer.parseInt(field.getText().trim());
+                v = Math.max(0, Math.min(100, v));
+                arr[idx] = v;
+                field.setText(String.valueOf(v));
+                if (isLower) slider.setValue(v);
+                else         slider.setUpperValue(v);
+            } catch (NumberFormatException ex) {
+                field.setText(String.valueOf(arr[idx]));
+            }
+        };
+        field.addActionListener(e -> syncFromField.run());
+        field.addFocusListener(new FocusAdapter() {
+            public void focusLost(FocusEvent e) { syncFromField.run(); }
+        });
+
+        minus.addActionListener(e -> {
+            arr[idx] = Math.max(0, arr[idx] - 1);
+            field.setText(String.valueOf(arr[idx]));
+            if (isLower) slider.setValue(arr[idx]);
+            else         slider.setUpperValue(arr[idx]);
+        });
+        plus.addActionListener(e -> {
+            arr[idx] = Math.min(100, arr[idx] + 1);
+            field.setText(String.valueOf(arr[idx]));
+            if (isLower) slider.setValue(arr[idx]);
+            else         slider.setUpperValue(arr[idx]);
+        });
+
+        // sync slider → field + arr
+        slider.addChangeListener((ChangeEvent e) -> {
+            int v = isLower ? slider.getValue() : slider.getUpperValue();
+            arr[idx] = v;
+            field.setText(String.valueOf(v));
+        });
+
+        JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        controls.setOpaque(false);
+        controls.add(minus);
+        controls.add(field);
+        controls.add(plus);
+
+        panel.add(lbl,      BorderLayout.NORTH);
+        panel.add(controls, BorderLayout.CENTER);
+        return panel;
+    }
+
+    private RoundedButton makeStepBtn(String text) {
+        RoundedButton btn = new RoundedButton(text, 8, new Dimension(34, 34));
+        btn.setBackground(new Color(241, 243, 248));
+        btn.setForeground(Theme.TEXT_DARK);
+        btn.setFont(Theme.title(16));
+        return btn;
+    }
+
+    private RangeSlider makeSlider(int lb, int ub) {
+        RangeSlider s = new RangeSlider();
+        s.setMinimum(0);
+        s.setMaximum(100);
+        s.setValue(lb);
+        s.setUpperValue(ub);
+        s.setOpaque(false);
+        s.setPaintTicks(true);
+        s.setPaintLabels(true);
+        s.setMajorTickSpacing(20);
+        s.setMinorTickSpacing(5);
+        s.setForeground(Theme.TEXT_MED);
+        return s;
     }
 }

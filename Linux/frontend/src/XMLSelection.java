@@ -13,86 +13,88 @@ public class XMLSelection extends RoundedPanel {
     public XMLSelection(CardLayout cardLayout, JPanel cardPanel, UserInput user) {
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        setBackground(Color.WHITE);
+        setBackground(Theme.BG);
 
-        HeaderPanel header = new HeaderPanel(user.getUsername());
+        HeaderPanel header = new HeaderPanel(user.getUsername(), cardLayout, cardPanel, user);
         add(header, BorderLayout.NORTH);
-
-        JLabel title = new JLabel("Add XML files", JLabel.CENTER);
-        title.setFont(new Font("Arial", Font.BOLD, 34));
-        title.setForeground(Color.BLACK);
-        // Remove purple background on title to keep it clean
-        title.setBackground(Color.WHITE);
 
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
-        centerPanel.setBackground(Color.WHITE);  // changed from purple
-        centerPanel.setBorder(BorderFactory.createEmptyBorder(30, 60, 60, 60));
+        centerPanel.setBackground(Theme.BG);
+        centerPanel.setBorder(BorderFactory.createEmptyBorder(30, 60, 40, 60));
 
+        JLabel title = new JLabel("Pathway XML Files");
+        title.setFont(Theme.title(26));
+        title.setForeground(Theme.TEXT_DARK);
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
         centerPanel.add(title);
+        centerPanel.add(Box.createVerticalStrut(4));
 
-        // Radio buttons to choose which file to enable
-        JLabel chooseLabel = new JLabel("Which file do you want to choose?");
-        chooseLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        chooseLabel.setForeground(Color.BLACK);
+        JLabel titleSub = new JLabel("Choose the source of KEGG pathway data");
+        titleSub.setFont(Theme.body(14));
+        titleSub.setForeground(Theme.TEXT_MED);
+        titleSub.setAlignmentX(Component.CENTER_ALIGNMENT);
+        centerPanel.add(titleSub);
+        centerPanel.add(Box.createVerticalStrut(24));
+
+        // Radio buttons selection section
+        JLabel chooseLabel = new JLabel("Select input type:");
+        chooseLabel.setFont(Theme.title(14));
+        chooseLabel.setForeground(Theme.TEXT_DARK);
 
         JRadioButton chooseFile1Radio = new JRadioButton("List of KEGG XML Files to Merge");
         chooseFile1Radio.setOpaque(false);
-        chooseFile1Radio.setForeground(Color.BLACK); // set text black
+        chooseFile1Radio.setFont(Theme.body(14));
+        chooseFile1Radio.setForeground(Theme.TEXT_DARK);
 
         JRadioButton chooseFile2Radio = new JRadioButton("XML File of Merged KEGG Pathways");
         chooseFile2Radio.setOpaque(false);
-        chooseFile2Radio.setForeground(Color.BLACK); // set text black
+        chooseFile2Radio.setFont(Theme.body(14));
+        chooseFile2Radio.setForeground(Theme.TEXT_DARK);
 
         ButtonGroup group = new ButtonGroup();
         group.add(chooseFile1Radio);
         group.add(chooseFile2Radio);
 
         // Components for file 1
-        JLabel label1 = new JLabel("Select list of KEGG XML Files to Merge:");
-        label1.setFont(new Font("Arial", Font.BOLD, 20));
-        label1.setForeground(Color.BLACK);
+        JLabel label1 = new JLabel("List of KEGG XML Files to Merge:");
+        label1.setFont(Theme.title(14));
+        label1.setForeground(Theme.TEXT_DARK);
 
-        JButton chooseButton1 = new JButton("Choose");
+        RoundedButton chooseButton1 = Theme.navBtn("Choose", 110);
         chooseButton1.setEnabled(false);
-        chooseButton1.setForeground(Color.WHITE);
-        chooseButton1.setBackground(Color.BLACK); 
-        chooseButton1.setFocusPainted(false);
-        chooseButton1.setOpaque(true);
 
         JLabel fileNameLabel1 = new JLabel();
         if (user.getTxtFile() != null && !user.getTxtFile().equals("")) {
             File txt = new File(user.getTxtFile());
-            fileNameLabel1.setText("Selected: " + txt.getName());
+            fileNameLabel1.setText(txt.getName());
             chooseFile1Radio.setSelected(true);
             chooseButton1.setEnabled(true);
         } else {
-            fileNameLabel1.setText("No file Selected");
+            fileNameLabel1.setText("No file selected");
         }
-        fileNameLabel1.setForeground(Color.BLACK);
+        fileNameLabel1.setFont(Theme.body(13));
+        fileNameLabel1.setForeground(Theme.TEXT_MED);
 
         // Components for file 2
-        JLabel label2 = new JLabel("Select XML File of Merged KEGG Pathways:");
-        label2.setFont(new Font("Arial", Font.BOLD, 20));
-        label2.setForeground(Color.BLACK);
+        JLabel label2 = new JLabel("XML File of Merged KEGG Pathways:");
+        label2.setFont(Theme.title(14));
+        label2.setForeground(Theme.TEXT_DARK);
 
-        JButton chooseButton2 = new JButton("Choose");
+        RoundedButton chooseButton2 = Theme.navBtn("Choose", 110);
         chooseButton2.setEnabled(false);
-        chooseButton2.setForeground(Color.WHITE);
-        chooseButton2.setBackground(Color.BLACK); 
-        chooseButton2.setFocusPainted(false);
-        chooseButton2.setOpaque(true);
 
         JLabel fileNameLabel2 = new JLabel();
         if (user.getXMLFile() != null && !user.getXMLFile().equals("")) {
             File txt = new File(user.getXMLFile());
-            fileNameLabel2.setText("Selected: " + txt.getName());
+            fileNameLabel2.setText(txt.getName());
             chooseFile2Radio.setSelected(true);
             chooseButton2.setEnabled(true);
         } else {
-            fileNameLabel2.setText("No file Selected");
+            fileNameLabel2.setText("No file selected");
         }
-        fileNameLabel2.setForeground(Color.BLACK);
+        fileNameLabel2.setFont(Theme.body(13));
+        fileNameLabel2.setForeground(Theme.TEXT_MED);
 
         // File chooser listeners remain same, no UI change needed:
         chooseButton1.addActionListener((ActionEvent e) -> {
@@ -136,77 +138,113 @@ public class XMLSelection extends RoundedPanel {
             user.setKegg(";;");
         });
 
-        // Add components to center panel
+        // Radio selection card
+        JPanel radioCard = new JPanel();
+        radioCard.setLayout(new BoxLayout(radioCard, BoxLayout.Y_AXIS));
+        radioCard.setBackground(Theme.BG_CARD);
+        radioCard.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Theme.BORDER, 1),
+            BorderFactory.createEmptyBorder(12, 16, 12, 16)));
+        radioCard.setMaximumSize(new Dimension(620, 100));
+        radioCard.setAlignmentX(Component.CENTER_ALIGNMENT);
+        chooseLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        chooseFile1Radio.setAlignmentX(Component.LEFT_ALIGNMENT);
+        chooseFile2Radio.setAlignmentX(Component.LEFT_ALIGNMENT);
+        radioCard.add(chooseLabel);
+        radioCard.add(Box.createVerticalStrut(8));
+        radioCard.add(chooseFile1Radio);
+        radioCard.add(Box.createVerticalStrut(4));
+        radioCard.add(chooseFile2Radio);
+        centerPanel.add(radioCard);
         centerPanel.add(Box.createVerticalStrut(20));
-        centerPanel.add(chooseLabel);
+
+        // File 1 card
+        JPanel file1Card = new JPanel(new BorderLayout(12, 0));
+        file1Card.setBackground(Theme.BG_CARD);
+        file1Card.setMaximumSize(new Dimension(620, 64));
+        file1Card.setAlignmentX(Component.CENTER_ALIGNMENT);
+        file1Card.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Theme.BORDER, 1),
+            BorderFactory.createEmptyBorder(10, 16, 10, 16)));
+        JPanel file1Info = new JPanel();
+        file1Info.setLayout(new BoxLayout(file1Info, BoxLayout.Y_AXIS));
+        file1Info.setOpaque(false);
+        label1.setAlignmentX(Component.LEFT_ALIGNMENT);
+        fileNameLabel1.setAlignmentX(Component.LEFT_ALIGNMENT);
+        file1Info.add(label1);
+        file1Info.add(fileNameLabel1);
+        file1Card.add(file1Info, BorderLayout.CENTER);
+        file1Card.add(chooseButton1, BorderLayout.EAST);
+        centerPanel.add(file1Card);
+        centerPanel.add(Box.createVerticalStrut(12));
+
+        // File 2 card
+        JPanel file2Card = new JPanel(new BorderLayout(12, 0));
+        file2Card.setBackground(Theme.BG_CARD);
+        file2Card.setMaximumSize(new Dimension(620, 64));
+        file2Card.setAlignmentX(Component.CENTER_ALIGNMENT);
+        file2Card.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Theme.BORDER, 1),
+            BorderFactory.createEmptyBorder(10, 16, 10, 16)));
+        JPanel file2Info = new JPanel();
+        file2Info.setLayout(new BoxLayout(file2Info, BoxLayout.Y_AXIS));
+        file2Info.setOpaque(false);
+        label2.setAlignmentX(Component.LEFT_ALIGNMENT);
+        fileNameLabel2.setAlignmentX(Component.LEFT_ALIGNMENT);
+        file2Info.add(label2);
+        file2Info.add(fileNameLabel2);
+        file2Card.add(file2Info, BorderLayout.CENTER);
+        file2Card.add(chooseButton2, BorderLayout.EAST);
+        centerPanel.add(file2Card);
         centerPanel.add(Box.createVerticalStrut(20));
-        centerPanel.add(chooseFile1Radio);
-        centerPanel.add(chooseFile2Radio);
-        centerPanel.add(Box.createVerticalStrut(30));
-        centerPanel.add(label1);
-        centerPanel.add(chooseButton1);
-        centerPanel.add(fileNameLabel1);
-        centerPanel.add(Box.createVerticalStrut(30));
-        centerPanel.add(label2);
-        centerPanel.add(chooseButton2);
-        centerPanel.add(fileNameLabel2);
-        centerPanel.add(Box.createVerticalStrut(30));
 
-        // Node split threshold panel
-        JPanel nodeSplitPanel = new JPanel();
-        nodeSplitPanel.setOpaque(false);
-        JLabel nodeSplitLabel = new JLabel("Threshold to split Nodes while merging");
-        nodeSplitLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        nodeSplitLabel.setForeground(Color.BLACK);  // black text
+        // Node split threshold section
+        JPanel nodeSplitCard = new JPanel(new BorderLayout(16, 0));
+        nodeSplitCard.setBackground(Theme.BG_CARD);
+        nodeSplitCard.setMaximumSize(new Dimension(620, 56));
+        nodeSplitCard.setAlignmentX(Component.CENTER_ALIGNMENT);
+        nodeSplitCard.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Theme.BORDER, 1),
+            BorderFactory.createEmptyBorder(10, 16, 10, 16)));
 
-        JTextField nodeSplitField = new JTextField(8);
+        JLabel nodeSplitLabel = new JLabel("Node Split Threshold");
+        nodeSplitLabel.setFont(Theme.title(14));
+        nodeSplitLabel.setForeground(Theme.TEXT_DARK);
+
+        JTextField nodeSplitField = new JTextField(6);
         nodeSplitField.setText("" + user.getNodeSplitThreshold());
+        nodeSplitField.setFont(Theme.body(14));
+        nodeSplitField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Theme.BORDER, 1),
+            BorderFactory.createEmptyBorder(4, 8, 4, 8)));
 
-        JButton iButton = new JButton("i");
-        iButton.setFont(new Font("Arial", Font.BOLD, 16));
-        iButton.setBackground(new Color(70, 130, 180)); // soft blue
+        RoundedButton iButton = new RoundedButton("i", 14, new Dimension(28, 28));
+        iButton.setFont(Theme.body(13));
+        iButton.setBackground(Theme.PRIMARY);
         iButton.setForeground(Color.WHITE);
-        iButton.setPreferredSize(new Dimension(40, 20));
         iButton.setFocusPainted(false);
-        iButton.setOpaque(true);
+        iButton.setToolTipText("Threshold to split nodes while merging pathways");
 
-        nodeSplitPanel.add(iButton);
-        nodeSplitPanel.add(nodeSplitLabel);
-        nodeSplitPanel.add(nodeSplitField);
+        JPanel nodeSplitRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        nodeSplitRight.setOpaque(false);
+        nodeSplitRight.add(nodeSplitField);
+        nodeSplitRight.add(iButton);
 
-        centerPanel.add(nodeSplitPanel);
+        nodeSplitCard.add(nodeSplitLabel, BorderLayout.CENTER);
+        nodeSplitCard.add(nodeSplitRight, BorderLayout.EAST);
+        centerPanel.add(nodeSplitCard);
 
         add(centerPanel, BorderLayout.CENTER);
 
         // Button panel - keep white background and standard buttons
         RoundedPanel buttonPanel = new RoundedPanel();
         buttonPanel.setLayout(new GridLayout(1, 2));
-        buttonPanel.setBackground(Color.WHITE);
+        buttonPanel.setBackground(Theme.BG);
 
-        RoundedButton nextButton = new RoundedButton("Next", 20, new Dimension(100, 40));
-        
-        nextButton.setBackground(new Color(100, 149, 237));
-        nextButton.setForeground(Color.WHITE);
-        nextButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        nextButton.setFocusPainted(false);
-
-        RoundedButton goToSessions = new RoundedButton("Go to Sessions", 20, new Dimension(170, 40));
-        goToSessions.setBackground(new Color(222, 129, 7));
-        goToSessions.setForeground(Color.WHITE);
-        goToSessions.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        goToSessions.setFocusPainted(false);
-
-        RoundedButton prevButton = new RoundedButton("Prev", 20, new Dimension(100, 40));
-        prevButton.setBackground(new Color(100, 149, 237));
-        prevButton.setForeground(Color.WHITE);
-        prevButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        prevButton.setFocusPainted(false);
-        
-        RoundedButton saveButton = new RoundedButton("Save", 20, new Dimension(100,40));
-        saveButton.setBackground(new Color(5, 161, 59));
-        saveButton.setForeground(Color.WHITE);
-        saveButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        saveButton.setFocusPainted(false);
+        RoundedButton nextButton = Theme.navBtn("Next →", 110);
+        RoundedButton goToSessions = Theme.warningBtn("Sessions", 140);
+        RoundedButton prevButton = Theme.navBtn("← Prev", 110);
+        RoundedButton saveButton = Theme.successBtn("Save", 110);
 
         
         nextButton.addActionListener(e -> {

@@ -1,0 +1,102 @@
+Current PO point: 7 nodes, 1 edges relaxed
+Solution 1
+65	hsa1	1	up_reg	present	active
+66	hsa2	1	up_reg	present	active
+67	hsa3	1	up_reg	present	active
+69	hsa5	1	up_reg	present	active
+70	hsa6	1	up_reg	present	active
+72	hsa8	1	up_reg	present	active
+73	hsa9	1	up_reg	present	active
+76	hsa12	1	up_reg	present	active
+78	hsa15	-1	down_reg	present	active
+80	hsa18	1	up_reg	present	inactive
+83	hsa21	-1	down_reg	present	active
+84	hsa22	1	up_reg	present	active
+
+73	present	activation	hsa1	1	hsa2	1	src_present	src_active	tgt_present	tgt_active [path:1]
+74	present	activation	hsa1	1	hsa3	1	src_present	src_active	tgt_present	tgt_active [path:hsa2]
+76	present	inhibition	hsa2	1	hsa5	1	src_present	src_active	tgt_present	tgt_active [path:hsa2]
+77	present	activation	hsa3	1	hsa6	1	src_present	src_active	tgt_present	tgt_active [path:1]
+79	present	activation	hsa5	1	hsa8	1	src_present	src_active	tgt_present	tgt_active [path:1]
+80	present	activation	hsa6	1	hsa9	1	src_present	src_active	tgt_present	tgt_active [path:hsa2]
+83	present	activation	hsa8	1	hsa12	1	src_present	src_active	tgt_present	tgt_active [path:1]
+84	present	activation	hsa9	1	hsa12	1	src_present	src_active	tgt_present	tgt_active [path:hsa2]
+86	present	activation	hsa12	1	hsa15	-1	src_present	src_active	tgt_present	tgt_active [path:1]
+88	present	inhibition	hsa15	-1	hsa18	1	src_present	src_active	tgt_present	tgt_inactive [path:1]
+91	present	inhibition	hsa18	1	hsa21	-1	src_present	src_inactive	tgt_present	tgt_active [path:1]
+94	present	activation	hsa21	-1	hsa22	1	src_present	src_active	tgt_present	tgt_active [path:1]
+
+
+Solution 2
+
+Current PO point: 4 nodes, 3 edges relaxed
+Solution 1
+65	hsa1	1	up_reg	present	active
+66	hsa2	1	up_reg	present	active
+67	hsa3	1	up_reg	present	active
+69	hsa5	1	up_reg	present	active
+70	hsa6	1	up_reg	present	active
+72	hsa8	1	up_reg	present	active
+73	hsa9	1	up_reg	present	active
+76	hsa12	1	up_reg	present	active
+78	hsa15	-1	down_reg	present	inactive
+80	hsa18	1	up_reg	present	active
+83	hsa21	-1	down_reg	present	inactive
+84	hsa22	1	up_reg	present	active
+
+73	present	activation	hsa1	1	hsa2	1	src_present	src_active	tgt_present	tgt_active [path:1]
+74	present	activation	hsa1	1	hsa3	1	src_present	src_active	tgt_present	tgt_active [path:hsa2]
+76	present	inhibition	hsa2	1	hsa5	1	src_present	src_active	tgt_present	tgt_active [path:hsa2]
+77	present	activation	hsa3	1	hsa6	1	src_present	src_active	tgt_present	tgt_active [path:1]
+79	present	activation	hsa5	1	hsa8	1	src_present	src_active	tgt_present	tgt_active [path:1]
+80	present	activation	hsa6	1	hsa9	1	src_present	src_active	tgt_present	tgt_active [path:hsa2]
+83	present	activation	hsa8	1	hsa12	1	src_present	src_active	tgt_present	tgt_active [path:1]
+84	present	activation	hsa9	1	hsa12	1	src_present	src_active	tgt_present	tgt_active [path:hsa2]
+86	present	activation	hsa12	1	hsa15	-1	src_present	src_active	tgt_present	tgt_inactive [path:1]
+88	present	inhibition	hsa15	-1	hsa18	1	src_present	src_inactive	tgt_present	tgt_active [path:1]
+91	present	inhibition	hsa18	1	hsa21	-1	src_present	src_active	tgt_present	tgt_inactive [path:1]
+94	present	activation	hsa21	-1	hsa22	1	src_present	src_inactive	tgt_present	tgt_active [path:1]
+
+
+Solution 2
+
+Current PO point: 2 nodes, 5 edges relaxed
+Solution 1
+65	hsa1	1	up_reg	present	active
+66	hsa2	1	up_reg	present	active
+67	hsa3	1	up_reg	present	active
+68	hsa4	1	up_reg	present	active
+69	hsa5	1	up_reg	present	active
+70	hsa6	1	up_reg	present	active
+71	hsa7	1	up_reg	present	active
+72	hsa8	1	up_reg	present	active
+73	hsa9	1	up_reg	present	active
+74	hsa16	hsa16	not_diff_expr	present	active
+76	hsa12	1	up_reg	present	active
+78	hsa15	-1	down_reg	present	inactive
+80	hsa18	1	up_reg	present	active
+81	hsa19	-1	down_reg	present	inactive
+83	hsa21	-1	down_reg	present	inactive
+84	hsa22	1	up_reg	present	active
+
+73	present	activation	hsa1	1	hsa2	1	src_present	src_active	tgt_present	tgt_active [path:1]
+74	present	activation	hsa1	1	hsa3	1	src_present	src_active	tgt_present	tgt_active [path:hsa2]
+75	present	activation	hsa1	1	hsa4	1	src_present	src_active	tgt_present	tgt_active [path:1]
+76	present	inhibition	hsa2	1	hsa5	1	src_present	src_active	tgt_present	tgt_active [path:hsa2]
+77	present	activation	hsa3	1	hsa6	1	src_present	src_active	tgt_present	tgt_active [path:1]
+78	present	inhibition	hsa4	1	hsa7	1	src_present	src_active	tgt_present	tgt_active [path:hsa2]
+79	present	activation	hsa5	1	hsa8	1	src_present	src_active	tgt_present	tgt_active [path:1]
+80	present	activation	hsa6	1	hsa9	1	src_present	src_active	tgt_present	tgt_active [path:hsa2]
+81	present	activation	hsa7	1	hsa16	hsa16	src_present	src_active	tgt_present	tgt_active [path:1]
+83	present	activation	hsa8	1	hsa12	1	src_present	src_active	tgt_present	tgt_active [path:1]
+84	present	activation	hsa9	1	hsa12	1	src_present	src_active	tgt_present	tgt_active [path:hsa2]
+86	present	activation	hsa12	1	hsa15	-1	src_present	src_active	tgt_present	tgt_inactive [path:1]
+88	present	inhibition	hsa15	-1	hsa18	1	src_present	src_inactive	tgt_present	tgt_active [path:1]
+89	present	inhibition	hsa16	hsa16	hsa19	-1	src_present	src_active	tgt_present	tgt_inactive [path:hsa2]
+91	present	inhibition	hsa18	1	hsa21	-1	src_present	src_active	tgt_present	tgt_inactive [path:1]
+92	present	activation	hsa19	-1	hsa22	1	src_present	src_inactive	tgt_present	tgt_active [path:hsa2]
+94	present	activation	hsa21	-1	hsa22	1	src_present	src_inactive	tgt_present	tgt_active [path:1]
+
+
+Solution 2
+

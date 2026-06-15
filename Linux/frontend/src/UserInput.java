@@ -29,6 +29,9 @@ public class UserInput {
     private String txtFile, xmlFile;
 
     private String additionalEdge, essentialEdge, avoidEdge, relaxedEdge, nonrelaxedEdge;
+    private String coexpressionCsv;
+    private int coexpThresh, frozenThresh;
+    private String pipelineData = "";
 
     private String sourceHsaID, targetHsaID, candidateID, hsaNotMerged;
 
@@ -74,6 +77,10 @@ public class UserInput {
                 String avoidEdge= obj.optString("AvoidEdge", "");
                 String relaxedEdge= obj.optString("RelaxedEdge", "");
                 String nonrelaxedEdge= obj.optString("NonrelaxedEdge", "");
+                String coexpressionCsv= obj.optString("CoexpressionCsv", "");
+                int coexpThresh= obj.optInt("CoexpThresh", 0);
+                int frozenThresh= obj.optInt("FrozenThresh", 0);
+                String pipelineData = obj.optString("pipelineData", "");
 
                 String sourcehsaID= obj.optString("SourceHsaID", "");
                 String targethsaID= obj.optString("TargetHsaID", "");
@@ -112,6 +119,10 @@ public class UserInput {
                 this.avoidEdge= avoidEdge;
                 this.relaxedEdge= relaxedEdge;
                 this.nonrelaxedEdge= nonrelaxedEdge;
+                this.coexpressionCsv= coexpressionCsv;
+                this.coexpThresh= coexpThresh;
+                this.frozenThresh= frozenThresh;
+                this.pipelineData= pipelineData;
                 this.sourceHsaID= sourcehsaID;
                 this.targetHsaID= targethsaID;
                 this.candidateID= candidateID;
@@ -318,6 +329,18 @@ public class UserInput {
         over.clear();
     }
 
+    public String getCoexpressionCsv() { return coexpressionCsv; }
+    public void setCoexpressionCsv(String f) { this.coexpressionCsv = f; }
+
+    public int getCoexpThresh() { return coexpThresh; }
+    public void setCoexpThresh(int v) { this.coexpThresh = v; }
+
+    public int getFrozenThresh() { return frozenThresh; }
+    public void setFrozenThresh(int v) { this.frozenThresh = v; }
+
+    public String getPipelineData() { return pipelineData != null ? pipelineData : ""; }
+    public void setPipelineData(String data) { this.pipelineData = data != null ? data : ""; }
+
     public void saveData(){
         String fileName = "frontend/sessions/" + getUsername() + ".json";
             
@@ -367,6 +390,10 @@ public class UserInput {
                 sessionData.put("HsaToPath", mappingFile[1]);
                 sessionData.put("InterDB", mappingFile[2]);
                 sessionData.put("KEGG", kegg);
+                sessionData.put("CoexpressionCsv", coexpressionCsv);
+                sessionData.put("CoexpThresh", coexpThresh);
+                sessionData.put("FrozenThresh", frozenThresh);
+                sessionData.put("pipelineData", pipelineData != null ? pipelineData : "");
                  
                 try (FileWriter fw = new FileWriter(fileName)) {
                     fw.write(sessionsArray.toString(2)); // Pretty print with 2 spaces

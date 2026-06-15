@@ -32,118 +32,92 @@ public class MainPanel extends RoundedPanel {
     private void initComponents(String username, UserInput user, CardLayout cardLayout, JPanel cardPanel) {
 
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE);   // White main background
+        setBackground(Theme.BG);
 
         // Top panel with username label and icon
-        HeaderPanel header = new HeaderPanel(username);
+        HeaderPanel header = new HeaderPanel(username, cardLayout, cardPanel, user);
         add(header, BorderLayout.NORTH);
 
         // Body panel using BoxLayout vertical axis
         JPanel bodyPanel = new JPanel();
-        bodyPanel.setBackground(Color.WHITE);  // White background
+        bodyPanel.setBackground(Theme.BG);
         bodyPanel.setLayout(new BoxLayout(bodyPanel, BoxLayout.Y_AXIS));
         bodyPanel.add(Box.createVerticalStrut(20));
 
-        JLabel jLabel1 = new JLabel("Welcome to FuSiON");
+        JLabel jLabel1 = new JLabel("Welcome to FuSION");
         jLabel1.setAlignmentX(Component.CENTER_ALIGNMENT);
-        jLabel1.setFont(new Font("Verdana", Font.BOLD, 38));
-        jLabel1.setForeground(Color.BLACK);  // Black text
+        jLabel1.setFont(Theme.title(34));
+        jLabel1.setForeground(Theme.TEXT_DARK);
 
         bodyPanel.add(jLabel1);
-        bodyPanel.add(Box.createVerticalStrut(30));
+        bodyPanel.add(Box.createVerticalStrut(10));
 
-        JLabel jLabel3 = new JLabel("Empowering your discovery process with computational insights to ");
+        JLabel jLabel3 = new JLabel("Empowering discovery with computational pathway insights");
         jLabel3.setAlignmentX(Component.CENTER_ALIGNMENT);
-        jLabel3.setFont(new Font("Verdana", Font.BOLD, 18));
-        jLabel3.setForeground(Color.BLACK);  // Black text
+        jLabel3.setFont(Theme.body(16));
+        jLabel3.setForeground(Theme.TEXT_MED);
 
         bodyPanel.add(jLabel3);
+        bodyPanel.add(Box.createVerticalStrut(40));
 
-        JLabel jLabel2 = new JLabel("spotlight functionally significant actors");
-        jLabel2.setAlignmentX(Component.CENTER_ALIGNMENT);
-        jLabel2.setFont(new Font("Verdana", Font.BOLD, 18));
-        jLabel2.setForeground(Color.BLACK);  // Black text
-
-        bodyPanel.add(jLabel2);
-        bodyPanel.add(Box.createVerticalStrut(50));
-
-        JLabel jLabel5 = new JLabel("Kindly Select your working Directory");
+        JLabel jLabel5 = new JLabel("Select Working Directory");
         jLabel5.setAlignmentX(Component.CENTER_ALIGNMENT);
-        jLabel5.setFont(new Font("Segoe UI", Font.BOLD, 22));
-        jLabel5.setForeground(Color.BLACK);  // Black text
-        jLabel5.setHorizontalAlignment(SwingConstants.CENTER);
+        jLabel5.setFont(Theme.title(18));
+        jLabel5.setForeground(Theme.TEXT_DARK);
 
         bodyPanel.add(jLabel5);
-        bodyPanel.add(Box.createVerticalStrut(20));
+        bodyPanel.add(Box.createVerticalStrut(12));
 
-        // Show current directory panel
-        JPanel showDirectory = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        showDirectory.setBackground(Color.WHITE);
-        showDirectory.setPreferredSize(new Dimension(650, 60));
-        showDirectory.setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, Color.BLACK));  // Black border
-
-        JLabel jLabel6 = new JLabel("Current Directory :");
-        jLabel6.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        jLabel6.setForeground(Color.BLACK);
-
-        showDirectory.add(jLabel6);
-
+        // Directory display card
         selectedDirectory = new File(user.getWorkingDirectory());
         currDirectory = new JLabel(selectedDirectory.getAbsolutePath());
-        currDirectory.setFont(new Font("Verdana", Font.BOLD, 14));
-        currDirectory.setForeground(Color.BLACK);  // Black text
+        currDirectory.setFont(Theme.body(14));
+        currDirectory.setForeground(Theme.PRIMARY);
 
-        showDirectory.add(currDirectory);
+        JPanel showDirectory = new JPanel(new BorderLayout(8, 0));
+        showDirectory.setBackground(Theme.BG_CARD);
+        showDirectory.setPreferredSize(new Dimension(650, 48));
+        showDirectory.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Theme.BORDER, 1),
+            BorderFactory.createEmptyBorder(8, 14, 8, 14)));
 
-        bodyPanel.add(new JPanel(new FlowLayout()) {
+        JLabel jLabel6 = new JLabel("Directory:");
+        jLabel6.setFont(Theme.body(13));
+        jLabel6.setForeground(Theme.TEXT_MED);
+
+        showDirectory.add(jLabel6, BorderLayout.WEST);
+        showDirectory.add(currDirectory, BorderLayout.CENTER);
+
+        bodyPanel.add(new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0)) {
             {
                 add(showDirectory);
-                setBackground(Color.WHITE);
+                setBackground(Theme.BG);
             }
         });
+        bodyPanel.add(Box.createVerticalStrut(16));
 
-        // Change Directory button with soft blue background and black text for better contrast
-        changeDirButton = new RoundedButton("Change Directory", 20, new Dimension(300, 50));
-        changeDirButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        changeDirButton.setBackground(new Color(86, 12, 112));  // soft blue
-        changeDirButton.setForeground(Color.WHITE);  // black text for readability
+        changeDirButton = new RoundedButton("Change Directory", 20, new Dimension(220, 44));
+        changeDirButton.setFont(Theme.title(15));
+        changeDirButton.setBackground(Theme.PRIMARY);
+        changeDirButton.setForeground(Color.WHITE);
         changeDirButton.setFocusPainted(false);
 
         changeDirButton.addActionListener(e -> changeDirectory(user));
 
-        bodyPanel.add(new JPanel(new FlowLayout()) {
+        bodyPanel.add(new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0)) {
             {
                 add(changeDirButton);
-                setBackground(Color.WHITE);
+                setBackground(Theme.BG);
             }
         });
 
         add(bodyPanel, BorderLayout.CENTER);
 
         
-        RoundedButton nextButton = new RoundedButton("Next", 20, new Dimension(100, 40));
-        nextButton.setBackground(new Color(100, 149, 237));
-        nextButton.setForeground(Color.WHITE);
-        nextButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        nextButton.setFocusPainted(false);
-
-        RoundedButton goToSessions = new RoundedButton("Go to Sessions", 20, new Dimension(170, 40));
-        goToSessions.setBackground(new Color(222, 129, 7));
-        goToSessions.setForeground(Color.WHITE);
-        goToSessions.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        goToSessions.setFocusPainted(false);
-
-        RoundedButton prevButton = new RoundedButton("Prev", 20, new Dimension(100, 40));
-        prevButton.setBackground(new Color(100, 149, 237));
-        prevButton.setForeground(Color.WHITE);
-        prevButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        prevButton.setFocusPainted(false);
-        
-        RoundedButton saveButton = new RoundedButton("Save", 20, new Dimension(100,40));
-        saveButton.setBackground(new Color(5, 161, 59));
-        saveButton.setForeground(Color.WHITE);
-        saveButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        saveButton.setFocusPainted(false);
+        RoundedButton nextButton = Theme.navBtn("Next →", 110);
+        RoundedButton goToSessions = Theme.warningBtn("Sessions", 140);
+        RoundedButton prevButton = Theme.navBtn("← Prev", 110);
+        RoundedButton saveButton = Theme.successBtn("Save", 110);
 
         
 
@@ -152,7 +126,7 @@ public class MainPanel extends RoundedPanel {
         // Button panel at bottom
         RoundedPanel buttonPanel = new RoundedPanel();
         buttonPanel.setLayout(new GridLayout(1,2));
-        buttonPanel.setBackground(Color.WHITE);
+        buttonPanel.setBackground(Theme.BG);
 
         
        

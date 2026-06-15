@@ -1,0 +1,150 @@
+Current PO point: 4 nodes, 1 edges relaxed
+timeout
+
+Current PO point: 3 nodes, 8 edges relaxed
+timeout
+
+Current PO point: 2 nodes, 9 edges relaxed
+Solution 1
+4991	hsa22800	RRAS2	not_diff_expr	present	active
+4992	hsa7124	TNF	not_diff_expr	present	active
+4993	hsa355	FAS	not_diff_expr	present	active
+4994	hsa3552	IL1A	not_diff_expr	present	active
+4995	hsa3554	IL1R1	not_diff_expr	present	active
+4996	hsa356	FASLG	not_diff_expr	present	active
+5000	hsa5578	PRKCA	not_diff_expr	present	active
+5007	hsa2002	ELK1	not_diff_expr	present	active
+5010	hsa10746	MAP3K2	not_diff_expr	present	active
+5014	hsa10912	GADD45G	not_diff_expr	present	active
+5017	hsa1147	CHUK	not_diff_expr	present	active
+5019	hsa1432	MAPK14	not_diff_expr	present	active
+5021	hsa10488	CREB3	not_diff_expr	present	active
+5022	hsa7157	TP53	not_diff_expr	present	active
+5031	hsa5599	MAPK8	not_diff_expr	present	active
+5032	hsa3725	JUN	up_reg	present	active
+5034	hsa4772	NFATC1	not_diff_expr	present	active
+5036	hsa10000	AKT3	not_diff_expr	present	active
+5041	hsa4791	NFKB2	up_reg	present	active
+5047	hsa1435	CSF1	not_diff_expr	present	active
+5049	hsa113026	PLCD3	not_diff_expr	present	active
+5051	hsa5290	PIK3CA	not_diff_expr	present	active
+5056	hsa5747	PTK2	not_diff_expr	present	active
+5070	hsa3708	ITPR1	not_diff_expr	present	active
+5086	hsa2353	FOS	up_reg	present	active
+5088	hsa10663	CXCR6	not_diff_expr	present	active
+5089	hsa3576	CXCL8	up_reg	present	active
+5090	hsa3569	IL6	up_reg	present	active
+5091	hsa11009	IL24	not_diff_expr	present	active
+5092	hsa1437	CSF2	up_reg	present	active
+5095	hsa8795	TNFRSF10B	up_reg	present	active
+5096	hsa3716	JAK1	not_diff_expr	present	inactive
+5098	hsa4792	NFKBIA	up_reg	present	active
+5101	c_s_hsa11213_hsa4615_hsa7185_c_e	c_s_hsa11213_hsa4615_hsa7185_c_e	not_diff_expr	present	active
+5102	c_s_hsa10454_hsa6885_c_e	[MAP3K7+TAB1]	not_diff_expr	present	active
+5107	hsa1457	CSNK2A1	not_diff_expr	present	active
+5109	hsa112401	BIRC8	not_diff_expr	present	active
+5110	hsa330	BIRC3	up_reg	present	active
+5111	c_s_hsa1147_c_e	c_s_hsa1147_c_e	not_diff_expr	present	active
+5112	hsa3460	IFNGR2	up_reg	present	active
+5116	hsa5728	PTEN	not_diff_expr	present	inactive
+5123	hsa1017	CDK2	not_diff_expr	present	active
+5132	hsa841	CASP8	not_diff_expr	present	active
+5133	hsa28227	PPP2R3B	not_diff_expr	present	inactive
+5141	hsa8772	FADD	not_diff_expr	present	active
+5152	hsa2534	FYN	not_diff_expr	present	active
+5153	hsa22801	ITGA11	not_diff_expr	present	active
+5168	c_s_hsa22801_c_e	c_s_hsa22801_c_e	not_diff_expr	present	active
+5169	hsa3383	ICAM1	up_reg	present	active
+5178	hsa8767	RIPK2	not_diff_expr	present	active
+5185	hsa915	CD3D	not_diff_expr	present	active
+
+16759	present	activation	hsa3552	IL1A	hsa3554	IL1R1	src_present	src_active	tgt_present	tgt_active [path:hsa04010 path:hsa04064 path:hsa04380 path:hsa04750 path:hsa05146]
+16760	present	activation	hsa356	FASLG	hsa355	FAS	src_present	src_active	tgt_present	tgt_active [path:hsa04010 path:hsa04060 path:hsa04210 path:hsa04650 path:hsa04932 path:hsa04940 path:hsa05142 path:hsa05161 path:hsa05162 path:hsa05200 path:hsa05205 path:hsa05320 path:hsa05330 path:hsa05332]
+16781	present	activation	hsa10912	GADD45G	hsa10746	MAP3K2	src_present	src_active	tgt_present	tgt_active [path:hsa04010]
+16819	present	inhibition_phosphorylation	hsa5599	MAPK8	hsa4772	NFATC1	src_present	src_active	tgt_present	tgt_active [path:hsa04010]
+16832	present	indirect	hsa1147	CHUK	hsa4791	NFKB2	src_present	src_active	tgt_present	tgt_active [path:hsa04010]
+16866	present	activation_phosphorylation	hsa5599	MAPK8	hsa2002	ELK1	src_present	src_active	tgt_present	tgt_active [path:hsa04012]
+16882	present	activation	hsa22800	RRAS2	hsa5290	PIK3CA	src_present	src_active	tgt_present	tgt_active [path:hsa04014 path:hsa04151 path:hsa04510 path:hsa04722 path:hsa04810 path:hsa05200 path:hsa05210 path:hsa05212 path:hsa05214 path:hsa05218 path:hsa05221 path:hsa05223]
+16910	present	compound	hsa113026	PLCD3	hsa3708	ITPR1	src_present	src_active	tgt_present	tgt_active [path:hsa04020 path:hsa04540 path:hsa04720 path:hsa04730 path:hsa04912]
+16941	present	expression	hsa10488	CREB3	hsa2353	FOS	src_present	src_active	tgt_present	tgt_active [path:hsa04024 path:hsa04713 path:hsa05031]
+16944	present	activation_indirect	hsa5290	PIK3CA	hsa10000	AKT3	src_present	src_active	tgt_present	tgt_active [path:hsa04024 path:hsa04380 path:hsa04550 path:hsa04611 path:hsa04620 path:hsa04630 path:hsa04915 path:hsa04932]
+16947	present	activation	hsa3576	CXCL8	hsa10663	CXCR6	src_present	src_active	tgt_present	tgt_active [path:hsa04060 path:hsa05120]
+16954	present	activation	hsa10663	CXCR6	hsa3716	JAK1	src_present	src_active	tgt_present	tgt_inactive [path:hsa04062]
+16962	present	compound_activation	hsa5290	PIK3CA	hsa10000	AKT3	src_present	src_active	tgt_present	tgt_active [path:hsa04062 path:hsa04370 path:hsa04722 path:hsa05142 path:hsa05162 path:hsa05164 path:hsa05169 path:hsa05215 path:hsa05218]
+16975	present	compound_activation	hsa113026	PLCD3	hsa5578	PRKCA	src_present	src_active	tgt_present	tgt_active [path:hsa04062 path:hsa04370 path:hsa04722 path:hsa05146]
+16976	present	activation	hsa3554	IL1R1	c_s_hsa11213_hsa4615_hsa7185_c_e	c_s_hsa11213_hsa4615_hsa7185_c_e	src_present	src_active	tgt_present	tgt_active [path:hsa04064]
+16977	present	activation	c_s_hsa11213_hsa4615_hsa7185_c_e	c_s_hsa11213_hsa4615_hsa7185_c_e	c_s_hsa10454_hsa6885_c_e	[MAP3K7+TAB1]	src_present	src_active	tgt_present	tgt_active [path:hsa04064]
+16986	present	activation_phosphorylation	hsa1147	CHUK	hsa4791	NFKB2	src_present	src_active	tgt_present	tgt_active [path:hsa04064 path:hsa04380]
+16987	present	activation_phosphorylation	hsa1457	CSNK2A1	hsa4792	NFKBIA	src_present	src_active	tgt_present	tgt_active [path:hsa04064]
+16996	present	activation	hsa11009	IL24	hsa3460	IFNGR2	src_present	src_active	tgt_present	tgt_active [path:hsa04066 path:hsa04380 path:hsa04630 path:hsa04650 path:hsa05142 path:hsa05162 path:hsa05200 path:hsa05321]
+17032	present	expression	hsa7157	TP53	hsa10912	GADD45G	src_present	src_active	tgt_present	tgt_active [path:hsa04110 path:hsa04115]
+17046	present	compound	hsa113026	PLCD3	hsa3708	ITPR1	src_present	src_active	tgt_present	tgt_active [path:hsa04114]
+17051	present	expression	hsa7157	TP53	hsa8795	TNFRSF10B	src_present	src_active	tgt_present	tgt_active [path:hsa04115 path:hsa04210]
+17054	present	expression	hsa7157	TP53	hsa5728	PTEN	src_present	src_active	tgt_present	tgt_inactive [path:hsa04115]
+17061	present	indirect	hsa8795	TNFRSF10B	hsa841	CASP8	src_present	src_active	tgt_present	tgt_active [path:hsa04115]
+17085	present	activation	hsa3716	JAK1	hsa5290	PIK3CA	src_present	src_inactive	tgt_present	tgt_active [path:hsa04151 path:hsa04725]
+17093	present	inhibition_dephosphorylation	hsa28227	PPP2R3B	hsa10000	AKT3	src_present	src_inactive	tgt_present	tgt_active [path:hsa04151 path:hsa04728]
+17100	present	activation	hsa8795	TNFRSF10B	hsa8772	FADD	src_present	src_active	tgt_present	tgt_active [path:hsa04210]
+17102	present	activation	hsa8772	FADD	hsa841	CASP8	src_present	src_active	tgt_present	tgt_active [path:hsa04210 path:hsa04620 path:hsa04668 path:hsa05010 path:hsa05142 path:hsa05168 path:hsa05200]
+17125	present	activation_phosphorylation	hsa5599	MAPK8	hsa2353	FOS	src_present	src_active	tgt_present	tgt_active [path:hsa04210 path:hsa04380 path:hsa05133 path:hsa05142 path:hsa05168]
+17127	present	expression	hsa3725	JUN	hsa7157	TP53	src_present	src_active	tgt_present	tgt_active [path:hsa04210]
+17128	present	expression	hsa3725	JUN	hsa355	FAS	src_present	src_active	tgt_present	tgt_active [path:hsa04210]
+17129	present	expression	hsa3725	JUN	hsa356	FASLG	src_present	src_active	tgt_present	tgt_active [path:hsa04210]
+17131	present	expression	hsa2353	FOS	hsa355	FAS	src_present	src_active	tgt_present	tgt_active [path:hsa04210]
+17132	present	expression	hsa2353	FOS	hsa356	FASLG	src_present	src_active	tgt_present	tgt_active [path:hsa04210]
+17170	present	activation	hsa5747	PTK2	hsa2534	FYN	src_present	src_active	tgt_present	tgt_active [path:hsa04360]
+17179	present	activation	hsa22801	ITGA11	hsa5747	PTK2	src_present	src_active	tgt_present	tgt_active [path:hsa04360 path:hsa04510]
+17248	present	activation	hsa3383	ICAM1	c_s_hsa22801_c_e	c_s_hsa22801_c_e	src_present	src_active	tgt_present	tgt_active [path:hsa04514 path:hsa04650]
+17257	present	compound	hsa3708	ITPR1	hsa5578	PRKCA	src_present	src_active	tgt_present	tgt_active [path:hsa04540]
+17302	present	phosphorylation	hsa5599	MAPK8	hsa2353	FOS	src_present	src_active	tgt_present	tgt_active [path:hsa04620]
+17319	present	expression	hsa3725	JUN	hsa3569	IL6	src_present	src_active	tgt_present	tgt_active [path:hsa04620]
+17321	present	expression	hsa3725	JUN	hsa11009	IL24	src_present	src_active	tgt_present	tgt_active [path:hsa04620 path:hsa05321]
+17328	present	activation_ubiquitination	hsa112401	BIRC8	hsa8767	RIPK2	src_present	src_active	tgt_present	tgt_active [path:hsa04621]
+17335	present	activation_ubiquitination	hsa330	BIRC3	hsa8767	RIPK2	src_present	src_active	tgt_present	tgt_active [path:hsa04621]
+17345	present	activation	hsa3725	JUN	hsa3552	IL1A	src_present	src_active	tgt_present	tgt_active [path:hsa04621]
+17347	present	activation	hsa3725	JUN	hsa3569	IL6	src_present	src_active	tgt_present	tgt_active [path:hsa04621]
+17365	present	activation	hsa1437	CSF2	hsa3460	IFNGR2	src_present	src_active	tgt_present	tgt_active [path:hsa04630]
+17366	present	activation	hsa3569	IL6	hsa3460	IFNGR2	src_present	src_active	tgt_present	tgt_active [path:hsa04630 path:hsa05200]
+17367	present	activation_phosphorylation	hsa3716	JAK1	hsa5290	PIK3CA	src_present	src_inactive	tgt_present	tgt_active [path:hsa04630]
+17371	present	-	hsa1435	CSF1	hsa3460	IFNGR2	src_present	src_active	tgt_present	tgt_active [path:hsa04630]
+17374	present	compound	hsa113026	PLCD3	hsa5578	PRKCA	src_present	src_active	tgt_present	tgt_active [path:hsa04650 path:hsa04664]
+17388	present	indirect	hsa4772	NFATC1	hsa1437	CSF2	src_present	src_active	tgt_present	tgt_active [path:hsa04650]
+17390	present	indirect	hsa3460	IFNGR2	hsa355	FAS	src_present	src_active	tgt_present	tgt_active [path:hsa04650]
+17393	present	activation_phosphorylation	hsa2534	FYN	hsa915	CD3D	src_present	src_active	tgt_present	tgt_active [path:hsa04650]
+17436	present	indirect	hsa5599	MAPK8	hsa3725	JUN	src_present	src_active	tgt_present	tgt_active [path:hsa04668]
+17462	present	activation	hsa3383	ICAM1	hsa113026	PLCD3	src_present	src_active	tgt_present	tgt_active [path:hsa04670]
+17497	present	activation_indirect	hsa22800	RRAS2	hsa10746	MAP3K2	src_present	src_active	tgt_present	tgt_active [path:hsa04722 path:hsa05161]
+17499	present	activation_phosphorylation_indirect	hsa10000	AKT3	hsa4792	NFKBIA	src_present	src_active	tgt_present	tgt_active [path:hsa04722]
+17506	present	activation	hsa5599	MAPK8	hsa3725	JUN	src_present	src_active	tgt_present	tgt_active [path:hsa04722 path:hsa04932 path:hsa05120 path:hsa05169]
+17512	present	activation_phosphorylation_indirect	hsa22800	RRAS2	hsa1432	MAPK14	src_present	src_active	tgt_present	tgt_active [path:hsa04722]
+17575	present	indirect	hsa5578	PRKCA	hsa10746	MAP3K2	src_present	src_active	tgt_present	tgt_active [path:hsa04912]
+17608	present	activation_indirect	c_s_hsa22801_c_e	c_s_hsa22801_c_e	hsa22800	RRAS2	src_present	src_active	tgt_present	tgt_active [path:hsa04919]
+17656	present	indirect	hsa7124	TNF	hsa1147	CHUK	src_present	src_active	tgt_present	tgt_active [path:hsa04930]
+17657	present	indirect	hsa7124	TNF	hsa5599	MAPK8	src_present	src_active	tgt_present	tgt_active [path:hsa04930]
+17690	present	activation_indirect	hsa355	FAS	hsa841	CASP8	src_present	src_active	tgt_present	tgt_active [path:hsa04932 path:hsa05142 path:hsa05145]
+17719	present	activation_indirect	hsa8767	RIPK2	c_s_hsa1147_c_e	c_s_hsa1147_c_e	src_present	src_active	tgt_present	tgt_active [path:hsa05131]
+17720	present	activation_phosphorylation	c_s_hsa1147_c_e	c_s_hsa1147_c_e	hsa4792	NFKBIA	src_present	src_active	tgt_present	tgt_active [path:hsa05131]
+17721	present	expression_indirect	hsa5599	MAPK8	hsa3576	CXCL8	src_present	src_active	tgt_present	tgt_active [path:hsa05131]
+17759	present	activation_phosphorylation_indirect	c_s_hsa10454_hsa6885_c_e	[MAP3K7+TAB1]	hsa4792	NFKBIA	src_present	src_active	tgt_present	tgt_active [path:hsa05140 path:hsa05162]
+17773	present	activation_indirect	hsa1432	MAPK14	hsa28227	PPP2R3B	src_present	src_active	tgt_present	tgt_inactive [path:hsa05142]
+17779	present	activation_indirect	hsa915	CD3D	hsa841	CASP8	src_present	src_active	tgt_present	tgt_active [path:hsa05142]
+17780	present	activation_indirect	hsa841	CASP8	hsa4792	NFKBIA	src_present	src_active	tgt_present	tgt_active [path:hsa05142]
+17782	present	expression	hsa7124	TNF	hsa3383	ICAM1	src_present	src_active	tgt_present	tgt_active [path:hsa05143]
+17864	present	inhibition	hsa5728	PTEN	hsa5290	PIK3CA	src_present	src_inactive	tgt_present	tgt_active [path:hsa05161]
+17872	present	expression	hsa5599	MAPK8	hsa3725	JUN	src_present	src_active	tgt_present	tgt_active [path:hsa05161]
+17878	present	activation	hsa5599	MAPK8	hsa10488	CREB3	src_present	src_active	tgt_present	tgt_active [path:hsa05161 path:hsa05169]
+17906	present	compound_activation_indirect	hsa5290	PIK3CA	hsa10000	AKT3	src_present	src_active	tgt_present	tgt_active [path:hsa05166]
+17911	present	activation_phosphorylation	hsa10746	MAP3K2	c_s_hsa1147_c_e	c_s_hsa1147_c_e	src_present	src_active	tgt_present	tgt_active [path:hsa05166]
+17914	present	activation	hsa1147	CHUK	hsa4791	NFKB2	src_present	src_active	tgt_present	tgt_active [path:hsa05166 path:hsa05169]
+17921	present	activation_phosphorylation_indirect	hsa1017	CDK2	hsa1457	CSNK2A1	src_present	src_active	tgt_present	tgt_active [path:hsa05168]
+17939	present	expression	hsa4791	NFKB2	hsa112401	BIRC8	src_present	src_active	tgt_present	tgt_active [path:hsa05200]
+17940	present	expression	hsa4791	NFKB2	hsa330	BIRC3	src_present	src_active	tgt_present	tgt_active [path:hsa05200]
+17946	present	expression	hsa2353	FOS	hsa1017	CDK2	src_present	src_active	tgt_present	tgt_active [path:hsa05200]
+17952	present	expression	hsa2002	ELK1	hsa1435	CSF1	src_present	src_active	tgt_present	tgt_active [path:hsa05200]
+18017	present	compound_expression	hsa5290	PIK3CA	hsa10000	AKT3	src_present	src_active	tgt_present	tgt_active [path:hsa05223]
+18028	present	activation	hsa3383	ICAM1	hsa22801	ITGA11	src_present	src_active	tgt_present	tgt_active [path:hsa05416]
+
+
+timeout
+
+Current PO point: 1 nodes, 11 edges relaxed

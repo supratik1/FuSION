@@ -1,0 +1,53 @@
+========================================
+EXECUTION: 2026-05-05 15:59:49
+Blocks: 2 | Connections: 0
+========================================
+
+# Topological Sort Order
+1. fb_rch_1 (Final Bound Reach)
+2. let_1 (Let Variable Assignment)
+
+# Final Bound Reach - Graph Algorithms
+let $fb_rch_1
+    input1 7
+    input2 0
+    output1 $fb_rch_1.output1
+
+# Let Variable Assignment - Variable Operations
+let $let_1
+    input1 0
+    input2 0
+    output1 $let_1.output1
+
+# Connections
+
+===END_ENTRY===
+========================================
+EXECUTION: 2026-05-12 18:04:42
+Blocks: 2 | Connections: 0
+========================================
+
+# Topological Sort Order
+1. cudf_1 (Create Up Down File)
+2. start_1 (Start/Initialize Process)
+
+# Create Up Down File - Package Management
+let $cudf_1
+    input1 /home/linux/Arpit/FuSION/example/Example/IITB_ACTREC_old_data/final_tnfa_p38i_combined.tsv
+    input2 0.9
+    input3 -0.9
+    output1 $cudf_1.output1
+    output2 $cudf_1.output2
+
+# Start/Initialize Process - Control Flow
+let $start_1
+#status start_1
+    input1 /home/linux/Arpit/FuSION/Linux/empty_file
+    input2 /home/linux/Arpit/FuSION/Linux/empty_file
+    input3 /home/linux/Arpit/FuSION/example/Example/IITB_ACTREC_old_data/hsa_to_gene_symbol_map_6334.txt
+    input4 /home/linux/Arpit/FuSION/example/Example/IITB_ACTREC_old_data/hsa_path_to_path_name_map_2822.txt
+    output1 $start_1.output1
+
+# Connections
+
+===END_ENTRY===

@@ -1,0 +1,12 @@
+Number of nodes: 22 (22 genes, 0 complexes, 0 compounds, 0 others)
+Number of edges: 25
+Number of nodes: 22 (22 genes, 0 complexes, 0 compounds, 0 others)
+Number of edges: 25
+Number of nodes: 20 (20 genes, 0 complexes, 0 compounds, 0 others)
+Number of edges: 22
+Set parents of nodes to 0
+Set parents of nodes to 0
+Number of nodes: 20 (20 genes, 0 complexes, 0 compounds, 0 others)
+Number of edges: 22
+Set parents of nodes to 0
+Set parents of nodes to 0

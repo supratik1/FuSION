@@ -1,0 +1,133 @@
+
+new call with node relax in [0, 7] and edge relax in [0, 7] of type 0
+Relax bounds: 3 3
+Time taken (sec): 0.017792
+unsat
+N_l: 4 E_l: 4
+Relax bounds: 5 5
+Time taken (sec): 0.001652
+sat
+N_h: 4 E_h: 4
+Relax bounds: 4 4
+Time taken (sec): 0.004416
+sat
+N_h: 4 E_h: 4
+
+Finding smallest n
+Relax bounds (node call): 4 2
+Time taken (sec): 0.001386
+unsat
+N_h: 4 N_l: 2
+Relax bounds (node call): 4 3
+Time taken (sec): 0.001691
+unsat
+N_h: 4 N_l: 3
+Point 4 3 already unsat
+unsat
+Soln lower 4 4
+
+Finding smallest e
+Relax bounds (edge call): 2 4
+Time taken (sec): 0.004359
+unsat
+E_h: 4 E_l: 2
+Relax bounds (edge call): 3 4
+Time taken (sec): 0.00274
+unsat
+E_h: 4 E_l: 3
+Point 3 4 already unsat
+unsat
+Soln upper 4 4
+One soln in window (7, 0, 0, 7)
+Point 1: (4, 4)
+
+new call with node relax in [5, 7] and edge relax in [0, 3] of type 1
+Relax bounds: 1 6
+Time taken (sec): 0.001422
+sat
+N_h: 5 E_h: 0
+Relax bounds: 0 5
+Time taken (sec): 0.000968
+unsat
+N_l: 5 E_l: 0
+
+Finding smallest n
+Relax bounds (node call): 1 5
+Time taken (sec): 0.001166
+unsat
+Soln lower 1 6
+
+Finding smallest e
+Relax bounds (edge call): 0 6
+Time taken (sec): 0.000722
+unsat
+Soln upper 1 6
+One soln in window (3, 5, 0, 7)
+Point 1: (1, 6)
+
+new call with node relax in [7, 7] and edge relax in [0, 0] of type 1
+Relax bounds: 0 7
+Time taken (sec): 0.002625
+unsat
+N_l: 7 E_l: 0
+
+new call with node relax in [5, 5] and edge relax in [2, 3] of type 2
+Relax bounds: 2 5
+Time taken (sec): 0.002378
+sat
+N_h: 5 E_h: 2
+One soln in window (3, 5, 2, 5)
+Point 1: (2, 5)
+
+new call with node relax in [6, 5] and edge relax in [2, 1] of type 1
+Invalid window: Quitting search
+
+new call with node relax in [5, 4] and edge relax in [3, 3] of type 2
+Invalid window: Quitting search
+
+new call with node relax in [0, 3] and edge relax in [5, 7] of type 2
+Relax bounds: 6 1
+Time taken (sec): 0.002061
+unsat
+N_l: 2 E_l: 7
+Relax bounds: 7 2
+Time taken (sec): 0.001092
+sat
+N_h: 2 E_h: 7
+
+Finding smallest n
+Relax bounds (node call): 7 1
+Time taken (sec): 0.000825
+unsat
+N_h: 2 N_l: 1
+Point 7 1 already unsat
+unsat
+Soln lower 7 2
+
+Finding smallest e
+Relax bounds (edge call): 6 2
+Time taken (sec): 0.001444
+unsat
+E_h: 7 E_l: 6
+Point 6 2 already unsat
+unsat
+Soln upper 7 2
+One soln in window (7, 0, 5, 3)
+Point 1: (7, 2)
+
+new call with node relax in [3, 3] and edge relax in [5, 6] of type 1
+Relax bounds: 5 3
+Time taken (sec): 0.001148
+sat
+N_h: 3 E_h: 5
+One soln in window (6, 3, 5, 3)
+Point 1: (5, 3)
+
+new call with node relax in [4, 3] and edge relax in [5, 4] of type 1
+Invalid window: Quitting search
+
+new call with node relax in [3, 2] and edge relax in [6, 6] of type 2
+Invalid window: Quitting search
+
+new call with node relax in [0, 1] and edge relax in [8, 7] of type 2
+Invalid window: Quitting search
