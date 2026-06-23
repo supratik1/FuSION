@@ -1478,6 +1478,17 @@ void XMLParser::process_edge(GraphNew* graph_ptr, int source_node_id, int target
 		}
 	}
 
+#ifdef DISCARD_INDIRECT_EDGES
+	// Discard any relation carrying the "indirect effect" subtype (normalized to
+	// "indirect" above). An indirect effect is a collapsed multi-step interaction;
+	// counting it as a single hop between two nodes would understate path length.
+	// The decomposed cascade exists elsewhere in the merged graph, so reachability
+	// is preserved (verified against the master graph).
+	if(std::find(subtype.begin(), subtype.end(), "indirect") != subtype.end()){
+		return;
+	}
+#endif
+
         
 	int eid = tool_written ? -1 : graph_ptr->check_if_edge_already_created(source_node_id, target_node_id, type, subtype);
         
