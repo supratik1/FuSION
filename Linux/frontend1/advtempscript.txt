@@ -1,0 +1,342 @@
+;; 
+;; To display SVG file on browser, use "dre 0 t 0 0 0 0 0 0 graph"
+;; To display on xdot (searchable), use "exec xdot t_graph.dot" after
+;; "dre 0 t 0 0 0 0 0 0 graph"
+;;
+
+;; **********************************************************************
+;; DO NOT CHANGE THE NEXT FEW LINES.  DO NOT MOVE THEM LATER IN THIS FILE.
+;; **********************************************************************
+
+let $ONLY_ACT_EDGES_TO_TARGET 1
+let $ONLY_EXPR_EDGES_TO_TARGET 2
+let $BOTH_ACT_EXPR_EDGES_TO_TARGET 0
+
+;; ***********
+;; Basic inputs read from GUI
+;; Potentially changes for every run
+;; ***********
+
+let $WORK_DIR %__1__%
+let $SRC_NODE hsa%__2__%
+let $TGT_NODE hsa%__3__%
+let $NODE_TO_TEST_FOR_SIGNIFICANCE hsa%__4__%
+let $REACH_PATH_BOUND %__5__%
+let $EDGE_RELAX_LB %__6__%
+let $EDGE_RELAX_UB %__7__%
+let $NODE_RELAX_LB %__8__%
+let $NODE_RELAX_UB %__9__%
+let $LOGFOLDCHANGES %__10__%
+let $ADDITIONALEDGES %__11__%
+let $UP_REG_THRESH %__12__%
+let $DOWN_REG_THRESH %__13__%
+
+let $EDGES_TO_TARGET %__14__%
+
+let $LOG_FOLD_CHANGE_FILE %__lf__%
+let $ADDITIONAL_EDGES_FILE %__ef__%
+
+;; ************
+;; Advanced inputs read from GUI or from last run
+;; May not change for every run
+;; ************
+
+let $NODE_SPLIT_THRESHOLD %__a1__%
+let $CONSTR_SOLVER_TIMEOUT1 %__a2__%
+let $CONSTR_SOLVER_TIMEOUT2 %__a3__%
+let $NUM_SOLNS_TO_COUNT %__a4__%
+let $NUM_SOLNS_TO_EXPLORE %__a5__%
+;; let $COMMON_FILES_DIR %__a6__%
+let $ESSENTIAL_EDGES_FILE %__a7__%
+let $AVOID_EDGES_FILE %__a8__%
+let $INACTIVE_NODES_FILE %__a9__%
+let $CONFIRMED_UP_REG_FILE %__a10__%
+let $CONFIRMED_DOWN_REG_FILE %__a11__%
+let $RELAXED_NODES_FILE %__a12__%
+let $RELAXED_EDGES_FILE %__a13__%
+let $NONRELAXED_EDGES_FILE %__a14__%
+let $INTER_DB_MAP_FILE %__a15__%
+let $HSA_TO_GENE_SYMBOL_MAP_FILE %__a16__%
+let $HSA_PATH_TO_PATH_NAME_MAP_FILE %__a17__%
+%__c__%let $LIST_OF_MERGED_KEGG_XML_FILE %__a18__%
+let $MERGED_KEGG_PATHWAYS_XML_FILE %__a19__%
+let $HSA_IDS_NOT_TO_BE_MERGED_FILE %__a20__%
+
+
+;; **********************************************************************
+;; DO NOT CHANGE THE ABOVE FEW LINES.  DO NOT MOVE THEM LATER IN THIS FILE.
+;; **********************************************************************
+
+
+;; ********************
+;; All template files should have the same part above this point
+;; Template files should only differ in the part below this point
+;; ********************
+
+
+;; **********************************************************************
+;; Coefficients and exponents for edge weights in min-cut based analysis
+;; Currently not used.
+;; DO NOT CHANGE UNLESS YOU ARE SURE
+;; **********************************************************************
+
+let $COEFF1 1.0
+let $EXP1 -1.0
+let $COEFF2 1.0
+let $EXP2 -1.0
+let $COEFF3 1.0
+let $EXP3 -1.0
+let $COEFF4 1.0
+let $EXP4 -1.0
+
+;; **************
+;; Main script starts here
+;; **************
+
+
+let $WRITE_SUBDIR $SRC_NODE_to_$TGT_NODE_fsc_$NODE_TO_TEST_FOR_SIGNIFICANCE_$LOGFOLDCHANGES_b$REACH_PATH_BOUND
+let $WRITE_DIR $WORK_DIR/$WRITE_SUBDIR
+
+exec if [ -d $WRITE_DIR ] ; then /bin/rm -rf $WRITE_DIR; fi
+exec mkdir $WRITE_DIR
+
+let $NEW_LIST_OF_MERGED_XML_FILE $WRITE_DIR/list_of_xml_files_new.txt
+let $MERGED_PATHWAYS_XML_FILE  $WRITE_DIR/merged_master_graph.xml
+let $ADDITIONAL_EDGES_XML_FILE $WRITE_DIR/additional_edges.xml
+let $EXCEPTION_TO_NODE_MERGE_FILE $WRITE_DIR/exception_file.txt
+let $UP_REG_FILE $WRITE_DIR/up_reg
+let $DOWN_REG_FILE $WRITE_DIR/down_reg
+let $ESSENTIAL_NODES_FILE_WITH_FSC $WRITE_DIR/essential_nodes_file_w_$NODE_TO_TEST_FOR_SIGNIFICANCE
+let $ESSENTIAL_NODES_FILE_WITHOUT_FSC $WRITE_DIR/essential_nodes_file_wo_$NODE_TO_TEST_FOR_SIGNIFICANCE
+let $ACTIVE_NODES_FILE_WITH_FSC $WRITE_DIR/active_nodes_file_w_$NODE_TO_TEST_FOR_SIGNIFICANCE
+let $ACTIVE_NODES_FILE_WITHOUT_FSC $WRITE_DIR/active_nodes_file_wo_$NODE_TO_TEST_FOR_SIGNIFICANCE
+let $NONRELAXED_NODES_FILE_WITH_FSC $WRITE_DIR/nonrelaxed_nodes_file_w_$NODE_TO_TEST_FOR_SIGNIFICANCE
+let $NONRELAXED_NODES_FILE_WITHOUT_FSC $WRITE_DIR/nonrelaxed_nodes_file_wo_$NODE_TO_TEST_FOR_SIGNIFICANCE
+let $CONNECT_PAIRS_FILE $WRITE_DIR/connect_pairs
+let $SRC_FILE $WRITE_DIR/src_file
+let $TGT_FILE $WRITE_DIR/tgt_file
+
+
+;; **********************************************************************
+;; create up-reg and down-reg files from fold change file and thresholds
+;; **********************************************************************
+
+cudf $LOG_FOLD_CHANGE_FILE $UP_REG_THRESH $DOWN_REG_THRESH $UP_REG_FILE $DOWN_REG_FILE
+
+;; **********************************************************************
+;; Now create some necessary files from src_node and tgt_node information
+;; **********************************************************************
+
+exec cd $WRITE_DIR; echo $SRC_NODE > $SRC_FILE; echo $TGT_NODE > $TGT_FILE
+exec cd $WRITE_DIR;
+exec echo $SRC_NODE $TGT_NODE > $CONNECT_PAIRS_FILE
+exec cat $UP_REG_FILE $DOWN_REG_FILE $SRC_FILE $TGT_FILE $HSA_IDS_NOT_TO_BE_MERGED_FILE > $EXCEPTION_TO_NODE_MERGE_FILE
+exec touch $WRITE_DIR/empty_file
+
+;; **********************************************************************
+;; Read the following global files before starting execution of the pipeline
+;; **********************************************************************
+
+start $INTER_DB_MAP_FILE $EXCEPTION_TO_NODE_MERGE_FILE $HSA_TO_GENE_SYMBOL_MAP_FILE $HSA_PATH_TO_PATH_NAME_MAP_FILE
+
+;; **********************************************************************
+;; Merging KEGG pathways to obtain merged KEGG (only) master network
+;; If this has already been done, this step can be skipped.
+;;
+;; Fifth argument is n: if these files were not previously written by the tool, otherwise 'y'
+;; **********************************************************************
+
+%__c__%mff $LIST_OF_MERGED_KEGG_XML_FILE xml $NODE_SPLIT_THRESHOLD n $INTER_DB_MAP_FILE -1
+
+;; **********************************************************************
+;; Writing merged graph into xml file, end with string for pathway.
+;; Currently using 'KEGG'.
+;; This file can be later read in instead of merging KEGG pathways afresh.
+;; **********************************************************************
+
+%__c__%wgx 0 $MERGED_KEGG_PATHWAYS_XML_FILE KEGG
+
+;; **********************************************************************
+;; Processing information about new edges to be added, if needed.
+;; If no new edges are being added, skip this step
+;; **********************************************************************
+
+exec add $ADDITIONAL_EDGES_FILE $ADDITIONAL_EDGES_XML_FILE
+exec if [ -f $NEW_LIST_OF_MERGED_XML_FILE ] ; then /bin/rm $NEW_LIST_OF_MERGED_XML_FILE; fi
+exec echo $MERGED_KEGG_PATHWAYS_XML_FILE | cat > $NEW_LIST_OF_MERGED_XML_FILE
+exec echo $ADDITIONAL_EDGES_XML_FILE | cat >>  $NEW_LIST_OF_MERGED_XML_FILE
+
+;; **********************************************************************
+;; Merging KEGG pathways and user provided additional edges to obtain
+;; master network on which analysis is to be done.
+;; Fifth argument is n: if these files were not previously written by the tool, otherwise 'y'
+;; **********************************************************************
+
+mff $NEW_LIST_OF_MERGED_XML_FILE xml $NODE_SPLIT_THRESHOLD y $INTER_DB_MAP_FILE -1
+size 0
+
+;; **********************************************************************
+;; Writing merged graph into xml file, end with string for pathway.
+;; Currently using 'KEGG' as pathway name.
+;; Helps for debugging to have the graph on which the final analysis is done.
+;; **********************************************************************
+
+wgx 0 $MERGED_PATHWAYS_XML_FILE KEGG
+
+;; **********************************************************************
+;; Saving information about the merged edges
+;; May be helpful for debugging purposes
+;; **********************************************************************
+
+exec mv edges_merged_filename $WRITE_DIR/merged_edges_file
+
+;; **********************************************************************
+;; Starting analysis with $NODE_TO_TEST_FOR_SIGNIFICANCE included
+;; **********************************************************************
+
+;; **********************************************************************
+;; Read file written in xml format
+;; **********************************************************************
+
+rgx $MERGED_PATHWAYS_XML_FILE y $NODE_SPLIT_THRESHOLD
+size 0
+
+;; **********************************************************************
+;; Save the graph number 
+;; **********************************************************************
+
+let $MERGED_GRAPH_NUM #LASTGRAPHNUM
+
+;; **********************************************************************
+;; Reachability (forward and backward) based pruning of paths
+;; Retain only those nodes that appear in some path of length <=
+;; $REACH_PATH_BOUND from $SRC_NODE to $TGT_NODE
+;; **********************************************************************
+
+fb_rch 0 $SRC_NODE -1 $TGT_NODE -1 -1 $REACH_PATH_BOUND $EDGES_TO_TARGET
+size 0
+
+;; **********************************************************************
+;; Prepare for finding PO points in the above pruned graph
+;; **********************************************************************
+
+exec cat $SRC_FILE $TGT_FILE > $ACTIVE_NODES_FILE_WITH_FSC
+exec echo $NODE_TO_TEST_FOR_SIGNIFICANCE >> $ACTIVE_NODES_FILE_WITH_FSC
+
+exec cat $SRC_FILE $TGT_FILE > $NONRELAXED_NODES_FILE_WITH_FSC
+exec echo $NODE_TO_TEST_FOR_SIGNIFICANCE >> $NONRELAXED_NODES_FILE_WITH_FSC
+
+exec cat $SRC_FILE $TGT_FILE > $ESSENTIAL_NODES_FILE_WITH_FSC
+exec echo $NODE_TO_TEST_FOR_SIGNIFICANCE >> $ESSENTIAL_NODES_FILE_WITH_FSC
+
+let $AVOID_NODES_FILE_WITH_FSC $WRITE_DIR/empty_file
+
+let $FILENAME_PREFIX_WITH_FSC $WRITE_DIR/temp_w
+
+;; **********************************************************************
+;; Find PO points
+;; $PO_SEARCH_MODE_WITH_FSC 0 means that PO points must be explicitly computed.
+;; $PO_SEARCH_MODE_WITH_FSC 1 means that we simply want to check if there are
+;; solutions at any point of a (previously computed) PO curve.
+;; **********************************************************************
+
+let $PO_SEARCH_MODE_WITH_FSC 0
+
+pathz3 0 $PO_SEARCH_MODE_WITH_FSC $CONNECT_PAIRS_FILE $EDGE_RELAX_LB $NODE_RELAX_LB $EDGE_RELAX_UB $NODE_RELAX_UB $REACH_PATH_BOUND $FILENAME_PREFIX_WITH_FSC $UP_REG_FILE $DOWN_REG_FILE $ESSENTIAL_NODES_FILE_WITH_FSC $AVOID_NODES_FILE_WITH_FSC $ESSENTIAL_EDGES_FILE $AVOID_EDGES_FILE $ACTIVE_NODES_FILE_WITH_FSC $INACTIVE_NODES_FILE $CONFIRMED_UP_REG_FILE $CONFIRMED_DOWN_REG_FILE $RELAXED_NODES_FILE $NONRELAXED_NODES_FILE_WITH_FSC $RELAXED_EDGES_FILE $NONRELAXED_EDGES_FILE $LOG_FOLD_CHANGE_FILE $NUM_SOLNS_TO_COUNT $NUM_SOLNS_TO_EXPLORE $CONSTR_SOLVER_TIMEOUT1 $CONSTR_SOLVER_TIMEOUT2
+
+
+;; **********************************************************************
+;; Save PO points to enable plotting of two PO curves (with and without
+;; FSC node) together.  Save limits_timefile.txt for debugging purposes
+;; (shows how the binary search proceeded when finding PO points)
+;; **********************************************************************
+
+let $PO_POINTS_WITH_FSC $SRC_NODE_to_$TGT_NODE_w_$NODE_TO_TEST_FOR_SIGNIFICANCE_$LOGFOLDCHANGES_b$REACH_PATH_BOUND
+exec mv limits_timefile.txt $WRITE_DIR/$PO_POINTS_WITH_FSC_limits_timefile.txt
+exec mv PO.dat $WRITE_DIR/$PO_POINTS_WITH_FSC.dat
+
+;; **********************************************************************
+;; Starting analysis with $NODE_TO_TEST_FOR_SIGNIFICANCE excluded
+;; **********************************************************************
+
+;; **********************************************************************
+;; Reachability (forward and backward) based pruning of paths
+;; Retain only those nodes that appear in some path of length <=
+;; $REACH_PATH_BOUND from $SRC_NODE to $TGT_NODE
+;; Reconstructing the same graph as was done earlier.
+;; **********************************************************************
+
+fb_rch $MERGED_GRAPH_NUM $SRC_NODE -1 $TGT_NODE -1 -1 $REACH_PATH_BOUND $EDGES_TO_TARGET
+size 0
+
+;; **********************************************************************
+;; Saving information about the forward-backward reachability search
+;; May be helpful for debugging purposes
+;; **********************************************************************
+
+exec mv fb_rch $WRITE_DIR/fb_rch
+exec mv fb_rch_back $WRITE_DIR/fb_rch_back
+
+;; **********************************************************************
+;; Prepare for finding PO points
+;; Find PO points after asserting that $NODE_TO_TEST_FOR_SIGNIFICANCE
+;; is not present (node to be avoided).
+;; **********************************************************************
+
+exec cat $SRC_FILE $TGT_FILE > $ACTIVE_NODES_FILE_WITHOUT_FSC
+
+exec cat $SRC_FILE $TGT_FILE > $NONRELAXED_NODES_FILE_WITHOUT_FSC
+
+exec cat $SRC_FILE $TGT_FILE > $ESSENTIAL_NODES_FILE_WITHOUT_FSC
+
+let $AVOID_NODES_FILE_WITHOUT_FSC $WRITE_DIR/avoid_$NODE_TO_TEST_FOR_SIGNIFICANCE_file
+exec if [ -f $AVOID_NODES_FILE_WITHOUT_FSC ] ; then /bin/rm $AVOID_NODES_FILE_WITHOUT_FSC; fi
+exec echo $NODE_TO_TEST_FOR_SIGNIFICANCE > $AVOID_NODES_FILE_WITHOUT_FSC
+
+let $FILENAME_PREFIX_WITHOUT_FSC $WRITE_DIR/temp_wo
+
+;; **********************************************************************
+;; Find PO points
+;; $PO_SEARCH_MODE_WITHOUT_FSC 0 means that PO points must be explicitly computed.
+;; $PO_SEARCH_MODE_WITHOUT_FSC 1 means that we simply want to check if there are
+;; solutions at any point of a (previously computed) PO curve.
+;; **********************************************************************
+
+
+let $PO_SEARCH_MODE_WITHOUT_FSC 0	
+
+pathz3 0 $PO_SEARCH_MODE_WITHOUT_FSC $CONNECT_PAIRS_FILE $EDGE_RELAX_LB $NODE_RELAX_LB $EDGE_RELAX_UB $NODE_RELAX_UB $REACH_PATH_BOUND $FILENAME_PREFIX_WITHOUT_FSC $UP_REG_FILE $DOWN_REG_FILE $ESSENTIAL_NODES_FILE_WITHOUT_FSC $AVOID_NODES_FILE_WITHOUT_FSC $ESSENTIAL_EDGES_FILE $AVOID_EDGES_FILE $ACTIVE_NODES_FILE_WITHOUT_FSC $INACTIVE_NODES_FILE $CONFIRMED_UP_REG_FILE $CONFIRMED_DOWN_REG_FILE $RELAXED_NODES_FILE $NONRELAXED_NODES_FILE_WITHOUT_FSC $RELAXED_EDGES_FILE $NONRELAXED_EDGES_FILE $LOG_FOLD_CHANGE_FILE $NUM_SOLNS_TO_COUNT $NUM_SOLNS_TO_EXPLORE $CONSTR_SOLVER_TIMEOUT1 $CONSTR_SOLVER_TIMEOUT2 
+
+;; **********************************************************************
+;; Save PO points to enable plotting of two PO curves (with and without
+;; FSC node) together.  Save limits_timefile.txt for debugging purposes
+;; (shows how the binary search proceeded when finding PO points)
+;; **********************************************************************
+
+let $PO_POINTS_WITHOUT_FSC $SRC_NODE_to_$TGT_NODE_wo_$NODE_TO_TEST_FOR_SIGNIFICANCE_$LOGFOLDCHANGES_b$REACH_PATH_BOUND
+exec mv limits_timefile.txt $WRITE_DIR/$PO_POINTS_WITHOUT_FSC_limits_timefile.txt
+exec mv PO.dat $WRITE_DIR/$PO_POINTS_WITHOUT_FSC.dat
+
+;; **********************************************************************
+;; Now plot the PO points
+;; **********************************************************************
+
+exec cd $WRITE_DIR; gnuplot -p -e "set xlabel 'Node relaxn'; set ylabel 'Edge relaxn'; set xrange [-0.5:$NODE_RELAX_UB+0.5]; set yrange [-0.5:$EDGE_RELAX_UB+0.5]; plot '$PO_POINTS_WITH_FSC.dat' with lp linecolor 'blue', '$PO_POINTS_WITHOUT_FSC.dat' with lp linecolor 'red'; exit"
+
+;; **********************************************************************
+;; Save the plot in a file
+;; **********************************************************************
+
+let $PLOT_FILE $WRITE_DIR/$SRC_NODE_to_$TGT_NODE_fsc_$NODE_TO_TEST_FOR_SIGNIFICANCE_$LOGFOLDCHANGES_b$REACH_PATH_BOUND.png
+exec echo "Saving plot in $PLOT_FILE ..."
+exec cd $WRITE_DIR; gnuplot -p -e "set term png; set output '$PLOT_FILE'; set xlabel 'Node relaxn'; set ylabel 'Edge relaxn'; set xrange [-0.5:$NODE_RELAX_UB+0.5]; set yrange [-0.5:$EDGE_RELAX_UB+0.5]; plot '$PO_POINTS_WITH_FSC.dat' with lp linecolor 'blue', '$PO_POINTS_WITHOUT_FSC.dat' with lp linecolor 'red'; exit"
+
+;; **********************************************************************
+;; Saving debug log.
+;; May be helpful for debugging purposes
+;; **********************************************************************
+
+exec mv mylog.txt $WRITE_DIR/mylog.txt
+
+exit
+

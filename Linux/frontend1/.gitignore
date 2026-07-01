@@ -1,0 +1,11 @@
+# Compiled output
+*.class
+out/
+
+# User session data
+sessions/*.json
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
