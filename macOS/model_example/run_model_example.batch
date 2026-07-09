@@ -1,0 +1,255 @@
+;; **********************************************************************
+;; MODEL EXAMPLE : EGFR (hsa1956) -> CXCL8/IL8 (hsa3576),
+;;                 candidate / FSC node JUN (hsa3725).
+;;
+;; Self-contained demonstration of a FuSION run driven from the frontend.
+;; Everything it needs lives under macOS/model_example/inputs :
+;;   - dummy_master_graph.xml : a REDUCED KEGG master graph. It is the induced
+;;     subgraph on the union of nodes/edges from a completed EGFR->CXCL8 FSC=JUN
+;;     run's two solution graphs (with-FSC + without-FSC). The original
+;;     experiment_score is retained on every relation, but the graph carries
+;;     ~471 relations instead of the full master's ~7500, so the solve is fast
+;;     and the Pareto frontier stays clean.
+;;   - egf_hela_t120_lfc.tsv : per-gene log2 fold changes (HeLa EGF, t=120),
+;;     subset to the genes in the reduced graph.
+;;   - coexpression_links.csv : StringDB coexpression links among those genes.
+;;   - hsa_to_gene_symbol_map.txt / hsa_path_to_path_name_map.txt : subset maps.
+;;
+;; Two solves are run: JUN forced active (with FSC) and JUN avoided (without
+;; FSC). The two Pareto curves are overlaid; without-JUN sits above with-JUN,
+;; i.e. explaining EGFR->CXCL8 without JUN costs extra relaxations.
+;; **********************************************************************
+
+let $ONLY_ACT_EDGES_TO_TARGET 1
+let $ONLY_EXPR_EDGES_TO_TARGET 2
+let $BOTH_ACT_EXPR_EDGES_TO_TARGET 0
+
+;; **********************************************************************
+;; Working directory layout
+;; **********************************************************************
+
+let $WORK_DIR /home/ks-149-u24/Desktop/arjun/FuSION/macOS/model_example
+let $INPUT_DIR $WORK_DIR/inputs
+let $WRITE_SUBDIR run
+let $WRITE_DIR $WORK_DIR/$WRITE_SUBDIR
+
+;; **********************************************************************
+;; Inputs (all local to this example)
+;; **********************************************************************
+
+let $LOGFOLDCHANGES egf_hela_t120_lfc.tsv
+let $LOG_FOLD_CHANGE_FILE $INPUT_DIR/egf_hela_t120_lfc.tsv
+let $MERGED_KEGG_PATHWAYS_XML_FILE $INPUT_DIR/dummy_master_graph.xml
+let $COEXPRESSION_CSV $INPUT_DIR/coexpression_links.csv
+
+;; **********************************************************************
+;; Common map files (subset to this example)
+;; **********************************************************************
+
+let $COMMON_FILES_DIR $INPUT_DIR
+let $INTER_DB_MAP_FILE $COMMON_FILES_DIR/inter_db_mapping_file
+let $HSA_TO_GENE_SYMBOL_MAP_FILE $COMMON_FILES_DIR/hsa_to_gene_symbol_map.txt
+let $HSA_PATH_TO_PATH_NAME_MAP_FILE $COMMON_FILES_DIR/hsa_path_to_path_name_map.txt
+let $HSA_IDS_NOT_TO_BE_MERGED_FILE $COMMON_FILES_DIR/hsa_ids_not_to_be_merged.txt
+
+;; **********************************************************************
+;; Parameters
+;; **********************************************************************
+
+let $SRC_NODE hsa1956
+let $TGT_NODE hsa3576
+let $NODE_TO_TEST_FOR_SIGNIFICANCE hsa3725
+
+let $EDGES_TO_TARGET $BOTH_ACT_EXPR_EDGES_TO_TARGET
+
+let $REACH_PATH_BOUND 10
+let $EDGE_RELAX_LB 0
+let $EDGE_RELAX_UB 7
+let $NODE_RELAX_LB 0
+let $NODE_RELAX_UB 7
+
+let $UP_REG_THRESH 1.01
+let $DOWN_REG_THRESH -1.01
+
+let $NODE_SPLIT_THRESHOLD 1
+
+let $CONSTR_SOLVER_TIMEOUT1 600000
+let $CONSTR_SOLVER_TIMEOUT2 3000000
+
+let $NUM_SOLNS_TO_COUNT 1
+let $NUM_SOLNS_TO_EXPLORE 1
+
+;; **********************************************************************
+;; Constraint thresholds
+;; **********************************************************************
+
+let $COEXP_THRESH 700
+let $FROZEN_THRESH 800
+
+let $NEW_CONSTRAINTS_ENABLED 1
+let $Z3_RANDOM_SEED 42
+
+;; **********************************************************************
+;; Ensure write dir exists
+;; **********************************************************************
+
+exec mkdir -p $WRITE_DIR
+
+;; **********************************************************************
+;; Derived filenames in $WRITE_DIR
+;; **********************************************************************
+
+let $NEW_LIST_OF_MERGED_XML_FILE $WRITE_DIR/list_of_xml_files_new.txt
+let $MERGED_PATHWAYS_XML_FILE  $WRITE_DIR/merged_master_graph.xml
+let $EXCEPTION_TO_NODE_MERGE_FILE $WRITE_DIR/exception_file.txt
+let $UP_REG_FILE $WRITE_DIR/up_reg
+let $DOWN_REG_FILE $WRITE_DIR/down_reg
+let $ESSENTIAL_NODES_FILE_WITH_FSC $WRITE_DIR/essential_nodes_file_w_$NODE_TO_TEST_FOR_SIGNIFICANCE
+let $ESSENTIAL_NODES_FILE_WITHOUT_FSC $WRITE_DIR/essential_nodes_file_wo_$NODE_TO_TEST_FOR_SIGNIFICANCE
+let $ACTIVE_NODES_FILE_WITH_FSC $WRITE_DIR/active_nodes_file_w_$NODE_TO_TEST_FOR_SIGNIFICANCE
+let $ACTIVE_NODES_FILE_WITHOUT_FSC $WRITE_DIR/active_nodes_file_wo_$NODE_TO_TEST_FOR_SIGNIFICANCE
+let $NONRELAXED_NODES_FILE_WITH_FSC $WRITE_DIR/nonrelaxed_nodes_file_w_$NODE_TO_TEST_FOR_SIGNIFICANCE
+let $NONRELAXED_NODES_FILE_WITHOUT_FSC $WRITE_DIR/nonrelaxed_nodes_file_wo_$NODE_TO_TEST_FOR_SIGNIFICANCE
+let $CONNECT_PAIRS_FILE $WRITE_DIR/connect_pairs
+let $SRC_FILE $WRITE_DIR/src_file
+let $TGT_FILE $WRITE_DIR/tgt_file
+
+;; **********************************************************************
+;; Empty-by-default files
+;; **********************************************************************
+
+let $ESSENTIAL_EDGES_FILE $WRITE_DIR/empty_file
+let $AVOID_EDGES_FILE $WRITE_DIR/empty_file
+let $INACTIVE_NODES_FILE $WRITE_DIR/empty_file
+let $CONFIRMED_UP_REG_FILE $WRITE_DIR/empty_file
+let $CONFIRMED_DOWN_REG_FILE $WRITE_DIR/empty_file
+let $RELAXED_NODES_FILE $WRITE_DIR/empty_file
+let $RELAXED_EDGES_FILE $WRITE_DIR/empty_file
+let $NONRELAXED_EDGES_FILE $WRITE_DIR/empty_file
+
+;; **********************************************************************
+;; Coefficients (unused, kept for completeness)
+;; **********************************************************************
+
+let $COEFF1 1.0
+let $EXP1 -1.0
+let $COEFF2 1.0
+let $EXP2 -1.0
+let $COEFF3 1.0
+let $EXP3 -1.0
+let $COEFF4 1.0
+let $EXP4 -1.0
+
+;; **********************************************************************
+;; Build up-reg / down-reg files from the log-fold-change file
+;; **********************************************************************
+
+cudf $LOG_FOLD_CHANGE_FILE $UP_REG_THRESH $DOWN_REG_THRESH $UP_REG_FILE $DOWN_REG_FILE
+
+;; **********************************************************************
+;; Build src / tgt / connect_pairs / exception files
+;; **********************************************************************
+
+exec cd $WRITE_DIR; echo $SRC_NODE > $SRC_FILE; echo $TGT_NODE > $TGT_FILE
+exec echo $SRC_NODE $TGT_NODE > $CONNECT_PAIRS_FILE
+exec cat $UP_REG_FILE $DOWN_REG_FILE $SRC_FILE $TGT_FILE $HSA_IDS_NOT_TO_BE_MERGED_FILE > $EXCEPTION_TO_NODE_MERGE_FILE
+exec touch $WRITE_DIR/empty_file
+
+;; **********************************************************************
+;; Pipeline initialization
+;; **********************************************************************
+
+start $INTER_DB_MAP_FILE $EXCEPTION_TO_NODE_MERGE_FILE $HSA_TO_GENE_SYMBOL_MAP_FILE $HSA_PATH_TO_PATH_NAME_MAP_FILE
+
+;; **********************************************************************
+;; Load the reduced master graph (single mff on the tool-written list file).
+;; experiment_score survives the mff/wgx round-trip.
+;; **********************************************************************
+
+exec if [ -f $NEW_LIST_OF_MERGED_XML_FILE ] ; then /bin/rm $NEW_LIST_OF_MERGED_XML_FILE; fi
+exec echo $MERGED_KEGG_PATHWAYS_XML_FILE | cat > $NEW_LIST_OF_MERGED_XML_FILE
+
+mff $NEW_LIST_OF_MERGED_XML_FILE xml $NODE_SPLIT_THRESHOLD y $INTER_DB_MAP_FILE -1
+size 0
+
+wgx 0 $MERGED_PATHWAYS_XML_FILE KEGG
+
+exec mv edges_merged_filename $WRITE_DIR/merged_edges_file
+
+;; **********************************************************************
+;; Read the merged graph back in for analysis
+;; **********************************************************************
+
+rgx $MERGED_PATHWAYS_XML_FILE y $NODE_SPLIT_THRESHOLD
+size 0
+
+let $MERGED_GRAPH_NUM #LASTGRAPHNUM
+
+;; **********************************************************************
+;; Forward/backward reachability pruning
+;; **********************************************************************
+
+fb_rch 0 $SRC_NODE -1 $TGT_NODE -1 -1 $REACH_PATH_BOUND $EDGES_TO_TARGET
+size 0
+
+;; **********************************************************************
+;; Phase 1 : analysis with FSC node ($NODE_TO_TEST_FOR_SIGNIFICANCE) included
+;; **********************************************************************
+
+exec cat $SRC_FILE $TGT_FILE > $ACTIVE_NODES_FILE_WITH_FSC
+exec echo $NODE_TO_TEST_FOR_SIGNIFICANCE >> $ACTIVE_NODES_FILE_WITH_FSC
+
+exec cat $SRC_FILE $TGT_FILE > $NONRELAXED_NODES_FILE_WITH_FSC
+exec echo $NODE_TO_TEST_FOR_SIGNIFICANCE >> $NONRELAXED_NODES_FILE_WITH_FSC
+
+exec cat $SRC_FILE $TGT_FILE > $ESSENTIAL_NODES_FILE_WITH_FSC
+exec echo $NODE_TO_TEST_FOR_SIGNIFICANCE >> $ESSENTIAL_NODES_FILE_WITH_FSC
+
+let $AVOID_NODES_FILE_WITH_FSC $WRITE_DIR/empty_file
+let $FILENAME_PREFIX_WITH_FSC $WRITE_DIR/temp_w
+let $PO_SEARCH_MODE_WITH_FSC 0
+
+pathz3 0 $PO_SEARCH_MODE_WITH_FSC $CONNECT_PAIRS_FILE $EDGE_RELAX_LB $NODE_RELAX_LB $EDGE_RELAX_UB $NODE_RELAX_UB $REACH_PATH_BOUND $FILENAME_PREFIX_WITH_FSC $UP_REG_FILE $DOWN_REG_FILE $ESSENTIAL_NODES_FILE_WITH_FSC $AVOID_NODES_FILE_WITH_FSC $ESSENTIAL_EDGES_FILE $AVOID_EDGES_FILE $ACTIVE_NODES_FILE_WITH_FSC $INACTIVE_NODES_FILE $CONFIRMED_UP_REG_FILE $CONFIRMED_DOWN_REG_FILE $RELAXED_NODES_FILE $NONRELAXED_NODES_FILE_WITH_FSC $RELAXED_EDGES_FILE $NONRELAXED_EDGES_FILE $LOG_FOLD_CHANGE_FILE $NUM_SOLNS_TO_COUNT $NUM_SOLNS_TO_EXPLORE $CONSTR_SOLVER_TIMEOUT1 $CONSTR_SOLVER_TIMEOUT2 $COEXPRESSION_CSV $COEXP_THRESH $FROZEN_THRESH $NEW_CONSTRAINTS_ENABLED $Z3_RANDOM_SEED
+
+let $PO_POINTS_WITH_FSC $SRC_NODE_to_$TGT_NODE_w_$NODE_TO_TEST_FOR_SIGNIFICANCE_$LOGFOLDCHANGES_b$REACH_PATH_BOUND
+exec mv limits_timefile.txt $WRITE_DIR/$PO_POINTS_WITH_FSC_limits_timefile.txt
+exec mv PO.dat $WRITE_DIR/$PO_POINTS_WITH_FSC.dat
+
+;; **********************************************************************
+;; Phase 2 : analysis with FSC node excluded
+;; **********************************************************************
+
+fb_rch $MERGED_GRAPH_NUM $SRC_NODE -1 $TGT_NODE -1 -1 $REACH_PATH_BOUND $EDGES_TO_TARGET
+size 0
+
+exec mv fb_rch $WRITE_DIR/fb_rch
+exec mv fb_rch_back $WRITE_DIR/fb_rch_back
+
+exec cat $SRC_FILE $TGT_FILE > $ACTIVE_NODES_FILE_WITHOUT_FSC
+exec cat $SRC_FILE $TGT_FILE > $NONRELAXED_NODES_FILE_WITHOUT_FSC
+exec cat $SRC_FILE $TGT_FILE > $ESSENTIAL_NODES_FILE_WITHOUT_FSC
+
+let $AVOID_NODES_FILE_WITHOUT_FSC $WRITE_DIR/avoid_$NODE_TO_TEST_FOR_SIGNIFICANCE_file
+exec if [ -f $AVOID_NODES_FILE_WITHOUT_FSC ] ; then /bin/rm $AVOID_NODES_FILE_WITHOUT_FSC; fi
+exec echo $NODE_TO_TEST_FOR_SIGNIFICANCE > $AVOID_NODES_FILE_WITHOUT_FSC
+
+let $FILENAME_PREFIX_WITHOUT_FSC $WRITE_DIR/temp_wo
+let $PO_SEARCH_MODE_WITHOUT_FSC 0
+
+pathz3 0 $PO_SEARCH_MODE_WITHOUT_FSC $CONNECT_PAIRS_FILE $EDGE_RELAX_LB $NODE_RELAX_LB $EDGE_RELAX_UB $NODE_RELAX_UB $REACH_PATH_BOUND $FILENAME_PREFIX_WITHOUT_FSC $UP_REG_FILE $DOWN_REG_FILE $ESSENTIAL_NODES_FILE_WITHOUT_FSC $AVOID_NODES_FILE_WITHOUT_FSC $ESSENTIAL_EDGES_FILE $AVOID_EDGES_FILE $ACTIVE_NODES_FILE_WITHOUT_FSC $INACTIVE_NODES_FILE $CONFIRMED_UP_REG_FILE $CONFIRMED_DOWN_REG_FILE $RELAXED_NODES_FILE $NONRELAXED_NODES_FILE_WITHOUT_FSC $RELAXED_EDGES_FILE $NONRELAXED_EDGES_FILE $LOG_FOLD_CHANGE_FILE $NUM_SOLNS_TO_COUNT $NUM_SOLNS_TO_EXPLORE $CONSTR_SOLVER_TIMEOUT1 $CONSTR_SOLVER_TIMEOUT2 $COEXPRESSION_CSV $COEXP_THRESH $FROZEN_THRESH $NEW_CONSTRAINTS_ENABLED $Z3_RANDOM_SEED
+
+let $PO_POINTS_WITHOUT_FSC $SRC_NODE_to_$TGT_NODE_wo_$NODE_TO_TEST_FOR_SIGNIFICANCE_$LOGFOLDCHANGES_b$REACH_PATH_BOUND
+exec mv limits_timefile.txt $WRITE_DIR/$PO_POINTS_WITHOUT_FSC_limits_timefile.txt
+exec mv PO.dat $WRITE_DIR/$PO_POINTS_WITHOUT_FSC.dat
+
+;; **********************************************************************
+;; Plot combined Pareto curves (with-FSC vs without-FSC)
+;; **********************************************************************
+
+let $PLOT_FILE $WRITE_DIR/PO_$SRC_NODE_to_$TGT_NODE_fsc_$NODE_TO_TEST_FOR_SIGNIFICANCE_$LOGFOLDCHANGES_b$REACH_PATH_BOUND.png
+exec echo "Saving plot in $PLOT_FILE ..."
+exec cd $WRITE_DIR; gnuplot -p -e "set term png size 900,650; set output '$PLOT_FILE'; set title 'Pareto frontier (new-constr ON: coexp700 frozen800; max_n=7 max_e=7): EGFR -> CXCL8 (FSC JUN $NODE_TO_TEST_FOR_SIGNIFICANCE)'; set xlabel 'Node relaxn'; set ylabel 'Edge relaxn'; set xrange [-0.5:$NODE_RELAX_UB+0.5]; set yrange [-0.5:$EDGE_RELAX_UB+0.5]; set grid; plot '$PO_POINTS_WITH_FSC.dat' with lp lw 2 pt 7 ps 1.3 linecolor 'blue' title 'with FSC (JUN)', '$PO_POINTS_WITHOUT_FSC.dat' with lp lw 2 pt 5 ps 1.2 linecolor 'red' title 'without FSC (JUN)'; exit"
+
+exec mv mylog.txt $WRITE_DIR/mylog.txt
+
+exit

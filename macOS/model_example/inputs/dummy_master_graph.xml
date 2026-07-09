@@ -1,0 +1,1816 @@
+<?xml version="1.0"?>
+<!DOCTYPE pathway SYSTEM "http://www.kegg.jp/kegg/xml/KGML_v0.7.1_.dtd">
+<pathway name="KEGG">
+	<entry id="1" name="hsa1956" type="gene">
+		<graphics name="EGFR"/>
+	</entry>
+	<entry id="2" name="hsa3576" type="gene">
+		<graphics name="CXCL8"/>
+	</entry>
+	<entry id="3" name="hsa3725" type="gene">
+		<graphics name="JUN"/>
+	</entry>
+	<entry id="4" name="hsa100132074" type="gene">
+		<graphics name="FOXO6"/>
+	</entry>
+	<entry id="5" name="hsa10125" type="gene">
+		<graphics name="RASGRP1"/>
+	</entry>
+	<entry id="6" name="hsa1017" type="gene">
+		<graphics name="CDK2"/>
+	</entry>
+	<entry id="7" name="hsa10197" type="gene">
+		<graphics name="PSME3"/>
+	</entry>
+	<entry id="8" name="hsa1026" type="gene">
+		<graphics name="CDKN1A"/>
+	</entry>
+	<entry id="9" name="hsa10411" type="gene">
+		<graphics name="RAPGEF3"/>
+	</entry>
+	<entry id="10" name="hsa10451" type="gene">
+		<graphics name="VAV3"/>
+	</entry>
+	<entry id="11" name="hsa10454" type="gene">
+		<graphics name="TAB1"/>
+	</entry>
+	<entry id="12" name="hsa10488" type="gene">
+		<graphics name="CREB3"/>
+	</entry>
+	<entry id="13" name="hsa10645" type="gene">
+		<graphics name="CAMKK2"/>
+	</entry>
+	<entry id="14" name="hsa10681" type="gene">
+		<graphics name="GNB5"/>
+	</entry>
+	<entry id="15" name="hsa10746" type="gene">
+		<graphics name="MAP3K2"/>
+	</entry>
+	<entry id="16" name="hsa109" type="gene">
+		<graphics name="ADCY3"/>
+	</entry>
+	<entry id="17" name="hsa10912" type="gene">
+		<graphics name="GADD45G"/>
+	</entry>
+	<entry id="18" name="hsa110117499" type="gene">
+		<graphics name="hsa110117499"/>
+	</entry>
+	<entry id="19" name="hsa1128" type="gene">
+		<graphics name="CHRM1"/>
+	</entry>
+	<entry id="20" name="hsa11317" type="gene">
+		<graphics name="RBPJL"/>
+	</entry>
+	<entry id="21" name="hsa117" type="gene">
+		<graphics name="ADCYAP1R1"/>
+	</entry>
+	<entry id="22" name="hsa1234" type="gene">
+		<graphics name="CCR5"/>
+	</entry>
+	<entry id="23" name="hsa1398" type="gene">
+		<graphics name="CRK"/>
+	</entry>
+	<entry id="24" name="hsa1432" type="gene">
+		<graphics name="MAPK14"/>
+	</entry>
+	<entry id="25" name="hsa1439" type="gene">
+		<graphics name="CSF2RB"/>
+	</entry>
+	<entry id="26" name="hsa146850" type="gene">
+		<graphics name="PIK3R6"/>
+	</entry>
+	<entry id="27" name="hsa1616" type="gene">
+		<graphics name="DAXX"/>
+	</entry>
+	<entry id="28" name="hsa163688" type="gene">
+		<graphics name="CALML6"/>
+	</entry>
+	<entry id="29" name="hsa1839" type="gene">
+		<graphics name="HBEGF"/>
+	</entry>
+	<entry id="30" name="hsa1843" type="gene">
+		<graphics name="DUSP1"/>
+	</entry>
+	<entry id="31" name="hsa1958" type="gene">
+		<graphics name="EGR1"/>
+	</entry>
+	<entry id="32" name="hsa2113" type="gene">
+		<graphics name="ETS1"/>
+	</entry>
+	<entry id="33" name="hsa23236" type="gene">
+		<graphics name="PLCB1"/>
+	</entry>
+	<entry id="34" name="hsa2353" type="gene">
+		<graphics name="FOS"/>
+	</entry>
+	<entry id="35" name="hsa2354" type="gene">
+		<graphics name="FOSB"/>
+	</entry>
+	<entry id="36" name="hsa2355" type="gene">
+		<graphics name="FOSL2"/>
+	</entry>
+	<entry id="37" name="hsa2475" type="gene">
+		<graphics name="MTOR"/>
+	</entry>
+	<entry id="38" name="hsa25" type="gene">
+		<graphics name="ABL1"/>
+	</entry>
+	<entry id="39" name="hsa25780" type="gene">
+		<graphics name="RASGRP3"/>
+	</entry>
+	<entry id="40" name="hsa2770" type="gene">
+		<graphics name="GNAI1"/>
+	</entry>
+	<entry id="41" name="hsa2885" type="gene">
+		<graphics name="GRB2"/>
+	</entry>
+	<entry id="42" name="hsa2889" type="gene">
+		<graphics name="RAPGEF1"/>
+	</entry>
+	<entry id="43" name="hsa2977" type="gene">
+		<graphics name="GUCY1A2"/>
+	</entry>
+	<entry id="44" name="hsa3164" type="gene">
+		<graphics name="NR4A1"/>
+	</entry>
+	<entry id="45" name="hsa3265" type="gene">
+		<graphics name="HRAS"/>
+	</entry>
+	<entry id="46" name="hsa3383" type="gene">
+		<graphics name="ICAM1"/>
+	</entry>
+	<entry id="47" name="hsa3397" type="gene">
+		<graphics name="ID1"/>
+	</entry>
+	<entry id="48" name="hsa3454" type="gene">
+		<graphics name="IFNAR1"/>
+	</entry>
+	<entry id="49" name="hsa3456" type="gene">
+		<graphics name="IFNB1"/>
+	</entry>
+	<entry id="50" name="hsa3458" type="gene">
+		<graphics name="IFNG"/>
+	</entry>
+	<entry id="51" name="hsa3480" type="gene">
+		<graphics name="IGF1R"/>
+	</entry>
+	<entry id="52" name="hsa355" type="gene">
+		<graphics name="FAS"/>
+	</entry>
+	<entry id="53" name="hsa3552" type="gene">
+		<graphics name="IL1A"/>
+	</entry>
+	<entry id="54" name="hsa3553" type="gene">
+		<graphics name="IL1B"/>
+	</entry>
+	<entry id="55" name="hsa3554" type="gene">
+		<graphics name="IL1R1"/>
+	</entry>
+	<entry id="56" name="hsa3569" type="gene">
+		<graphics name="IL6"/>
+	</entry>
+	<entry id="57" name="hsa3592" type="gene">
+		<graphics name="IL12A"/>
+	</entry>
+	<entry id="58" name="hsa3630" type="gene">
+		<graphics name="INS"/>
+	</entry>
+	<entry id="59" name="hsa3643" type="gene">
+		<graphics name="INSR"/>
+	</entry>
+	<entry id="60" name="hsa3663" type="gene">
+		<graphics name="IRF5"/>
+	</entry>
+	<entry id="61" name="hsa3667" type="gene">
+		<graphics name="IRS1"/>
+	</entry>
+	<entry id="62" name="hsa3716" type="gene">
+		<graphics name="JAK1"/>
+	</entry>
+	<entry id="63" name="hsa3726" type="gene">
+		<graphics name="JUNB"/>
+	</entry>
+	<entry id="64" name="hsa3727" type="gene">
+		<graphics name="JUND"/>
+	</entry>
+	<entry id="65" name="hsa374" type="gene">
+		<graphics name="AREG"/>
+	</entry>
+	<entry id="66" name="hsa387" type="gene">
+		<graphics name="RHOA"/>
+	</entry>
+	<entry id="67" name="hsa388372" type="gene">
+		<graphics name="CCL4L1"/>
+	</entry>
+	<entry id="68" name="hsa396" type="gene">
+		<graphics name="ARHGDIA"/>
+	</entry>
+	<entry id="69" name="hsa414062" type="gene">
+		<graphics name="CCL3L3"/>
+	</entry>
+	<entry id="70" name="hsa4216" type="gene">
+		<graphics name="MAP3K4"/>
+	</entry>
+	<entry id="71" name="hsa4217" type="gene">
+		<graphics name="MAP3K5"/>
+	</entry>
+	<entry id="72" name="hsa4313" type="gene">
+		<graphics name="MMP2"/>
+	</entry>
+	<entry id="73" name="hsa4609" type="gene">
+		<graphics name="MYC"/>
+	</entry>
+	<entry id="74" name="hsa4772" type="gene">
+		<graphics name="NFATC1"/>
+	</entry>
+	<entry id="75" name="hsa4773" type="gene">
+		<graphics name="NFATC2"/>
+	</entry>
+	<entry id="76" name="hsa4790" type="gene">
+		<graphics name="NFKB1"/>
+	</entry>
+	<entry id="77" name="hsa4842" type="gene">
+		<graphics name="NOS1"/>
+	</entry>
+	<entry id="78" name="hsa4846" type="gene">
+		<graphics name="NOS3"/>
+	</entry>
+	<entry id="79" name="hsa4851" type="gene">
+		<graphics name="NOTCH1"/>
+	</entry>
+	<entry id="80" name="hsa51196" type="gene">
+		<graphics name="PLCE1"/>
+	</entry>
+	<entry id="81" name="hsa51422" type="gene">
+		<graphics name="PRKAG2"/>
+	</entry>
+	<entry id="82" name="hsa5170" type="gene">
+		<graphics name="PDPK1"/>
+	</entry>
+	<entry id="83" name="hsa5290" type="gene">
+		<graphics name="PIK3CA"/>
+	</entry>
+	<entry id="84" name="hsa5335" type="gene">
+		<graphics name="PLCG1"/>
+	</entry>
+	<entry id="85" name="hsa5530" type="gene">
+		<graphics name="PPP3CA"/>
+	</entry>
+	<entry id="86" name="hsa5566" type="gene">
+		<graphics name="PRKACA"/>
+	</entry>
+	<entry id="87" name="hsa5578" type="gene">
+		<graphics name="PRKCA"/>
+	</entry>
+	<entry id="88" name="hsa5588" type="gene">
+		<graphics name="PRKCQ"/>
+	</entry>
+	<entry id="89" name="hsa5592" type="gene">
+		<graphics name="PRKG1"/>
+	</entry>
+	<entry id="90" name="hsa5594" type="gene">
+		<graphics name="MAPK1"/>
+	</entry>
+	<entry id="91" name="hsa5598" type="gene">
+		<graphics name="MAPK7"/>
+	</entry>
+	<entry id="92" name="hsa5600" type="gene">
+		<graphics name="MAPK11"/>
+	</entry>
+	<entry id="93" name="hsa5604" type="gene">
+		<graphics name="MAP2K1"/>
+	</entry>
+	<entry id="94" name="hsa5606" type="gene">
+		<graphics name="MAP2K3"/>
+	</entry>
+	<entry id="95" name="hsa5607" type="gene">
+		<graphics name="MAP2K5"/>
+	</entry>
+	<entry id="96" name="hsa5608" type="gene">
+		<graphics name="MAP2K6"/>
+	</entry>
+	<entry id="97" name="hsa5743" type="gene">
+		<graphics name="PTGS2"/>
+	</entry>
+	<entry id="98" name="hsa5747" type="gene">
+		<graphics name="PTK2"/>
+	</entry>
+	<entry id="99" name="hsa5879" type="gene">
+		<graphics name="RAC1"/>
+	</entry>
+	<entry id="100" name="hsa5906" type="gene">
+		<graphics name="RAP1A"/>
+	</entry>
+	<entry id="101" name="hsa5997" type="gene">
+		<graphics name="RGS2"/>
+	</entry>
+	<entry id="102" name="hsa6188" type="gene">
+		<graphics name="hsa6188"/>
+	</entry>
+	<entry id="103" name="hsa6352" type="gene">
+		<graphics name="CCL5"/>
+	</entry>
+	<entry id="104" name="hsa6385" type="gene">
+		<graphics name="SDC4"/>
+	</entry>
+	<entry id="105" name="hsa6446" type="gene">
+		<graphics name="SGK1"/>
+	</entry>
+	<entry id="106" name="hsa6654" type="gene">
+		<graphics name="SOS1"/>
+	</entry>
+	<entry id="107" name="hsa6714" type="gene">
+		<graphics name="SRC"/>
+	</entry>
+	<entry id="108" name="hsa6772" type="gene">
+		<graphics name="STAT1"/>
+	</entry>
+	<entry id="109" name="hsa6774" type="gene">
+		<graphics name="STAT3"/>
+	</entry>
+	<entry id="110" name="hsa6776" type="gene">
+		<graphics name="STAT5A"/>
+	</entry>
+	<entry id="111" name="hsa6885" type="gene">
+		<graphics name="MAP3K7"/>
+	</entry>
+	<entry id="112" name="hsa695" type="gene">
+		<graphics name="BTK"/>
+	</entry>
+	<entry id="113" name="hsa7057" type="gene">
+		<graphics name="THBS1"/>
+	</entry>
+	<entry id="114" name="hsa7067" type="gene">
+		<graphics name="THRA"/>
+	</entry>
+	<entry id="115" name="hsa7124" type="gene">
+		<graphics name="TNF"/>
+	</entry>
+	<entry id="116" name="hsa7128" type="gene">
+		<graphics name="TNFAIP3"/>
+	</entry>
+	<entry id="117" name="hsa7157" type="gene">
+		<graphics name="TP53"/>
+	</entry>
+	<entry id="118" name="hsa7189" type="gene">
+		<graphics name="TRAF6"/>
+	</entry>
+	<entry id="119" name="hsa773" type="gene">
+		<graphics name="CACNA1A"/>
+	</entry>
+	<entry id="120" name="hsa8061" type="gene">
+		<graphics name="FOSL1"/>
+	</entry>
+	<entry id="121" name="hsa84335" type="gene">
+		<graphics name="AKT1S1"/>
+	</entry>
+	<entry id="122" name="hsa8660" type="gene">
+		<graphics name="IRS2"/>
+	</entry>
+	<entry id="123" name="hsa8767" type="gene">
+		<graphics name="RIPK2"/>
+	</entry>
+	<entry id="124" name="hsa9846" type="gene">
+		<graphics name="GAB2"/>
+	</entry>
+	<entry id="125" name="hsa998" type="gene">
+		<graphics name="CDC42"/>
+	</entry>
+	<relation entry1="4" entry2="17" type="GErel" pathways="path:hsa04068" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="5" entry2="100" type="PPrel" pathways="path:hsa04611" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="6" entry2="4" type="PPrel" pathways="path:hsa04068" experiment_score="0">
+		<subtype name="inhibition" value="--|"/>
+	</relation>
+	<relation entry1="6" entry2="4" type="PPrel" pathways="path:hsa04068" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="8" entry2="6" type="PPrel" pathways="path:hsa05160" experiment_score="994">
+		<subtype name="inhibition" value="--|"/>
+	</relation>
+	<relation entry1="9" entry2="24" type="PPrel" pathways="path:hsa04261" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="9" entry2="92" type="PPrel" pathways="path:hsa04261" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="10" entry2="125" type="PPrel" pathways="path:hsa04062 path:hsa04666" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="10" entry2="125" type="PPrel" pathways="path:hsa04062 path:hsa04666" experiment_score="0">
+		<subtype name="indirect effect" value="..&amp;gt;"/>
+	</relation>
+	<relation entry1="10" entry2="125" type="PPrel" pathways="path:hsa04660" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="10" entry2="125" type="PPrel" pathways="path:hsa04670" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="11" entry2="111" type="PPrel" pathways="path:hsa04010" experiment_score="994">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="11" entry2="111" type="PPrel" pathways="path:hsa04620" experiment_score="994">
+		<subtype name="binding/association" value="---"/>
+	</relation>
+	<relation entry1="11" entry2="111" type="PPrel" pathways="path:hsa04621" experiment_score="994">
+		<subtype name="binding/association" value="---"/>
+	</relation>
+	<relation entry1="12" entry2="31" type="GErel" pathways="path:hsa05020" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="12" entry2="34" type="GErel" pathways="path:hsa04024" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="12" entry2="34" type="GErel" pathways="path:hsa05031" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="12" entry2="35" type="GErel" pathways="path:hsa05031 path:hsa05034" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="12" entry2="58" type="GErel" pathways="path:hsa04911" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="13" entry2="81" type="PPrel" pathways="path:hsa04152 path:hsa04920" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="13" entry2="81" type="PPrel" pathways="path:hsa04152 path:hsa04920" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="13" entry2="81" type="PPrel" pathways="path:hsa04921" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="14" entry2="24" type="PPrel" pathways="path:hsa04723" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="15" entry2="95" type="PPrel" pathways="path:hsa04540" experiment_score="979">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="17" entry2="70" type="PPrel" pathways="path:hsa04010" experiment_score="609">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="18" entry2="82" type="PPrel" pathways="path:hsa04360 path:hsa05205" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="18" entry2="82" type="PPrel" pathways="path:hsa04360 path:hsa05205" experiment_score="0">
+		<subtype name="indirect effect" value="..&amp;gt;"/>
+	</relation>
+	<relation entry1="18" entry2="82" type="PPrel" pathways="path:hsa04510" experiment_score="0">
+		<subtype name="compound" value="24"/>
+	</relation>
+	<relation entry1="18" entry2="82" type="PPrel" pathways="path:hsa04660" experiment_score="0">
+		<subtype name="activation" value="--&gt;"/>
+	</relation>
+	<relation entry1="18" entry2="82" type="PPrel" pathways="path:hsa04664" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="18" entry2="82" type="PPrel" pathways="path:hsa04722" experiment_score="0">
+		<subtype name="compound" value="234"/>
+	</relation>
+	<relation entry1="18" entry2="82" type="PPrel" pathways="path:hsa04722" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="18" entry2="82" type="PPrel" pathways="path:hsa04910" experiment_score="0">
+		<subtype name="compound" value="71"/>
+	</relation>
+	<relation entry1="18" entry2="82" type="PPrel" pathways="path:hsa04910" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="18" entry2="82" type="PPrel" pathways="path:hsa05213" experiment_score="0">
+		<subtype name="compound" value="28"/>
+	</relation>
+	<relation entry1="18" entry2="82" type="PPrel" pathways="path:hsa05215" experiment_score="0">
+		<subtype name="compound" value="45"/>
+	</relation>
+	<relation entry1="18" entry2="82" type="PPrel" pathways="path:hsa05215" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="18" entry2="98" type="PPrel" pathways="path:hsa04062" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="18" entry2="98" type="PPrel" pathways="path:hsa04062" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="18" entry2="99" type="PPrel" pathways="path:hsa04014 path:hsa04650 path:hsa04664" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="18" entry2="99" type="PPrel" pathways="path:hsa04370" experiment_score="0">
+		<subtype name="compound" value="15"/>
+	</relation>
+	<relation entry1="18" entry2="99" type="PPrel" pathways="path:hsa04370" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="18" entry2="99" type="PPrel" pathways="path:hsa04670" experiment_score="0">
+		<subtype name="indirect effect" value="..&amp;gt;"/>
+	</relation>
+	<relation entry1="18" entry2="99" type="PPrel" pathways="path:hsa05169" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="18" entry2="112" type="ECrel" pathways="path:hsa04664" experiment_score="0">
+		<subtype name="compound" value="30"/>
+	</relation>
+	<relation entry1="18" entry2="114" type="PPrel" pathways="path:hsa04919" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="18" entry2="125" type="PPrel" pathways="path:hsa05100" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="19" entry2="40" type="PPrel" pathways="path:hsa04024" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="20" entry2="73" type="GErel" pathways="path:hsa05169" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="21" entry2="14" type="PPrel" pathways="path:hsa04713" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="22" entry2="40" type="PPrel" pathways="path:hsa04062" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="22" entry2="40" type="PPrel" pathways="path:hsa05145" experiment_score="900">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="23" entry2="38" type="PPrel" pathways="path:hsa04012" experiment_score="986">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="23" entry2="42" type="PPrel" pathways="path:hsa04015 path:hsa04510 path:hsa05211" experiment_score="874">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="23" entry2="42" type="PPrel" pathways="path:hsa04722" experiment_score="874">
+		<subtype name="binding/association" value="---"/>
+	</relation>
+	<relation entry1="24" entry2="35" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="24" entry2="35" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="24" entry2="36" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="24" entry2="36" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="24" entry2="2" type="GErel" pathways="path:hsa05120" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="24" entry2="3" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="24" entry2="3" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="24" entry2="3" type="PPrel" pathways="path:hsa04620 path:hsa05132 path:hsa05142" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="24" entry2="3" type="PPrel" pathways="path:hsa04621 path:hsa05169" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="24" entry2="3" type="PPrel" pathways="path:hsa04621 path:hsa05169" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="24" entry2="3" type="PPrel" pathways="path:hsa05130 path:hsa05133" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="24" entry2="3" type="PPrel" pathways="path:hsa05130 path:hsa05133" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="24" entry2="3" type="PPrel" pathways="path:hsa05161" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="24" entry2="63" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="24" entry2="63" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="24" entry2="64" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="24" entry2="64" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="24" entry2="117" type="PPrel" pathways="path:hsa04010" experiment_score="816">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="24" entry2="120" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="24" entry2="120" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="25" entry2="45" type="PPrel" pathways="path:hsa04210" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="25" entry2="62" type="PPrel" pathways="path:hsa05200" experiment_score="625">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="26" entry2="98" type="PPrel" pathways="path:hsa04062" experiment_score="0">
+		<subtype name="activation" value="--&gt;"/>
+	</relation>
+	<relation entry1="27" entry2="71" type="PPrel" pathways="path:hsa04010 path:hsa04210 path:hsa05014" experiment_score="857">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="28" entry2="77" type="PPrel" pathways="path:hsa04020" experiment_score="0">
+		<subtype name="binding/association" value="---"/>
+	</relation>
+	<relation entry1="28" entry2="77" type="PPrel" pathways="path:hsa04970" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="28" entry2="85" type="PPrel" pathways="path:hsa04114 path:hsa04720 path:hsa04921 path:hsa05010 path:hsa05031 path:hsa05152" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="28" entry2="85" type="PPrel" pathways="path:hsa04728" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="30" entry2="90" type="PPrel" pathways="path:hsa04010" experiment_score="0">
+		<subtype name="inhibition" value="--|"/>
+	</relation>
+	<relation entry1="30" entry2="90" type="PPrel" pathways="path:hsa04010" experiment_score="0">
+		<subtype name="dephosphorylation" value="-p"/>
+	</relation>
+	<relation entry1="30" entry2="90" type="PPrel" pathways="path:hsa04726" experiment_score="783">
+		<subtype name="inhibition" value="--|"/>
+	</relation>
+	<relation entry1="30" entry2="90" type="PPrel" pathways="path:hsa04726" experiment_score="783">
+		<subtype name="dephosphorylation" value="-p"/>
+	</relation>
+	<relation entry1="1" entry2="18" type="PPrel" pathways="path:hsa04066" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="18" type="PPrel" pathways="path:hsa04066" experiment_score="0">
+		<subtype name="indirect effect" value="..&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="18" type="PPrel" pathways="path:hsa04510" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="18" type="PPrel" pathways="path:hsa04915 path:hsa05131 path:hsa05200 path:hsa05213 path:hsa05214" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="18" type="PPrel" pathways="path:hsa05210" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="18" type="PPrel" pathways="path:hsa05210" experiment_score="0">
+		<subtype name="indirect effect" value="..&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="18" type="PPrel" pathways="path:hsa05215" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="23" type="PPrel" pathways="path:hsa04012" experiment_score="842">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="23" type="PPrel" pathways="path:hsa04012" experiment_score="842">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="1" entry2="23" type="PPrel" pathways="path:hsa04015" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="33" type="PPrel" pathways="path:hsa04015" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="41" type="PPrel" pathways="path:hsa04012 path:hsa04068 path:hsa04912 path:hsa05210 path:hsa05213 path:hsa05223" experiment_score="994">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="41" type="PPrel" pathways="path:hsa04151" experiment_score="625">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="41" type="PPrel" pathways="path:hsa04540" experiment_score="994">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="41" type="PPrel" pathways="path:hsa05160" experiment_score="994">
+		<subtype name="binding/association" value="---"/>
+	</relation>
+	<relation entry1="1" entry2="41" type="PPrel" pathways="path:hsa05215" experiment_score="994">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="45" type="PPrel" pathways="path:hsa05218" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="61" type="PPrel" pathways="path:hsa04151" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="83" type="PPrel" pathways="path:hsa04066" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="83" type="PPrel" pathways="path:hsa04066" experiment_score="0">
+		<subtype name="indirect effect" value="..&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="83" type="PPrel" pathways="path:hsa04510" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="83" type="PPrel" pathways="path:hsa04915 path:hsa05131 path:hsa05200 path:hsa05213 path:hsa05214" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="83" type="PPrel" pathways="path:hsa05210" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="83" type="PPrel" pathways="path:hsa05210" experiment_score="0">
+		<subtype name="indirect effect" value="..&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="83" type="PPrel" pathways="path:hsa05215" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="83" type="PPrel" pathways="path:hsa05223" experiment_score="790">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="84" type="PPrel" pathways="path:hsa04012 path:hsa05214 path:hsa05223" experiment_score="891">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="84" type="PPrel" pathways="path:hsa04012 path:hsa05214 path:hsa05223" experiment_score="891">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="1" entry2="84" type="PPrel" pathways="path:hsa04020" experiment_score="891">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="84" type="PPrel" pathways="path:hsa05200" experiment_score="891">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="106" type="PPrel" pathways="path:hsa04810" experiment_score="994">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="107" type="PPrel" pathways="path:hsa04012" experiment_score="923">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="107" type="PPrel" pathways="path:hsa04540" experiment_score="923">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="110" type="PPrel" pathways="path:hsa04012" experiment_score="831">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="1" entry2="110" type="PPrel" pathways="path:hsa04012" experiment_score="831">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="31" entry2="103" type="GErel" pathways="path:hsa05020" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="32" entry2="2" type="GErel" pathways="path:hsa05200" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="33" entry2="85" type="PPrel" pathways="path:hsa04310" experiment_score="0">
+		<subtype name="compound" value="12"/>
+	</relation>
+	<relation entry1="33" entry2="87" type="PPrel" pathways="path:hsa04020" experiment_score="0">
+		<subtype name="compound" value="41"/>
+	</relation>
+	<relation entry1="33" entry2="87" type="PPrel" pathways="path:hsa04310" experiment_score="0">
+		<subtype name="compound" value="12"/>
+	</relation>
+	<relation entry1="33" entry2="87" type="PPrel" pathways="path:hsa04540" experiment_score="0">
+		<subtype name="compound" value="21"/>
+	</relation>
+	<relation entry1="33" entry2="87" type="PPrel" pathways="path:hsa04713" experiment_score="0">
+		<subtype name="compound" value="27"/>
+	</relation>
+	<relation entry1="33" entry2="87" type="PPrel" pathways="path:hsa04720" experiment_score="0">
+		<subtype name="compound" value="19"/>
+	</relation>
+	<relation entry1="33" entry2="87" type="PPrel" pathways="path:hsa04730" experiment_score="0">
+		<subtype name="compound" value="48"/>
+	</relation>
+	<relation entry1="33" entry2="87" type="PPrel" pathways="path:hsa04730" experiment_score="0">
+		<subtype name="compound" value="33"/>
+	</relation>
+	<relation entry1="33" entry2="87" type="PPrel" pathways="path:hsa04912" experiment_score="0">
+		<subtype name="compound" value="15"/>
+	</relation>
+	<relation entry1="33" entry2="87" type="PPrel" pathways="path:hsa04916" experiment_score="0">
+		<subtype name="compound" value="26"/>
+	</relation>
+	<relation entry1="33" entry2="87" type="PPrel" pathways="path:hsa05143" experiment_score="0">
+		<subtype name="compound" value="159"/>
+	</relation>
+	<relation entry1="33" entry2="87" type="PPrel" pathways="path:hsa05143" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="33" entry2="87" type="PPrel" pathways="path:hsa05143" experiment_score="0">
+		<subtype name="indirect effect" value="..&amp;gt;"/>
+	</relation>
+	<relation entry1="33" entry2="87" type="PPrel" pathways="path:hsa05143" experiment_score="0">
+		<subtype name="compound" value="160"/>
+	</relation>
+	<relation entry1="33" entry2="87" type="PPrel" pathways="path:hsa05143" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="33" entry2="87" type="PPrel" pathways="path:hsa05143" experiment_score="0">
+		<subtype name="indirect effect" value="..&amp;gt;"/>
+	</relation>
+	<relation entry1="33" entry2="87" type="PPrel" pathways="path:hsa05146" experiment_score="0">
+		<subtype name="compound" value="277"/>
+	</relation>
+	<relation entry1="33" entry2="87" type="PPrel" pathways="path:hsa05146" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="34" entry2="56" type="GErel" pathways="path:hsa04620 path:hsa05130 path:hsa05132 path:hsa05142 path:hsa05162" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="34" entry2="117" type="GErel" pathways="path:hsa04210" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="35" entry2="34" type="GErel" pathways="path:hsa05031" experiment_score="0">
+		<subtype name="repression" value="--|"/>
+	</relation>
+	<relation entry1="35" entry2="49" type="GErel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="36" entry2="49" type="GErel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="36" entry2="74" type="GErel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="37" entry2="122" type="PPrel" pathways="path:hsa04920" experiment_score="625">
+		<subtype name="inhibition" value="--|"/>
+	</relation>
+	<relation entry1="37" entry2="122" type="PPrel" pathways="path:hsa04930" experiment_score="625">
+		<subtype name="inhibition" value="--|"/>
+	</relation>
+	<relation entry1="37" entry2="122" type="PPrel" pathways="path:hsa04930" experiment_score="625">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="38" entry2="99" type="PPrel" pathways="path:hsa05416" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="39" entry2="100" type="PPrel" pathways="path:hsa04015" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="40" entry2="9" type="ECrel" pathways="path:hsa04670" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="40" entry2="90" type="PPrel" pathways="path:hsa04261" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="40" entry2="90" type="PPrel" pathways="path:hsa04713" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="40" entry2="90" type="PPrel" pathways="path:hsa04713" experiment_score="0">
+		<subtype name="indirect effect" value="..&amp;gt;"/>
+	</relation>
+	<relation entry1="40" entry2="90" type="PPrel" pathways="path:hsa04723" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="40" entry2="90" type="PPrel" pathways="path:hsa05133" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="40" entry2="90" type="PPrel" pathways="path:hsa05133" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="40" entry2="90" type="PPrel" pathways="path:hsa05133" experiment_score="0">
+		<subtype name="indirect effect" value="..&amp;gt;"/>
+	</relation>
+	<relation entry1="41" entry2="106" type="PPrel" pathways="path:hsa04012 path:hsa04014 path:hsa04068 path:hsa04150 path:hsa04151 path:hsa04510 path:hsa04540 path:hsa04650 path:hsa04660 path:hsa04664 path:hsa04910 path:hsa04912 path:hsa04915 path:hsa04917 path:hsa05161 path:hsa05200 path:hsa05210 path:hsa05211 path:hsa05213 path:hsa05214 path:hsa05215 path:hsa05220 path:hsa05221 path:hsa05223" experiment_score="994">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="41" entry2="106" type="PPrel" pathways="path:hsa04062 path:hsa04662 path:hsa04722 path:hsa05160" experiment_score="994">
+		<subtype name="binding/association" value="---"/>
+	</relation>
+	<relation entry1="41" entry2="124" type="PPrel" pathways="path:hsa04014" experiment_score="994">
+		<subtype name="binding/association" value="---"/>
+	</relation>
+	<relation entry1="41" entry2="124" type="PPrel" pathways="path:hsa05220" experiment_score="991">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="42" entry2="100" type="PPrel" pathways="path:hsa04015 path:hsa04510 path:hsa04722 path:hsa05211" experiment_score="624">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="43" entry2="89" type="PPrel" pathways="path:hsa04540" experiment_score="0">
+		<subtype name="compound" value="20"/>
+	</relation>
+	<relation entry1="43" entry2="89" type="PPrel" pathways="path:hsa04713" experiment_score="0">
+		<subtype name="compound" value="23"/>
+	</relation>
+	<relation entry1="43" entry2="89" type="PPrel" pathways="path:hsa04730" experiment_score="0">
+		<subtype name="compound" value="42"/>
+	</relation>
+	<relation entry1="45" entry2="93" type="PPrel" pathways="path:hsa04725" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="45" entry2="93" type="PPrel" pathways="path:hsa04725" experiment_score="0">
+		<subtype name="indirect effect" value="..&amp;gt;"/>
+	</relation>
+	<relation entry1="45" entry2="93" type="PPrel" pathways="path:hsa05166" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="47" entry2="113" type="PPrel" pathways="path:hsa04015" experiment_score="0">
+		<subtype name="inhibition" value="--|"/>
+	</relation>
+	<relation entry1="48" entry2="62" type="PPrel" pathways="path:hsa04380 path:hsa05162 path:hsa05164 path:hsa05168" experiment_score="0">
+		<subtype name="binding/association" value="---"/>
+	</relation>
+	<relation entry1="48" entry2="62" type="PPrel" pathways="path:hsa04620 path:hsa04621 path:hsa05169" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="48" entry2="62" type="PPrel" pathways="path:hsa05200" experiment_score="625">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="49" entry2="48" type="PPrel" pathways="path:hsa04380 path:hsa04620 path:hsa05164" experiment_score="612">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="49" entry2="48" type="PPrel" pathways="path:hsa04621 path:hsa05162 path:hsa05168 path:hsa05169" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="49" entry2="48" type="PPrel" pathways="path:hsa04650" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="50" entry2="7" type="PPrel" pathways="path:hsa04612" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="51" entry2="122" type="PPrel" pathways="path:hsa04068 path:hsa04152" experiment_score="979">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="52" entry2="27" type="PPrel" pathways="path:hsa04010 path:hsa04210" experiment_score="854">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="53" entry2="55" type="PPrel" pathways="path:hsa04010" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="53" entry2="55" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="54" entry2="55" type="PPrel" pathways="path:hsa04010" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="54" entry2="55" type="PPrel" pathways="path:hsa04064 path:hsa05130 path:hsa05131" experiment_score="960">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="54" entry2="55" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="54" entry2="55" type="PPrel" pathways="path:hsa04750" experiment_score="960">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="54" entry2="55" type="PPrel" pathways="path:hsa05146" experiment_score="960">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="56" entry2="25" type="PPrel" pathways="path:hsa05200" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="58" entry2="51" type="PPrel" pathways="path:hsa04010 path:hsa04151" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="58" entry2="51" type="PPrel" pathways="path:hsa04014" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="58" entry2="51" type="PPrel" pathways="path:hsa04015" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="58" entry2="51" type="PPrel" pathways="path:hsa04066" experiment_score="999">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="58" entry2="51" type="PPrel" pathways="path:hsa04114 path:hsa04914" experiment_score="900">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="58" entry2="51" type="PPrel" pathways="path:hsa04150" experiment_score="982">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="58" entry2="51" type="PPrel" pathways="path:hsa05215" experiment_score="999">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="58" entry2="59" type="PPrel" pathways="path:hsa04010 path:hsa04151" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="58" entry2="59" type="PPrel" pathways="path:hsa04014" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="58" entry2="59" type="PPrel" pathways="path:hsa04015" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="58" entry2="59" type="PPrel" pathways="path:hsa04022 path:hsa04068 path:hsa04152 path:hsa04910 path:hsa04913 path:hsa04930 path:hsa04932 path:hsa04960 path:hsa05010" experiment_score="982">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="58" entry2="59" type="PPrel" pathways="path:hsa04066" experiment_score="999">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="58" entry2="59" type="PPrel" pathways="path:hsa04150" experiment_score="982">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="59" entry2="122" type="PPrel" pathways="path:hsa04022 path:hsa04068 path:hsa04152 path:hsa04930" experiment_score="985">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="59" entry2="122" type="PPrel" pathways="path:hsa04910 path:hsa05010" experiment_score="985">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="59" entry2="122" type="PPrel" pathways="path:hsa04910 path:hsa05010" experiment_score="985">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="59" entry2="122" type="PPrel" pathways="path:hsa04932" experiment_score="985">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="60" entry2="2" type="GErel" pathways="path:hsa04620" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="61" entry2="18" type="PPrel" pathways="path:hsa04068 path:hsa04140 path:hsa04152 path:hsa04910 path:hsa04930 path:hsa05010" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="61" entry2="18" type="PPrel" pathways="path:hsa04150" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="61" entry2="18" type="PPrel" pathways="path:hsa04150" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="61" entry2="18" type="PPrel" pathways="path:hsa04151 path:hsa04722 path:hsa04930 path:hsa04960" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="61" entry2="18" type="PPrel" pathways="path:hsa04932" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="62" entry2="109" type="PPrel" pathways="path:hsa04550" experiment_score="785">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="62" entry2="109" type="PPrel" pathways="path:hsa05145" experiment_score="785">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="62" entry2="109" type="PPrel" pathways="path:hsa05145" experiment_score="785">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="62" entry2="109" type="PPrel" pathways="path:hsa05161" experiment_score="785">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="62" entry2="109" type="PPrel" pathways="path:hsa05161" experiment_score="785">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="62" entry2="109" type="PPrel" pathways="path:hsa05162" experiment_score="785">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="62" entry2="109" type="PPrel" pathways="path:hsa05162" experiment_score="785">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="62" entry2="109" type="PPrel" pathways="path:hsa05200" experiment_score="785">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="62" entry2="109" type="PPrel" pathways="path:hsa05200" experiment_score="785">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="62" entry2="109" type="PPrel" pathways="path:hsa05212" experiment_score="785">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="62" entry2="109" type="PPrel" pathways="path:hsa05212" experiment_score="785">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="3" entry2="46" type="GErel" pathways="path:hsa05169" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="3" entry2="49" type="GErel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="3" entry2="49" type="GErel" pathways="path:hsa05142" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="3" entry2="50" type="GErel" pathways="path:hsa04660" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="3" entry2="50" type="GErel" pathways="path:hsa05321" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="3" entry2="52" type="GErel" pathways="path:hsa04210" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="3" entry2="53" type="GErel" pathways="path:hsa05162" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="3" entry2="54" type="GErel" pathways="path:hsa04620 path:hsa05130 path:hsa05132" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="3" entry2="54" type="PPrel" pathways="path:hsa04621" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="3" entry2="54" type="GErel" pathways="path:hsa05162" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="3" entry2="56" type="GErel" pathways="path:hsa04620 path:hsa05130 path:hsa05132 path:hsa05142 path:hsa05162" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="3" entry2="56" type="PPrel" pathways="path:hsa04621" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="3" entry2="2" type="GErel" pathways="path:hsa04620 path:hsa05130 path:hsa05132 path:hsa05142" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="3" entry2="2" type="PPrel" pathways="path:hsa04621" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="3" entry2="2" type="GErel" pathways="path:hsa05120 path:hsa05200" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="3" entry2="57" type="GErel" pathways="path:hsa04620 path:hsa05142 path:hsa05162" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="3" entry2="67" type="GErel" pathways="path:hsa04620" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="3" entry2="69" type="GErel" pathways="path:hsa04620 path:hsa05142" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="3" entry2="103" type="GErel" pathways="path:hsa04620 path:hsa05142" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="3" entry2="103" type="PPrel" pathways="path:hsa04621" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="3" entry2="115" type="GErel" pathways="path:hsa04620 path:hsa04660 path:hsa05130 path:hsa05132 path:hsa05142" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="3" entry2="115" type="PPrel" pathways="path:hsa04621" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="3" entry2="116" type="GErel" pathways="path:hsa05169" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="3" entry2="117" type="GErel" pathways="path:hsa04210" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="63" entry2="49" type="GErel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="63" entry2="74" type="GErel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="64" entry2="49" type="GErel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="64" entry2="74" type="GErel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="66" entry2="80" type="PPrel" pathways="path:hsa05205" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="67" entry2="22" type="PPrel" pathways="path:hsa04060" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="67" entry2="22" type="PPrel" pathways="path:hsa04062" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="67" entry2="22" type="PPrel" pathways="path:hsa04062" experiment_score="0">
+		<subtype name="binding/association" value="---"/>
+	</relation>
+	<relation entry1="68" entry2="66" type="PPrel" pathways="path:hsa04722" experiment_score="920">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="69" entry2="22" type="PPrel" pathways="path:hsa04060" experiment_score="510">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="69" entry2="22" type="PPrel" pathways="path:hsa04062" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="69" entry2="22" type="PPrel" pathways="path:hsa04062" experiment_score="0">
+		<subtype name="binding/association" value="---"/>
+	</relation>
+	<relation entry1="70" entry2="94" type="PPrel" pathways="path:hsa04010" experiment_score="775">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="70" entry2="94" type="PPrel" pathways="path:hsa04010" experiment_score="775">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="70" entry2="94" type="PPrel" pathways="path:hsa04912" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="70" entry2="94" type="PPrel" pathways="path:hsa04912" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="70" entry2="96" type="PPrel" pathways="path:hsa04010" experiment_score="835">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="70" entry2="96" type="PPrel" pathways="path:hsa04010" experiment_score="835">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="70" entry2="96" type="PPrel" pathways="path:hsa04912" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="70" entry2="96" type="PPrel" pathways="path:hsa04912" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="71" entry2="96" type="PPrel" pathways="path:hsa04010" experiment_score="837">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="71" entry2="96" type="PPrel" pathways="path:hsa05014" experiment_score="837">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="71" entry2="96" type="PPrel" pathways="path:hsa05014" experiment_score="837">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="72" entry2="29" type="PPrel" pathways="path:hsa04912" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="72" entry2="29" type="PPrel" pathways="path:hsa04915" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="73" entry2="2" type="GErel" pathways="path:hsa05200" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="74" entry2="50" type="GErel" pathways="path:hsa04660" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="74" entry2="97" type="GErel" pathways="path:hsa04921" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="75" entry2="97" type="GErel" pathways="path:hsa04370" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="75" entry2="97" type="GErel" pathways="path:hsa04921" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="76" entry2="56" type="GErel" pathways="path:hsa04620 path:hsa04623 path:hsa04932 path:hsa05010 path:hsa05152 path:hsa05161 path:hsa05162 path:hsa05164 path:hsa05166 path:hsa05168 path:hsa05169" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="76" entry2="56" type="PPrel" pathways="path:hsa04621" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="76" entry2="76" type="PPrel" pathways="path:hsa05161" experiment_score="0">
+		<subtype name="inhibition" value="--|"/>
+	</relation>
+	<relation entry1="76" entry2="76" type="GErel" pathways="path:hsa05168" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="77" entry2="43" type="PPrel" pathways="path:hsa04713" experiment_score="0">
+		<subtype name="compound" value="97"/>
+	</relation>
+	<relation entry1="77" entry2="43" type="PPrel" pathways="path:hsa04730" experiment_score="0">
+		<subtype name="compound" value="32"/>
+	</relation>
+	<relation entry1="79" entry2="20" type="PPrel" pathways="path:hsa04330" experiment_score="0">
+		<subtype name="compound" value="64"/>
+	</relation>
+	<relation entry1="81" entry2="37" type="PPrel" pathways="path:hsa04152" experiment_score="0">
+		<subtype name="inhibition" value="--|"/>
+	</relation>
+	<relation entry1="81" entry2="37" type="PPrel" pathways="path:hsa04152" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="82" entry2="105" type="PPrel" pathways="path:hsa04068 path:hsa04151" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="82" entry2="105" type="PPrel" pathways="path:hsa04068 path:hsa04151" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="82" entry2="105" type="PPrel" pathways="path:hsa04960" experiment_score="735">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="82" entry2="105" type="PPrel" pathways="path:hsa04960" experiment_score="735">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="84" entry2="5" type="PPrel" pathways="path:hsa04660" experiment_score="0">
+		<subtype name="compound" value="6"/>
+	</relation>
+	<relation entry1="84" entry2="28" type="PPrel" pathways="path:hsa04722" experiment_score="0">
+		<subtype name="compound" value="17"/>
+	</relation>
+	<relation entry1="84" entry2="28" type="PPrel" pathways="path:hsa04722" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="84" entry2="78" type="PPrel" pathways="path:hsa04370" experiment_score="0">
+		<subtype name="compound" value="6"/>
+	</relation>
+	<relation entry1="84" entry2="78" type="PPrel" pathways="path:hsa04370" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="84" entry2="85" type="PPrel" pathways="path:hsa04370" experiment_score="0">
+		<subtype name="compound" value="6"/>
+	</relation>
+	<relation entry1="84" entry2="85" type="PPrel" pathways="path:hsa04370" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="84" entry2="85" type="PPrel" pathways="path:hsa04370" experiment_score="0">
+		<subtype name="compound" value="7"/>
+	</relation>
+	<relation entry1="84" entry2="85" type="PPrel" pathways="path:hsa04370" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="84" entry2="85" type="ECrel" pathways="path:hsa04650" experiment_score="0">
+		<subtype name="compound" value="70"/>
+	</relation>
+	<relation entry1="84" entry2="87" type="PPrel" pathways="path:hsa04012" experiment_score="0">
+		<subtype name="compound" value="25"/>
+	</relation>
+	<relation entry1="84" entry2="87" type="PPrel" pathways="path:hsa04020" experiment_score="0">
+		<subtype name="compound" value="41"/>
+	</relation>
+	<relation entry1="84" entry2="87" type="PPrel" pathways="path:hsa04370" experiment_score="0">
+		<subtype name="compound" value="8"/>
+	</relation>
+	<relation entry1="84" entry2="87" type="PPrel" pathways="path:hsa04370" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="84" entry2="87" type="PPrel" pathways="path:hsa04370" experiment_score="0">
+		<subtype name="compound" value="6"/>
+	</relation>
+	<relation entry1="84" entry2="87" type="PPrel" pathways="path:hsa04370" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="84" entry2="87" type="ECrel" pathways="path:hsa04650" experiment_score="0">
+		<subtype name="compound" value="69"/>
+	</relation>
+	<relation entry1="84" entry2="87" type="ECrel" pathways="path:hsa04664" experiment_score="0">
+		<subtype name="compound" value="25"/>
+	</relation>
+	<relation entry1="84" entry2="87" type="ECrel" pathways="path:hsa04670" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="84" entry2="87" type="PPrel" pathways="path:hsa05205" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="84" entry2="87" type="PPrel" pathways="path:hsa05205" experiment_score="0">
+		<subtype name="indirect effect" value="..&amp;gt;"/>
+	</relation>
+	<relation entry1="84" entry2="88" type="PPrel" pathways="path:hsa04660" experiment_score="0">
+		<subtype name="compound" value="6"/>
+	</relation>
+	<relation entry1="85" entry2="74" type="PPrel" pathways="path:hsa04010" experiment_score="976">
+		<subtype name="dephosphorylation" value="-p"/>
+	</relation>
+	<relation entry1="85" entry2="74" type="PPrel" pathways="path:hsa04020 path:hsa04022 path:hsa04921 path:hsa05166" experiment_score="976">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="85" entry2="74" type="PPrel" pathways="path:hsa04020 path:hsa04022 path:hsa04921 path:hsa05166" experiment_score="976">
+		<subtype name="dephosphorylation" value="-p"/>
+	</relation>
+	<relation entry1="85" entry2="74" type="PPrel" pathways="path:hsa04310" experiment_score="976">
+		<subtype name="dephosphorylation" value="-p"/>
+	</relation>
+	<relation entry1="85" entry2="74" type="PPrel" pathways="path:hsa04380" experiment_score="976">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="85" entry2="74" type="PPrel" pathways="path:hsa04380" experiment_score="976">
+		<subtype name="dephosphorylation" value="-p"/>
+	</relation>
+	<relation entry1="85" entry2="74" type="PPrel" pathways="path:hsa04650" experiment_score="976">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="85" entry2="74" type="PPrel" pathways="path:hsa04650" experiment_score="976">
+		<subtype name="dephosphorylation" value="-p"/>
+	</relation>
+	<relation entry1="85" entry2="74" type="PPrel" pathways="path:hsa04660" experiment_score="976">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="85" entry2="74" type="PPrel" pathways="path:hsa04660" experiment_score="976">
+		<subtype name="dephosphorylation" value="-p"/>
+	</relation>
+	<relation entry1="85" entry2="74" type="PPrel" pathways="path:hsa04662" experiment_score="976">
+		<subtype name="dephosphorylation" value="-p"/>
+	</relation>
+	<relation entry1="85" entry2="75" type="PPrel" pathways="path:hsa04020 path:hsa04022 path:hsa04921 path:hsa05166" experiment_score="976">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="85" entry2="75" type="PPrel" pathways="path:hsa04020 path:hsa04022 path:hsa04921 path:hsa05166" experiment_score="976">
+		<subtype name="dephosphorylation" value="-p"/>
+	</relation>
+	<relation entry1="85" entry2="75" type="PPrel" pathways="path:hsa04310" experiment_score="976">
+		<subtype name="dephosphorylation" value="-p"/>
+	</relation>
+	<relation entry1="85" entry2="75" type="PPrel" pathways="path:hsa04360" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="85" entry2="75" type="PPrel" pathways="path:hsa04360" experiment_score="0">
+		<subtype name="dephosphorylation" value="-p"/>
+	</relation>
+	<relation entry1="85" entry2="75" type="PPrel" pathways="path:hsa04370" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="85" entry2="75" type="PPrel" pathways="path:hsa04370" experiment_score="0">
+		<subtype name="dephosphorylation" value="-p"/>
+	</relation>
+	<relation entry1="85" entry2="75" type="PPrel" pathways="path:hsa04650" experiment_score="976">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="85" entry2="75" type="PPrel" pathways="path:hsa04650" experiment_score="976">
+		<subtype name="dephosphorylation" value="-p"/>
+	</relation>
+	<relation entry1="85" entry2="75" type="PPrel" pathways="path:hsa04660" experiment_score="976">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="85" entry2="75" type="PPrel" pathways="path:hsa04660" experiment_score="976">
+		<subtype name="dephosphorylation" value="-p"/>
+	</relation>
+	<relation entry1="85" entry2="75" type="PPrel" pathways="path:hsa04662" experiment_score="976">
+		<subtype name="dephosphorylation" value="-p"/>
+	</relation>
+	<relation entry1="86" entry2="66" type="PPrel" pathways="path:hsa04024" experiment_score="0">
+		<subtype name="inhibition" value="--|"/>
+	</relation>
+	<relation entry1="86" entry2="66" type="PPrel" pathways="path:hsa04024" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="86" entry2="68" type="PPrel" pathways="path:hsa04962" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="86" entry2="100" type="PPrel" pathways="path:hsa04010" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="86" entry2="100" type="PPrel" pathways="path:hsa04720" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="86" entry2="121" type="PPrel" pathways="path:hsa04140" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="86" entry2="121" type="PPrel" pathways="path:hsa04140" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="87" entry2="12" type="PPrel" pathways="path:hsa04918" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="87" entry2="34" type="PPrel" pathways="path:hsa04728" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="87" entry2="119" type="PPrel" pathways="path:hsa04730" experiment_score="0">
+		<subtype name="compound" value="45"/>
+	</relation>
+	<relation entry1="88" entry2="111" type="PPrel" pathways="path:hsa04660" experiment_score="510">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="89" entry2="101" type="PPrel" pathways="path:hsa04022" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="89" entry2="101" type="PPrel" pathways="path:hsa04022" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="90" entry2="4" type="PPrel" pathways="path:hsa04068" experiment_score="0">
+		<subtype name="inhibition" value="--|"/>
+	</relation>
+	<relation entry1="90" entry2="4" type="PPrel" pathways="path:hsa04068" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="90" entry2="32" type="PPrel" pathways="path:hsa04014" experiment_score="597">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="90" entry2="32" type="PPrel" pathways="path:hsa05200 path:hsa05211" experiment_score="597">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="90" entry2="32" type="PPrel" pathways="path:hsa05200 path:hsa05211" experiment_score="597">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="90" entry2="73" type="PPrel" pathways="path:hsa04012 path:hsa05200" experiment_score="643">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="90" entry2="73" type="PPrel" pathways="path:hsa04012 path:hsa05200" experiment_score="643">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="90" entry2="73" type="PPrel" pathways="path:hsa05210" experiment_score="643">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="91" entry2="97" type="GErel" pathways="path:hsa04921" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="92" entry2="34" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="92" entry2="34" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="92" entry2="34" type="PPrel" pathways="path:hsa04620 path:hsa05132 path:hsa05142" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="92" entry2="34" type="PPrel" pathways="path:hsa04728" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="92" entry2="34" type="PPrel" pathways="path:hsa05130 path:hsa05133" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="92" entry2="34" type="PPrel" pathways="path:hsa05130 path:hsa05133" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="92" entry2="35" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="92" entry2="35" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="92" entry2="36" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="92" entry2="36" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="92" entry2="2" type="GErel" pathways="path:hsa05120" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="92" entry2="3" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="92" entry2="3" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="92" entry2="3" type="PPrel" pathways="path:hsa04620 path:hsa05132 path:hsa05142" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="92" entry2="3" type="PPrel" pathways="path:hsa04621 path:hsa05169" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="92" entry2="3" type="PPrel" pathways="path:hsa04621 path:hsa05169" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="92" entry2="3" type="PPrel" pathways="path:hsa05130 path:hsa05133" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="92" entry2="3" type="PPrel" pathways="path:hsa05130 path:hsa05133" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="92" entry2="3" type="PPrel" pathways="path:hsa05161" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="92" entry2="63" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="92" entry2="63" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="92" entry2="64" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="92" entry2="64" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="92" entry2="117" type="PPrel" pathways="path:hsa04010" experiment_score="816">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="92" entry2="120" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="92" entry2="120" type="PPrel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="93" entry2="24" type="PPrel" pathways="path:hsa05161" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="93" entry2="24" type="PPrel" pathways="path:hsa05161" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="93" entry2="92" type="PPrel" pathways="path:hsa05161" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="93" entry2="92" type="PPrel" pathways="path:hsa05161" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="94" entry2="24" type="PPrel" pathways="path:hsa04010 path:hsa04668" experiment_score="872">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="94" entry2="24" type="PPrel" pathways="path:hsa04015 path:hsa04664" experiment_score="872">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="94" entry2="24" type="PPrel" pathways="path:hsa04620 path:hsa04668" experiment_score="872">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="94" entry2="24" type="PPrel" pathways="path:hsa04750" experiment_score="872">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="94" entry2="24" type="PPrel" pathways="path:hsa04912 path:hsa05132 path:hsa05145 path:hsa05161 path:hsa05169" experiment_score="872">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="94" entry2="24" type="PPrel" pathways="path:hsa04912 path:hsa05132 path:hsa05145 path:hsa05161 path:hsa05169" experiment_score="872">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="94" entry2="24" type="PPrel" pathways="path:hsa05014" experiment_score="872">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="94" entry2="24" type="PPrel" pathways="path:hsa05014" experiment_score="872">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="94" entry2="92" type="PPrel" pathways="path:hsa04010 path:hsa04668" experiment_score="872">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="94" entry2="92" type="PPrel" pathways="path:hsa04015 path:hsa04664" experiment_score="872">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="94" entry2="92" type="PPrel" pathways="path:hsa04620 path:hsa04668" experiment_score="872">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="94" entry2="92" type="PPrel" pathways="path:hsa04750" experiment_score="872">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="94" entry2="92" type="PPrel" pathways="path:hsa04912 path:hsa05132 path:hsa05145 path:hsa05161 path:hsa05169" experiment_score="872">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="94" entry2="92" type="PPrel" pathways="path:hsa04912 path:hsa05132 path:hsa05145 path:hsa05161 path:hsa05169" experiment_score="872">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="94" entry2="92" type="PPrel" pathways="path:hsa05014" experiment_score="872">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="94" entry2="92" type="PPrel" pathways="path:hsa05014" experiment_score="872">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="95" entry2="91" type="PPrel" pathways="path:hsa04010" experiment_score="977">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="95" entry2="91" type="PPrel" pathways="path:hsa04540" experiment_score="977">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="95" entry2="91" type="PPrel" pathways="path:hsa04722 path:hsa04921" experiment_score="977">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="95" entry2="91" type="PPrel" pathways="path:hsa04722 path:hsa04921" experiment_score="977">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="96" entry2="24" type="PPrel" pathways="path:hsa04010" experiment_score="863">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="96" entry2="24" type="PPrel" pathways="path:hsa04015 path:hsa04664" experiment_score="872">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="96" entry2="24" type="PPrel" pathways="path:hsa04380 path:hsa05014" experiment_score="863">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="96" entry2="24" type="PPrel" pathways="path:hsa04380 path:hsa05014" experiment_score="863">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="96" entry2="24" type="PPrel" pathways="path:hsa04620 path:hsa04668" experiment_score="872">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="96" entry2="24" type="PPrel" pathways="path:hsa04750" experiment_score="872">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="96" entry2="24" type="PPrel" pathways="path:hsa04912 path:hsa05132 path:hsa05145 path:hsa05161 path:hsa05169" experiment_score="872">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="96" entry2="24" type="PPrel" pathways="path:hsa04912 path:hsa05132 path:hsa05145 path:hsa05161 path:hsa05169" experiment_score="872">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="96" entry2="92" type="PPrel" pathways="path:hsa04010" experiment_score="863">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="96" entry2="92" type="PPrel" pathways="path:hsa04015 path:hsa04664" experiment_score="872">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="96" entry2="92" type="PPrel" pathways="path:hsa04380 path:hsa05014" experiment_score="863">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="96" entry2="92" type="PPrel" pathways="path:hsa04380 path:hsa05014" experiment_score="863">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="96" entry2="92" type="PPrel" pathways="path:hsa04620 path:hsa04668" experiment_score="872">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="96" entry2="92" type="PPrel" pathways="path:hsa04750" experiment_score="872">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="96" entry2="92" type="PPrel" pathways="path:hsa04912 path:hsa05132 path:hsa05145 path:hsa05161 path:hsa05169" experiment_score="872">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="96" entry2="92" type="PPrel" pathways="path:hsa04912 path:hsa05132 path:hsa05145 path:hsa05161 path:hsa05169" experiment_score="872">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="98" entry2="24" type="PPrel" pathways="path:hsa05205" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="98" entry2="92" type="PPrel" pathways="path:hsa05205" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="99" entry2="76" type="PPrel" pathways="path:hsa05212" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="100" entry2="47" type="PPrel" pathways="path:hsa04015" experiment_score="0">
+		<subtype name="inhibition" value="--|"/>
+	</relation>
+	<relation entry1="101" entry2="16" type="PPrel" pathways="path:hsa04740" experiment_score="0">
+		<subtype name="inhibition" value="--|"/>
+	</relation>
+	<relation entry1="103" entry2="22" type="PPrel" pathways="path:hsa04060" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="103" entry2="22" type="PPrel" pathways="path:hsa04062" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="103" entry2="22" type="PPrel" pathways="path:hsa04062" experiment_score="0">
+		<subtype name="binding/association" value="---"/>
+	</relation>
+	<relation entry1="104" entry2="98" type="PPrel" pathways="path:hsa05205" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="105" entry2="4" type="PPrel" pathways="path:hsa04068" experiment_score="0">
+		<subtype name="inhibition" value="--|"/>
+	</relation>
+	<relation entry1="105" entry2="4" type="PPrel" pathways="path:hsa04068" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="106" entry2="5" type="PPrel" pathways="path:hsa04660" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="106" entry2="39" type="PPrel" pathways="path:hsa04662" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="106" entry2="45" type="PPrel" pathways="path:hsa04010 path:hsa04014 path:hsa04810 path:hsa05205" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="106" entry2="45" type="PPrel" pathways="path:hsa04012 path:hsa04014 path:hsa04068 path:hsa04150 path:hsa04151 path:hsa04540 path:hsa04650 path:hsa04664 path:hsa04722 path:hsa04910 path:hsa04912 path:hsa04915 path:hsa04917 path:hsa05034 path:hsa05160 path:hsa05161 path:hsa05200 path:hsa05210 path:hsa05213 path:hsa05214 path:hsa05215 path:hsa05220 path:hsa05221 path:hsa05223" experiment_score="990">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="106" entry2="45" type="PPrel" pathways="path:hsa04062" experiment_score="990">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="106" entry2="45" type="PPrel" pathways="path:hsa04062" experiment_score="990">
+		<subtype name="indirect effect" value="..&amp;gt;"/>
+	</relation>
+	<relation entry1="106" entry2="45" type="PPrel" pathways="path:hsa04510 path:hsa04630" experiment_score="990">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="107" entry2="15" type="PPrel" pathways="path:hsa04540" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="107" entry2="72" type="PPrel" pathways="path:hsa04915" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="107" entry2="125" type="PPrel" pathways="path:hsa04360" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="107" entry2="125" type="PPrel" pathways="path:hsa04912" experiment_score="0">
+		<subtype name="indirect effect" value="..&amp;gt;"/>
+	</relation>
+	<relation entry1="109" entry2="73" type="GErel" pathways="path:hsa04550" experiment_score="612">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="111" entry2="24" type="PPrel" pathways="path:hsa04621" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="111" entry2="24" type="PPrel" pathways="path:hsa04621" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="111" entry2="24" type="PPrel" pathways="path:hsa04622" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="111" entry2="24" type="PPrel" pathways="path:hsa04622" experiment_score="0">
+		<subtype name="indirect effect" value="..&amp;gt;"/>
+	</relation>
+	<relation entry1="111" entry2="81" type="PPrel" pathways="path:hsa04152" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="111" entry2="81" type="PPrel" pathways="path:hsa04152" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="111" entry2="92" type="PPrel" pathways="path:hsa04621" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="111" entry2="92" type="PPrel" pathways="path:hsa04621" experiment_score="0">
+		<subtype name="phosphorylation" value="+p"/>
+	</relation>
+	<relation entry1="111" entry2="92" type="PPrel" pathways="path:hsa04622" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="111" entry2="92" type="PPrel" pathways="path:hsa04622" experiment_score="0">
+		<subtype name="indirect effect" value="..&amp;gt;"/>
+	</relation>
+	<relation entry1="113" entry2="72" type="PPrel" pathways="path:hsa05205" experiment_score="0">
+		<subtype name="inhibition" value="--|"/>
+	</relation>
+	<relation entry1="113" entry2="104" type="PPrel" pathways="path:hsa04512" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="114" entry2="79" type="GErel" pathways="path:hsa04919" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="115" entry2="7" type="PPrel" pathways="path:hsa04612" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="116" entry2="123" type="PPrel" pathways="path:hsa04621" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="117" entry2="17" type="GErel" pathways="path:hsa04110 path:hsa04115 path:hsa05169" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="117" entry2="17" type="PPrel" pathways="path:hsa05200 path:hsa05210 path:hsa05212 path:hsa05213 path:hsa05214 path:hsa05216 path:hsa05217 path:hsa05218 path:hsa05220 path:hsa05222 path:hsa05223" experiment_score="0">
+		<subtype name="missing interaction" value="-/-"/>
+	</relation>
+	<relation entry1="117" entry2="30" type="GErel" pathways="path:hsa05012" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="117" entry2="113" type="GErel" pathways="path:hsa04115" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="118" entry2="60" type="PPrel" pathways="path:hsa04620" experiment_score="510">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="119" entry2="58" type="PPrel" pathways="path:hsa04930" experiment_score="0">
+		<subtype name="compound" value="25"/>
+	</relation>
+	<relation entry1="120" entry2="49" type="GErel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="120" entry2="74" type="GErel" pathways="path:hsa04380" experiment_score="0">
+		<subtype name="expression" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="121" entry2="37" type="PPrel" pathways="path:hsa04140 path:hsa04150" experiment_score="984">
+		<subtype name="inhibition" value="--|"/>
+	</relation>
+	<relation entry1="122" entry2="18" type="PPrel" pathways="path:hsa04068 path:hsa04140 path:hsa04152 path:hsa04910 path:hsa04930 path:hsa05010" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="122" entry2="18" type="PPrel" pathways="path:hsa04932" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="122" entry2="26" type="PPrel" pathways="path:hsa04022" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="123" entry2="11" type="PPrel" pathways="path:hsa04621" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="124" entry2="18" type="PPrel" pathways="path:hsa04664 path:hsa05220" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="124" entry2="18" type="PPrel" pathways="path:hsa04666" experiment_score="0">
+		<subtype name="binding/association" value="---"/>
+	</relation>
+	<relation entry1="125" entry2="24" type="PPrel" pathways="path:hsa04370" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+	<relation entry1="125" entry2="92" type="PPrel" pathways="path:hsa04370" experiment_score="0">
+		<subtype name="activation" value="--&amp;gt;"/>
+	</relation>
+</pathway>
