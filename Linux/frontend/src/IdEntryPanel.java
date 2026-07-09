@@ -18,9 +18,9 @@ public class IdEntryPanel extends RoundedPanel {
 
     public IdEntryPanel(CardLayout cardLayout, JPanel cardPanel, UserInput user) {
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
+        setBackground(Theme.BG);
 
-        HeaderPanel header = new HeaderPanel(user.getUsername());
+        HeaderPanel header = new HeaderPanel(user.getUsername(), cardLayout, cardPanel, user);
         add(header, BorderLayout.NORTH);
 
         String[] mappingFile = user.getMappingFile();
@@ -28,103 +28,124 @@ public class IdEntryPanel extends RoundedPanel {
         // Main center panel with vertical stacking
         JPanel center = new JPanel();
         center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
-        center.setBackground(Color.WHITE);
+        center.setBackground(Theme.BG);
         center.setOpaque(true);
 
-        JLabel title = new JLabel("Add HSA IDs", JLabel.CENTER);
-        title.setFont(new Font("Arial", Font.BOLD, 30));
-        title.setForeground(Color.BLACK);
-        title.setBackground(Color.WHITE);
-        title.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        center.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
+
+        JLabel title = new JLabel("HSA Node IDs");
+        title.setFont(Theme.title(26));
+        title.setForeground(Theme.TEXT_DARK);
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
         center.add(title);
+        center.add(Box.createVerticalStrut(4));
+        JLabel titleSub = new JLabel("Enter source, target, and candidate node identifiers");
+        titleSub.setFont(Theme.body(14));
+        titleSub.setForeground(Theme.TEXT_MED);
+        titleSub.setAlignmentX(Component.CENTER_ALIGNMENT);
+        center.add(titleSub);
+        center.add(Box.createVerticalStrut(24));
 
         // ---- First row: Source hsa ID ----
-        JPanel row1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 5));
-        row1.setBackground(Color.WHITE);
-        JLabel label1 = new JLabel("Source hsa ID");
-        label1.setForeground(Color.BLACK);
+        JLabel label1 = new JLabel("Source HSA ID");
+        label1.setFont(Theme.title(13));
+        label1.setForeground(Theme.TEXT_DARK);
 
-        inputField1 = new JTextField(15); // width in columns
+        inputField1 = new JTextField(18);
         inputField1.setBackground(Color.WHITE);
-        inputField1.setForeground(Color.BLACK);
-        inputField1.setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, Color.BLACK));
+        inputField1.setForeground(Theme.TEXT_DARK);
+        inputField1.setFont(Theme.body(14));
+        inputField1.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 2, 0, Theme.PRIMARY),
+            BorderFactory.createEmptyBorder(4, 8, 4, 8)));
 
         suggestions1 = new JComboBox<>();
-        suggestions1.setPreferredSize(new Dimension(300, 30));
+        suggestions1.setPreferredSize(new Dimension(280, 30));
 
-        row1.add(label1);
-        row1.add(inputField1);
-        row1.add(suggestions1);
-
+        JPanel row1 = createIdRow(label1, inputField1, suggestions1);
         center.add(row1);
+        center.add(Box.createVerticalStrut(12));
 
         // ---- Second row: Target hsa ID ----
-        JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 5));
-        row2.setBackground(Color.WHITE);
-        JLabel label2 = new JLabel("Target hsa ID");
-        label2.setForeground(Color.BLACK);
+        JLabel label2 = new JLabel("Target HSA ID");
+        label2.setFont(Theme.title(13));
+        label2.setForeground(Theme.TEXT_DARK);
 
-        inputField2 = new JTextField(15);
+        inputField2 = new JTextField(18);
         inputField2.setBackground(Color.WHITE);
-        inputField2.setForeground(Color.BLACK);
-        inputField2.setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, Color.BLACK));
+        inputField2.setForeground(Theme.TEXT_DARK);
+        inputField2.setFont(Theme.body(14));
+        inputField2.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 2, 0, Theme.PRIMARY),
+            BorderFactory.createEmptyBorder(4, 8, 4, 8)));
 
         suggestions2 = new JComboBox<>();
-        suggestions2.setPreferredSize(new Dimension(300, 30));
+        suggestions2.setPreferredSize(new Dimension(280, 30));
 
-        row2.add(label2);
-        row2.add(inputField2);
-        row2.add(suggestions2);
+        JPanel row2 = createIdRow(label2, inputField2, suggestions2);
         center.add(row2);
+        center.add(Box.createVerticalStrut(12));
 
         // ---- Third row: Candidate hsa ID ----
-        JPanel row3 = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 5));
-        row3.setBackground(Color.WHITE);
-        JLabel label3 = new JLabel("Candidate Implicated Node hsa ID");
-        label3.setForeground(Color.BLACK);
+        JLabel label3 = new JLabel("Candidate Implicated Node HSA ID");
+        label3.setFont(Theme.title(13));
+        label3.setForeground(Theme.TEXT_DARK);
 
-        inputField3 = new JTextField(15);
+        inputField3 = new JTextField(18);
         inputField3.setBackground(Color.WHITE);
-        inputField3.setForeground(Color.BLACK);
-        inputField3.setBorder(BorderFactory.createMatteBorder(2, 2, 2, 2, Color.BLACK));
+        inputField3.setForeground(Theme.TEXT_DARK);
+        inputField3.setFont(Theme.body(14));
+        inputField3.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 2, 0, Theme.PRIMARY),
+            BorderFactory.createEmptyBorder(4, 8, 4, 8)));
 
         suggestions3 = new JComboBox<>();
-        suggestions3.setPreferredSize(new Dimension(300, 30));
+        suggestions3.setPreferredSize(new Dimension(280, 30));
 
-        row3.add(label3);
-        row3.add(inputField3);
-        row3.add(suggestions3);
+        JPanel row3 = createIdRow(label3, inputField3, suggestions3);
         center.add(row3);
+        center.add(Box.createVerticalStrut(16));
 
         // ---- Fourth row: HSA not merged panel ----
-        JPanel hsaNot = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 5));
-        hsaNot.setBackground(Color.WHITE);
-        JLabel hsaJLabel = new JLabel("HSA IDs not to be merged:");
-        hsaJLabel.setForeground(Color.BLACK);
+        JPanel hsaNot = new JPanel(new BorderLayout(12, 0));
+        hsaNot.setBackground(Theme.BG_CARD);
+        hsaNot.setMaximumSize(new Dimension(Integer.MAX_VALUE, 54));
+        hsaNot.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Theme.BORDER, 1),
+            BorderFactory.createEmptyBorder(10, 16, 10, 16)));
 
-        JLabel ans = new JLabel();
-        ans.setForeground(Color.BLACK);
-        ans.setText("No File Selected");
+        JPanel hsaInfo = new JPanel();
+        hsaInfo.setLayout(new BoxLayout(hsaInfo, BoxLayout.Y_AXIS));
+        hsaInfo.setOpaque(false);
+        JLabel hsaJLabel = new JLabel("HSA IDs not to be merged");
+        hsaJLabel.setFont(Theme.title(13));
+        hsaJLabel.setForeground(Theme.TEXT_DARK);
+        JLabel ans = new JLabel("No File Selected");
+        ans.setFont(Theme.body(12));
+        ans.setForeground(Theme.TEXT_MED);
+        hsaInfo.add(hsaJLabel);
+        hsaInfo.add(ans);
 
-        JButton hsaButton = new JButton("Choose");
-        hsaButton.setBackground(new Color(100, 149, 237));
-        hsaButton.setForeground(Color.WHITE);
+        RoundedButton hsaButton = Theme.navBtn("Choose", 110);
 
-        hsaNot.add(hsaJLabel);
-        hsaNot.add(hsaButton);
-        hsaNot.add(ans);
+        hsaNot.add(hsaInfo, BorderLayout.CENTER);
+        hsaNot.add(hsaButton, BorderLayout.EAST);
         center.add(hsaNot);
+        center.add(Box.createVerticalStrut(10));
 
         // ---- Fifth row: Mapping file change ----
-        JPanel mappingPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 5));
-        mappingPanel.setBackground(Color.WHITE);
-        JLabel ques = new JLabel("Would you like to change the Mapping Files?");
-        ques.setForeground(Color.BLACK);
-        JButton changeMapping = new JButton("Change Mapping File");
-        changeMapping.setBackground(new Color(100, 149, 237));
-        changeMapping.setForeground(Color.WHITE);
-        mappingPanel.add(ques);
-        mappingPanel.add(changeMapping);
+        JPanel mappingPanel = new JPanel(new BorderLayout(12, 0));
+        mappingPanel.setBackground(Theme.BG_CARD);
+        mappingPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 48));
+        mappingPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Theme.BORDER, 1),
+            BorderFactory.createEmptyBorder(8, 16, 8, 16)));
+        JLabel ques = new JLabel("Mapping files");
+        ques.setFont(Theme.title(13));
+        ques.setForeground(Theme.TEXT_DARK);
+        RoundedButton changeMapping = Theme.navBtn("Change Mapping Files", 200);
+        mappingPanel.add(ques, BorderLayout.CENTER);
+        mappingPanel.add(changeMapping, BorderLayout.EAST);
         center.add(mappingPanel);
 
         add(center, BorderLayout.CENTER);
@@ -220,19 +241,22 @@ public class IdEntryPanel extends RoundedPanel {
 
             JPanel panel = new JPanel(new GridLayout(1, 3, 15, 15));
             panel.setBorder(BorderFactory.createEmptyBorder(30, 10, 10, 10));
-            panel.setBackground(Color.WHITE);
+            panel.setBackground(Theme.BG_CARD);
 
-            JButton hsaToGeneBtn = new JButton("Choose");
-            hsaToGeneBtn.setBackground(new Color(100, 149, 237));
+            RoundedButton hsaToGeneBtn = new RoundedButton("Choose", 14, new Dimension(110, 30));
+            hsaToGeneBtn.setBackground(Theme.PRIMARY);
             hsaToGeneBtn.setForeground(Color.WHITE);
+            hsaToGeneBtn.setFont(new Font("Segoe UI", Font.BOLD, 13));
 
-            JButton hsaToPathBtn = new JButton("Choose");
-            hsaToPathBtn.setBackground(new Color(100, 149, 237));
+            RoundedButton hsaToPathBtn = new RoundedButton("Choose", 14, new Dimension(110, 30));
+            hsaToPathBtn.setBackground(Theme.PRIMARY);
             hsaToPathBtn.setForeground(Color.WHITE);
+            hsaToPathBtn.setFont(new Font("Segoe UI", Font.BOLD, 13));
 
-            JButton interDBBtn = new JButton("Choose");
-            interDBBtn.setBackground(new Color(100, 149, 237));
+            RoundedButton interDBBtn = new RoundedButton("Choose", 14, new Dimension(110, 30));
+            interDBBtn.setBackground(Theme.PRIMARY);
             interDBBtn.setForeground(Color.WHITE);
+            interDBBtn.setFont(new Font("Segoe UI", Font.BOLD, 13));
 
             JLabel geneField = new JLabel();
             geneField.setText(mappingFile[0]);
@@ -243,7 +267,7 @@ public class IdEntryPanel extends RoundedPanel {
 
             panel.add(new JPanel(new BorderLayout()) {
                 {
-                    setBackground(Color.WHITE);
+                    setBackground(Theme.BG_CARD);
                     add(new JLabel("HSA to Gene Symbol Map", SwingConstants.CENTER), BorderLayout.NORTH);
                     add(geneField, BorderLayout.CENTER);
                     add(hsaToGeneBtn, BorderLayout.SOUTH);
@@ -251,7 +275,7 @@ public class IdEntryPanel extends RoundedPanel {
             });
             panel.add(new JPanel(new BorderLayout()) {
                 {
-                    setBackground(Color.WHITE);
+                    setBackground(Theme.BG_CARD);
                     add(new JLabel("HSA path to Path Name Map", SwingConstants.CENTER), BorderLayout.NORTH);
                     add(pathField, BorderLayout.CENTER);
                     add(hsaToPathBtn, BorderLayout.SOUTH);
@@ -259,7 +283,7 @@ public class IdEntryPanel extends RoundedPanel {
             });
             panel.add(new JPanel(new BorderLayout()) {
                 {
-                    setBackground(Color.WHITE);
+                    setBackground(Theme.BG_CARD);
                     add(new JLabel("Cross Database Map", SwingConstants.CENTER), BorderLayout.NORTH);
                     add(dbField, BorderLayout.CENTER);
                     add(interDBBtn, BorderLayout.SOUTH);
@@ -268,11 +292,12 @@ public class IdEntryPanel extends RoundedPanel {
             dialog.add(panel, BorderLayout.CENTER);
 
             // OK button at bottom
-            JButton okButton = new JButton("OK");
-            okButton.setBackground(new Color(100, 149, 237));
+            RoundedButton okButton = new RoundedButton("OK", 14, new Dimension(90, 32));
+            okButton.setBackground(Theme.PRIMARY);
             okButton.setForeground(Color.WHITE);
+            okButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
             JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-            bottomPanel.setBackground(Color.WHITE);
+            bottomPanel.setBackground(Theme.BG);
             bottomPanel.add(okButton);
             dialog.add(bottomPanel, BorderLayout.SOUTH);
 
@@ -312,32 +337,12 @@ public class IdEntryPanel extends RoundedPanel {
             dialog.setVisible(true);
         });
 
-        RoundedButton nextButton = new RoundedButton("Submit", 20, new Dimension(100, 40));
+        RoundedButton nextButton = Theme.navBtn("Next →", 110);
+        RoundedButton goToSessions = Theme.warningBtn("Sessions", 140);
+        RoundedButton prevButton = Theme.navBtn("← Prev", 110);
+        RoundedButton saveButton = Theme.successBtn("Save", 110);
 
-        nextButton.setBackground(new Color(100, 149, 237));
-        nextButton.setForeground(Color.WHITE);
-        nextButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        nextButton.setFocusPainted(false);
-
-        RoundedButton goToSessions = new RoundedButton("Go to Sessions", 20, new Dimension(170, 40));
-        goToSessions.setBackground(new Color(222, 129, 7));
-        goToSessions.setForeground(Color.WHITE);
-        goToSessions.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        goToSessions.setFocusPainted(false);
-
-        RoundedButton prevButton = new RoundedButton("Prev", 20, new Dimension(100, 40));
-        prevButton.setBackground(new Color(100, 149, 237));
-        prevButton.setForeground(Color.WHITE);
-        prevButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        prevButton.setFocusPainted(false);
-
-        RoundedButton saveButton = new RoundedButton("Save", 20, new Dimension(100, 40));
-        saveButton.setBackground(new Color(5, 161, 59));
-        saveButton.setForeground(Color.WHITE);
-        saveButton.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        saveButton.setFocusPainted(false);
-
-        prevButton.addActionListener(e -> cardLayout.show(cardPanel, "edgeEntry"));
+        prevButton.addActionListener(e -> cardLayout.show(cardPanel, "relaxationPanel"));
         saveButton.addActionListener(e -> {
             user.setMappingFile(mappingFile);
             user.saveData();
@@ -345,20 +350,16 @@ public class IdEntryPanel extends RoundedPanel {
 
         nextButton.addActionListener(e -> {
             user.setMappingFile(mappingFile);
-            try {
-                new ScriptFile(user);
-
-                runTool(user.getUsername());
-            } catch (Exception et) {
-                et.printStackTrace();
-            }
+            ThresholdFilterPanel threshold = new ThresholdFilterPanel(cardLayout, cardPanel, user);
+            cardPanel.add(threshold, "threshold");
+            cardLayout.show(cardPanel, "threshold");
         });
 
         goToSessions.addActionListener(e -> cardLayout.show(cardPanel, "sessions"));
 
         JPanel buttonPanel = new RoundedPanel();
         buttonPanel.setLayout(new GridLayout(1, 2));
-        buttonPanel.setBackground(Color.WHITE);
+        buttonPanel.setBackground(Theme.BG);
 
         buttonPanel.add(new JPanel(new BorderLayout()) {
             {
@@ -379,6 +380,27 @@ public class IdEntryPanel extends RoundedPanel {
             }
         });
         add(buttonPanel, BorderLayout.SOUTH);
+    }
+
+    private JPanel createIdRow(JLabel label, JTextField field, JComboBox<String> combo) {
+        JPanel card = new JPanel(new BorderLayout(10, 4));
+        card.setBackground(Theme.BG_CARD);
+        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 72));
+        card.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Theme.BORDER, 1),
+            BorderFactory.createEmptyBorder(10, 16, 10, 16)));
+        JPanel left = new JPanel();
+        left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));
+        left.setOpaque(false);
+        label.setAlignmentX(Component.LEFT_ALIGNMENT);
+        field.setAlignmentX(Component.LEFT_ALIGNMENT);
+        field.setMaximumSize(new Dimension(220, 34));
+        left.add(label);
+        left.add(Box.createVerticalStrut(4));
+        left.add(field);
+        card.add(left, BorderLayout.CENTER);
+        card.add(combo, BorderLayout.EAST);
+        return card;
     }
 
     private boolean performExactMatch(JTextField field) {

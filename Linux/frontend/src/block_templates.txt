@@ -22,7 +22,7 @@ TEMPLATE:start
 INPUTS:4
 OUTPUTS:1
 INTYPES:file,file,file,file
-OUTTYPES:status
+OUTTYPES:Status
 TEMPLATE:wgx
 INPUTS:2
 OUTPUTS:1

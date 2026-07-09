@@ -1,61 +1,59 @@
 import java.awt.*;
+import java.awt.event.*;
 import javax.swing.*;
 
 public class RoundedButton extends JButton {
 
-    private int radius;
-    private Dimension d;
+    private final int radius;
+    private final Dimension d;
+    private boolean hovered = false;
 
     public RoundedButton(String text, int radius, Dimension d) {
         super(text);
         this.radius = radius;
-        this.d= d;
-        setOpaque(false); // We’ll handle painting ourselves
-        setFocusPainted(false); // Optional: removes focus ring
-        setContentAreaFilled(false); // We paint the button
-        setBorderPainted(false); // Optional: no default border
+        this.d = d;
+        setOpaque(false);
+        setFocusPainted(false);
+        setContentAreaFilled(false);
+        setBorderPainted(false);
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) { hovered = true;  repaint(); }
+            public void mouseExited (MouseEvent e) { hovered = false; repaint(); }
+        });
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         Graphics2D g2 = (Graphics2D) g.create();
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,      RenderingHints.VALUE_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2.setRenderingHint(RenderingHints.KEY_RENDERING,         RenderingHints.VALUE_RENDER_QUALITY);
 
-        // Antialiasing for smooth corners
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        Color base = getBackground() != null ? getBackground() : Theme.PRIMARY;
+        Color fill = getModel().isPressed() ? base.darker()
+                   : hovered               ? base.brighter()
+                   :                         base;
 
-        // Button background
-        if (getModel().isArmed()) {
-            g2.setColor(Color.LIGHT_GRAY);
-        } else {
-            g2.setColor(getBackground());
-        }
-
-        // Draw rounded rectangle
+        g2.setColor(fill);
         g2.fillRoundRect(0, 0, getWidth(), getHeight(), radius, radius);
 
-        // Draw button text
+        // Subtle top-highlight shimmer
+        if (!getModel().isPressed()) {
+            g2.setColor(new Color(255, 255, 255, 25));
+            g2.fillRoundRect(1, 1, getWidth() - 2, getHeight() / 2, radius, radius);
+        }
+
+        g2.setFont(getFont() != null ? getFont() : Theme.title(14));
         FontMetrics fm = g2.getFontMetrics();
-        Rectangle stringBounds = fm.getStringBounds(getText(), g2).getBounds();
-        int textX = (getWidth() - stringBounds.width) / 2;
-        int textY = (getHeight() - stringBounds.height) / 2 + fm.getAscent();
-        g2.setColor(getForeground());
-        g2.drawString(getText(), textX, textY);
-
+        int tx = (getWidth()  - fm.stringWidth(getText())) / 2;
+        int ty = (getHeight() - fm.getHeight()) / 2 + fm.getAscent();
+        g2.setColor(getForeground() != null ? getForeground() : Color.WHITE);
+        g2.drawString(getText(), tx, ty);
         g2.dispose();
     }
 
-    @Override
-    protected void paintBorder(Graphics g) {
-        // Optional: draw a rounded border
-        Graphics2D g2 = (Graphics2D) g.create();
-        g2.setColor(getForeground());
-        g2.setStroke(new BasicStroke(1.5f));
-        g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, radius, radius);
-        g2.dispose();
-    }
+    @Override protected void paintBorder(Graphics g) { /* no border */ }
 
-    @Override
-    public Dimension getPreferredSize() {
-        return d;
-    }
+    @Override public Dimension getPreferredSize() { return d; }
 }

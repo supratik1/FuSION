@@ -61,6 +61,9 @@ let $HSA_PATH_TO_PATH_NAME_MAP_FILE %__a17__%
 %__c__%let $LIST_OF_MERGED_KEGG_XML_FILE %__a18__%
 let $MERGED_KEGG_PATHWAYS_XML_FILE %__a19__%
 let $HSA_IDS_NOT_TO_BE_MERGED_FILE %__a20__%
+let $COEXPRESSION_CSV %__a21__%
+let $COEXP_THRESH %__a22__%
+let $FROZEN_THRESH %__a23__%
 
 
 ;; **********************************************************************
