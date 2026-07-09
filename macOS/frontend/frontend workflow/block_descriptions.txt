@@ -1,0 +1,40 @@
+BLOCK:result
+FULLNAME:Result Aggregator
+DESC:DESCRIPTION:Aggregates multiple inputs (float, string, file, graph) and produces consolidated outputs. Final processing block for workflows.
+CATEGORY:Output/Aggregation
+BLOCK:rgx
+FULLNAME:Read Graph Xml
+DESC:DESCRIPTION:Reads graph data from XML format. Takes two integer inputs and produces a file output.
+CATEGORY:Graph Processing
+BLOCK:fb_rch
+FULLNAME:Final Bound Reach
+DESC:DESCRIPTION:Calculates reachability bounds in a graph. Takes two integer inputs and produces a file output.
+CATEGORY:Graph Algorithms
+BLOCK:pathz3
+FULLNAME:Path Z3 Solver
+DESC:DESCRIPTION:Uses Z3 solver for path analysis. Takes two integer inputs and produces a file output.
+CATEGORY:Constraint Solving
+BLOCK:start
+FULLNAME:Start/Initialize Process
+DESC:DESCRIPTION:Entry point block that initializes the workflow. Takes multiple file inputs and outputs a Status indicating success or failure.
+CATEGORY:Control Flow
+BLOCK:wgx
+FULLNAME:Write Graph Xml
+DESC:DESCRIPTION:Processes weighted graph data and performs graph transformations. Combines two string inputs into a processed output.
+CATEGORY:Graph Processing
+BLOCK:let
+FULLNAME:Let Variable Assignment
+DESC:DESCRIPTION:Assigns values to variables. Takes two integer inputs and produces a file output.
+CATEGORY:Variable Operations
+BLOCK:cudf
+FULLNAME:Create Up Down File
+DESC:DESCRIPTION:Processes package dependency files and generates upgrade plans. Used for managing software package dependencies and conflicts.
+CATEGORY:Package Management
+BLOCK:mff
+FULLNAME:Merge From File
+DESC:DESCRIPTION:Computes maximum flow in a network graph. Takes a float parameter and outputs a graph structure.
+CATEGORY:Graph Algorithms
+BLOCK:exec
+FULLNAME:Execute Command
+DESC:DESCRIPTION:Executes a command or process. Takes two integer inputs and produces a file output.
+CATEGORY:Execution
