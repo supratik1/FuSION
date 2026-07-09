@@ -8757,7 +8757,13 @@ std::string GraphManagerNew::get_identifier(std::string key)
 inline std::string GraphManagerNew::get_display_names_from_rep_id(std::string rep_id)
 {
     std::map<std::string, std::string>::iterator map_iter = kegg_hsa_id_to_display_name_map.find(rep_id);
-    if (map_iter == kegg_hsa_id_to_display_name_map.end())
+    // Fall back to rep_id for a missing key OR an empty value. operator[] lookups on
+    // this map elsewhere (e.g. XMLParser.cc:1004, GraphManagerNew.cc:2696/6711/6718)
+    // default-insert "" for absent keys; during a merge that poisons entries so a
+    // later graph read's new node gets no display id, and the unguarded
+    // get_all_display_ids_of_node(...)[0] in complex handling (XMLParser.cc:1105)
+    // segfaults. This is the "two graph reads in one session" crash.
+    if (map_iter == kegg_hsa_id_to_display_name_map.end() || (*map_iter).second.empty())
     {
         // cout << "Rep id " << rep_id << " not found in KEGG map" << endl;
         return rep_id;
