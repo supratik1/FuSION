@@ -2931,8 +2931,20 @@ void GraphNew::write_edge_to_xml_file(int eid, map<int, int> &nid_to_xml_node_id
     string type = get_edge_type(eid);
     vector<string> subtypes = get_edge_subtypes_of_edge(eid);
 
+    // experiment_score is stored as the edge weight float; emit it so the
+    // attribute survives the wgx/rgx round-trip and frozen-edge constraints
+    // can be formed. Whole-number scores are written without a decimal point
+    // to match the source KGML format (e.g. "625", "0").
+    float exp_score = get_edge_weight_float(eid);
+    std::ostringstream exp_score_ss;
+    if (exp_score == (long)exp_score)
+        exp_score_ss << (long)exp_score;
+    else
+        exp_score_ss << exp_score;
+    string exp_score_str = exp_score_ss.str();
+
     // fout << "\t<relation entry1=\"" << source_id_xml <<"\" entry2=\"" << target_id_xml << "\" type=\""+type+"\">"<< endl;
-    fout << "\t<relation entry1=\"" << source_id_xml << "\" entry2=\"" << target_id_xml << "\" type=\"" + type << "\" pathways=\"" << concatenated_pathways + "\">" << endl;
+    fout << "\t<relation entry1=\"" << source_id_xml << "\" entry2=\"" << target_id_xml << "\" type=\"" + type << "\" pathways=\"" << concatenated_pathways << "\" experiment_score=\"" << exp_score_str << "\">" << endl;
     for (vector<string>::iterator itr = subtypes.begin(); itr != subtypes.end(); ++itr)
     {
         fout << "\t\t<subtype name=\"" + *itr + "\"/>" << endl;
@@ -9077,6 +9089,11 @@ int GraphManagerNew::duplicate_edge(GraphNew *new_graph, GraphNew *old_graph, in
                 new_graph->add_pathway_for_edge(eid_to_check, path);
             }
         }
+        // aggregate experiment_score (edge weight float) as the max across
+        // pathways so a high-confidence score from any pathway is preserved.
+        float incoming_wt = old_graph->get_edge_weight_float(eid);
+        if (incoming_wt > new_graph->get_edge_weight_float(eid_to_check))
+            new_graph->set_edge_weight_float(eid_to_check, incoming_wt);
         // return existing edge id
         return eid_to_check;
     }
@@ -9179,6 +9196,11 @@ int GraphManagerNew::duplicate_edge_without_splitting_nodes(GraphNew *new_graph,
                 new_graph->add_pathway_for_edge(eid_to_check, path);
             }
         }
+        // aggregate experiment_score (edge weight float) as the max across
+        // pathways so a high-confidence score from any pathway is preserved.
+        float incoming_wt = old_graph->get_edge_weight_float(eid);
+        if (incoming_wt > new_graph->get_edge_weight_float(eid_to_check))
+            new_graph->set_edge_weight_float(eid_to_check, incoming_wt);
         // return existing edge id
         return eid_to_check;
     }
@@ -9890,6 +9912,9 @@ GraphNew *GraphManagerNew::merge_two_graphs_without_splitting_nodes(GraphNew *gr
             {
                 new_graph->merged_eid_to_construction_eids_map[eid_to_check].insert(*i_eids);
             }
+            // aggregate experiment_score (edge weight float) as max across pathways
+            if (graph1->get_edge_weight_float(curr_eid) > new_graph->get_edge_weight_float(eid_to_check))
+                new_graph->set_edge_weight_float(eid_to_check, graph1->get_edge_weight_float(curr_eid));
             continue;
         }
 
@@ -9921,6 +9946,9 @@ GraphNew *GraphManagerNew::merge_two_graphs_without_splitting_nodes(GraphNew *gr
         // insert new edge in outlist of source and inlist of target nodes
         new_graph->add_edge_to_outlist_of_node(new_source_nid, new_eid);
         new_graph->add_edge_to_inlist_of_node(new_target_nid, new_eid);
+
+        // carry over experiment_score (edge weight float) to the merged edge
+        new_graph->set_edge_weight_float(new_eid, graph1->get_edge_weight_float(curr_eid));
 
         // update construction info of edge
         //        if (merged_eid_to_construction_info_map.find(new_eid) == merged_eid_to_construction_info_map.end(new_eid)) {
@@ -9982,6 +10010,9 @@ GraphNew *GraphManagerNew::merge_two_graphs_without_splitting_nodes(GraphNew *gr
                     new_graph->add_pathway_for_edge(eid_to_check, path);
                 }
             }
+            // aggregate experiment_score (edge weight float) as max across pathways
+            if (graph2->get_edge_weight_float(curr_eid) > new_graph->get_edge_weight_float(eid_to_check))
+                new_graph->set_edge_weight_float(eid_to_check, graph2->get_edge_weight_float(curr_eid));
             new_graph->merged_eid_to_construction_eids_map[eid_to_check].insert(curr_eid);
             continue;
         }
@@ -10014,6 +10045,9 @@ GraphNew *GraphManagerNew::merge_two_graphs_without_splitting_nodes(GraphNew *gr
         // insert new edge in outlist of source and inlist of target nodes
         new_graph->add_edge_to_outlist_of_node(new_source_nid, new_eid);
         new_graph->add_edge_to_inlist_of_node(new_target_nid, new_eid);
+
+        // carry over experiment_score (edge weight float) to the merged edge
+        new_graph->set_edge_weight_float(new_eid, graph2->get_edge_weight_float(curr_eid));
 
         new_graph->merged_eid_to_construction_eids_map[new_eid].insert(curr_eid);
     }
