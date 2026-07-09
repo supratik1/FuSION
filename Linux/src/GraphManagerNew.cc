@@ -8786,6 +8786,352 @@ inline std::string GraphManagerNew::get_pathway_names_from_path_id(std::string p
         return (*map_iter).second;
     }
 }
+
+// ------------------------------------------------------------------------
+// plot_solution_paths: render source->target paths from a pathz3 solution
+// dump (temp_w_solutions.txt / temp_wo_solutions.txt) and write a companion
+// CSV listing, per drawn edge, the KEGG pathway(s) that edge came from.
+//
+// Self-contained: reads only the solution file for structure; uses this
+// GraphManagerNew's pathway_name_map (loaded by `start`) to translate the
+// [path:hsaXXXXX] ids into proper pathway names. Works on any old run.
+//
+//   soln_file   : a *_solutions.txt produced by pathz3 (with- or without-FSC)
+//   src_hsa     : source node rep id  (e.g. hsa1956)
+//   tgt_hsa     : target node rep id  (e.g. hsa3576)
+//   path_mode   : shortest | alt[:W] | all | subgraph
+//                   shortest - edges on a shortest src->tgt path
+//                   alt[:W]  - edges on any src->tgt path within +W of shortest (default W=2)
+//                   all      - edges lying on some src->tgt path (union subgraph)
+//                   subgraph - the entire active solution subgraph
+//   po_selector : all | least | <node_relax>,<edge_relax>   (e.g. 7,1)
+//   out_prefix  : output prefix; per PO point (n,e) writes
+//                   <out_prefix>_n<n>_e<e>.dot / .svg and
+//                   <out_prefix>_n<n>_e<e>_edge_sources.csv
+// ------------------------------------------------------------------------
+void GraphManagerNew::plot_solution_paths(string soln_file, string src_hsa, string tgt_hsa, string path_mode, string po_selector, string out_prefix)
+{
+    struct SolNode { string hsa; string sym; bool active; };
+    struct SolEdge { string s_hsa, s_sym, t_hsa, t_sym, subtype; bool both_active; vector<string> pathways; };
+
+    // parse the requested path mode (and optional +window for "alt")
+    string mode = path_mode;
+    int alt_window = 2;
+    {
+        size_t colon = path_mode.find(':');
+        if (colon != string::npos)
+        {
+            mode = path_mode.substr(0, colon);
+            alt_window = atoi(path_mode.substr(colon + 1).c_str());
+        }
+    }
+    if (mode != "shortest" && mode != "alt" && mode != "all" && mode != "subgraph")
+    {
+        cerr << "plot_solution_paths: unknown path_mode '" << path_mode << "' (use shortest|alt[:W]|all|subgraph)" << endl;
+        return;
+    }
+
+    ifstream fin(soln_file.c_str());
+    if (!fin.is_open())
+    {
+        cerr << "plot_solution_paths: cannot open solution file " << soln_file << endl;
+        return;
+    }
+
+    // Parse the dump into per-PO-point blocks. We only keep "Solution 1"
+    // (the first witness) at each PO point.
+    map<pair<int, int>, vector<SolNode>> po_to_nodes;
+    map<pair<int, int>, vector<SolEdge>> po_to_edges;
+
+    pair<int, int> curr_po(-1, -1);
+    int curr_soln = 0;
+    string line;
+    while (getline(fin, line))
+    {
+        if (line.empty())
+            continue;
+        if (line.compare(0, 17, "Current PO point:") == 0)
+        {
+            int n = -1, e = -1;
+            // format: "Current PO point: N nodes, M edges relaxed"
+            sscanf(line.c_str(), "Current PO point: %d nodes, %d edges relaxed", &n, &e);
+            curr_po = make_pair(n, e);
+            curr_soln = 0;
+            continue;
+        }
+        if (line.compare(0, 8, "Solution") == 0)
+        {
+            curr_soln = atoi(line.c_str() + 8);
+            continue;
+        }
+        if (curr_soln != 1) // only the first witness per PO point
+            continue;
+
+        // tokenize on tabs
+        vector<string> tok;
+        {
+            size_t start = 0;
+            while (true)
+            {
+                size_t tab = line.find('\t', start);
+                if (tab == string::npos) { tok.push_back(line.substr(start)); break; }
+                tok.push_back(line.substr(start, tab - start));
+                start = tab + 1;
+            }
+        }
+
+        if (tok.size() == 6) // node line: nid hsa sym expr present active|inactive
+        {
+            SolNode nd;
+            nd.hsa = tok[1];
+            nd.sym = tok[2];
+            nd.active = (tok[5] == "active");
+            po_to_nodes[curr_po].push_back(nd);
+        }
+        else if (tok.size() >= 11) // edge line
+        {
+            SolEdge ed;
+            ed.subtype = tok[2];
+            ed.s_hsa = tok[3];
+            ed.s_sym = tok[4];
+            ed.t_hsa = tok[5];
+            ed.t_sym = tok[6];
+            bool src_active = (tok[8] == "src_active");
+            // tok[10] is "tgt_active [path:.. path:..]" (or tgt_inactive / empty [])
+            bool tgt_active = (tok[10].compare(0, 10, "tgt_active") == 0);
+            ed.both_active = src_active && tgt_active;
+            size_t lb = tok[10].find('[');
+            size_t rb = tok[10].find(']');
+            if (lb != string::npos && rb != string::npos && rb > lb + 1)
+            {
+                string inside = tok[10].substr(lb + 1, rb - lb - 1);
+                stringstream ss(inside);
+                string pw;
+                while (ss >> pw)
+                    ed.pathways.push_back(pw);
+            }
+            po_to_edges[curr_po].push_back(ed);
+        }
+    }
+    fin.close();
+
+    if (po_to_nodes.empty())
+    {
+        cerr << "plot_solution_paths: no PO points parsed from " << soln_file << endl;
+        return;
+    }
+
+    // Decide which PO points to render.
+    vector<pair<int, int>> selected_pos;
+    if (po_selector == "all")
+    {
+        for (auto &kv : po_to_nodes)
+            selected_pos.push_back(kv.first);
+    }
+    else if (po_selector == "least")
+    {
+        // least relaxed = fewest total relaxations (node+edge); tie-break fewer node relaxations
+        pair<int, int> best(-1, -1);
+        int best_total = 1 << 30;
+        for (auto &kv : po_to_nodes)
+        {
+            int total = kv.first.first + kv.first.second;
+            if (total < best_total || (total == best_total && kv.first.first < best.first))
+            { best_total = total; best = kv.first; }
+        }
+        selected_pos.push_back(best);
+    }
+    else
+    {
+        int n = -1, e = -1;
+        if (sscanf(po_selector.c_str(), "%d,%d", &n, &e) != 2)
+        {
+            cerr << "plot_solution_paths: bad po_selector '" << po_selector << "' (use all|least|<n>,<e>)" << endl;
+            return;
+        }
+        pair<int, int> key(n, e);
+        if (po_to_nodes.find(key) == po_to_nodes.end())
+        {
+            cerr << "plot_solution_paths: PO point " << n << "," << e << " not in file. Available:";
+            for (auto &kv : po_to_nodes)
+                cerr << " " << kv.first.first << "," << kv.first.second;
+            cerr << endl;
+            return;
+        }
+        selected_pos.push_back(key);
+    }
+
+    const int INFDIST = 1 << 30;
+
+    for (auto &po : selected_pos)
+    {
+        vector<SolNode> &nodes = po_to_nodes[po];
+        vector<SolEdge> &edges = po_to_edges[po];
+
+        // active node label map, and active-endpoint edge list
+        map<string, string> hsa_to_sym;
+        set<string> active_nodes;
+        for (auto &nd : nodes)
+        {
+            hsa_to_sym[nd.hsa] = nd.sym;
+            if (nd.active)
+                active_nodes.insert(nd.hsa);
+        }
+
+        // directed adjacency over both-active edges (for BFS)
+        map<string, vector<string>> fwd, rev;
+        vector<SolEdge *> active_edges;
+        for (auto &ed : edges)
+        {
+            if (!ed.both_active)
+                continue;
+            fwd[ed.s_hsa].push_back(ed.t_hsa);
+            rev[ed.t_hsa].push_back(ed.s_hsa);
+            active_edges.push_back(&ed);
+        }
+
+        // bidirectional BFS distances
+        map<string, int> dist_from_src, dist_to_tgt;
+        {
+            queue<string> q;
+            if (active_nodes.count(src_hsa)) { dist_from_src[src_hsa] = 0; q.push(src_hsa); }
+            while (!q.empty())
+            {
+                string u = q.front(); q.pop();
+                for (auto &v : fwd[u])
+                    if (dist_from_src.find(v) == dist_from_src.end())
+                    { dist_from_src[v] = dist_from_src[u] + 1; q.push(v); }
+            }
+        }
+        {
+            queue<string> q;
+            if (active_nodes.count(tgt_hsa)) { dist_to_tgt[tgt_hsa] = 0; q.push(tgt_hsa); }
+            while (!q.empty())
+            {
+                string u = q.front(); q.pop();
+                for (auto &v : rev[u])
+                    if (dist_to_tgt.find(v) == dist_to_tgt.end())
+                    { dist_to_tgt[v] = dist_to_tgt[u] + 1; q.push(v); }
+            }
+        }
+
+        auto dsrc = [&](const string &h) { auto it = dist_from_src.find(h); return it == dist_from_src.end() ? INFDIST : it->second; };
+        auto dtgt = [&](const string &h) { auto it = dist_to_tgt.find(h); return it == dist_to_tgt.end() ? INFDIST : it->second; };
+
+        int L = dtgt(src_hsa); // == shortest src->tgt distance
+
+        if (mode != "subgraph" && L >= INFDIST)
+        {
+            cerr << "plot_solution_paths: no active src->tgt path at PO (" << po.first << "," << po.second << ") in " << soln_file << " - skipping" << endl;
+            continue;
+        }
+
+        // select edges to draw per mode
+        vector<SolEdge *> drawn;
+        for (auto ep : active_edges)
+        {
+            bool keep = false;
+            if (mode == "subgraph")
+                keep = true;
+            else
+            {
+                int du = dsrc(ep->s_hsa), dv = dtgt(ep->t_hsa);
+                if (du < INFDIST && dv < INFDIST)
+                {
+                    int through = du + 1 + dv;
+                    if (mode == "shortest") keep = (through == L);
+                    else if (mode == "alt") keep = (through <= L + alt_window);
+                    else if (mode == "all") keep = true; // on some src->tgt path
+                }
+            }
+            if (keep)
+                drawn.push_back(ep);
+        }
+
+        // nodes to draw = endpoints of drawn edges (+ src/tgt); subgraph = all active
+        set<string> drawn_nodes;
+        if (mode == "subgraph")
+            drawn_nodes = active_nodes;
+        else
+        {
+            for (auto ep : drawn) { drawn_nodes.insert(ep->s_hsa); drawn_nodes.insert(ep->t_hsa); }
+            if (active_nodes.count(src_hsa)) drawn_nodes.insert(src_hsa);
+            if (active_nodes.count(tgt_hsa)) drawn_nodes.insert(tgt_hsa);
+        }
+
+        // ---- write dot ----
+        stringstream base_ss;
+        base_ss << out_prefix << "_n" << po.first << "_e" << po.second;
+        string base = base_ss.str();
+        string dot_name = base + ".dot";
+        string svg_name = base + ".svg";
+
+        ofstream dot(dot_name.c_str());
+        dot << "digraph G {\n";
+        dot << "rankdir=LR;\n";
+        dot << "label=\"" << mode << " : " << src_hsa << " -> " << tgt_hsa
+            << "  [PO " << po.first << " nodes, " << po.second << " edges relaxed]\";\n";
+        dot << "labelloc=top; labeljust=left; fontname=\"Helvetica\";\n";
+        dot << "node [shape=box, style=filled, fillcolor=\"#EEEEEE\", fontname=\"Helvetica\"];\n";
+        dot << "edge [fontname=\"Helvetica\", fontsize=9];\n";
+        for (auto &h : drawn_nodes)
+        {
+            string sym = hsa_to_sym.count(h) ? hsa_to_sym[h] : h;
+            string fill = "#EEEEEE";
+            if (h == src_hsa) fill = "#A6E3A1";      // source: green
+            else if (h == tgt_hsa) fill = "#F5A9A9"; // target: red
+            dot << "  \"" << h << "\" [label=\"" << sym << "\", fillcolor=\"" << fill << "\"];\n";
+        }
+        // one dot edge per distinct (src,tgt,subtype)
+        set<string> emitted_edge_keys;
+        for (auto ep : drawn)
+        {
+            string key = ep->s_hsa + "|" + ep->t_hsa + "|" + ep->subtype;
+            if (!emitted_edge_keys.insert(key).second)
+                continue;
+            dot << "  \"" << ep->s_hsa << "\" -> \"" << ep->t_hsa << "\" [label=\"" << ep->subtype << "\"];\n";
+        }
+        dot << "}\n";
+        dot.close();
+
+        // render svg
+        string cmd = string(DOT_PATH_NAME) + "-Tsvg " + dot_name + " -o " + svg_name;
+        int rv = system(cmd.c_str());
+        if (rv != 0)
+            cerr << "plot_solution_paths: graphviz returned " << rv << " for " << dot_name << endl;
+
+        // ---- write edge-sources CSV (one row per drawn edge, deterministic order) ----
+        // sort by (source_sym, target_sym, subtype)
+        sort(drawn.begin(), drawn.end(), [](const SolEdge *a, const SolEdge *b) {
+            if (a->s_sym != b->s_sym) return a->s_sym < b->s_sym;
+            if (a->t_sym != b->t_sym) return a->t_sym < b->t_sym;
+            return a->subtype < b->subtype;
+        });
+        string csv_name = base + "_edge_sources.csv";
+        ofstream csv(csv_name.c_str());
+        csv << "edge_index,source_symbol,source_hsa,target_symbol,target_hsa,subtype,pathway_ids,pathway_names\n";
+        int idx = 1;
+        for (auto ep : drawn)
+        {
+            string ids, names;
+            for (size_t i = 0; i < ep->pathways.size(); i++)
+            {
+                if (i) { ids += ";"; names += ";"; }
+                ids += ep->pathways[i];
+                names += get_pathway_names_from_path_id(ep->pathways[i]);
+            }
+            csv << idx++ << ",\"" << ep->s_sym << "\",\"" << ep->s_hsa << "\",\""
+                << ep->t_sym << "\",\"" << ep->t_hsa << "\",\"" << ep->subtype << "\",\""
+                << ids << "\",\"" << names << "\"\n";
+        }
+        csv.close();
+
+        cout << "plot_solution_paths: PO (" << po.first << "," << po.second << ") mode=" << mode
+             << " -> " << svg_name << " (" << drawn_nodes.size() << " nodes, " << drawn.size()
+             << " edges); sources -> " << csv_name << endl;
+    }
+}
+
 // int GraphManagerNew::check_if_node_already_created(GraphNew * new_graph, std::string rep_id) {
 //         // get all node ids from new graph
 //         std::vector<int> all_nids = new_graph->get_node_ids();

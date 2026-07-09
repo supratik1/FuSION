@@ -903,6 +903,7 @@ void display_commands()
     cout << "fwd_bkwd_rch \t(or fb_rch) \t<graph-id> \t<src> \t<-1> \t<tgt> \t<-1> \t<-1> \t<path_bound> \t<edges_to_tgt>" << endl;
     cout << "pathz3 \t(or get_path_with_z3) \t<args ...> \t[coexpression_csv] \t[coexpr_threshold] \t[exp_score_threshold] \t[new_constraints_enabled (0|1, default 0)] \t[z3_random_seed (default 42)]" << endl;
     cout << "add \t<input_edges_file> \t<output_xml_file>" << endl;
+    cout << "plot_solution_paths \t(or psp) \t<solution_file> \t<src_hsa> \t<tgt_hsa> \t<shortest|alt[:W]|all|subgraph> \t<all|least|<node_relax>,<edge_relax>> \t<out_prefix>" << endl;
     cout << "exit" << endl;
     cout << endl;
 }
@@ -5654,6 +5655,36 @@ int main(int argc, char *argv[])
 
 #endif
 // ===== DEBLOATED: block 6/7 end =====
+        else if (command == "plot_solution_paths" || command == "psp")
+        {
+            string soln_file, src_hsa, tgt_hsa, path_mode, po_selector, out_prefix;
+            if (!b_mode)
+            {
+                cout << "Enter solution file (e.g. temp_w_solutions.txt): ";
+                cin >> soln_file;
+                cout << "Source node hsa id: ";
+                cin >> src_hsa;
+                cout << "Target node hsa id: ";
+                cin >> tgt_hsa;
+                cout << "Path mode (shortest | alt[:W] | all | subgraph): ";
+                cin >> path_mode;
+                cout << "PO selector (all | least | <node_relax>,<edge_relax>): ";
+                cin >> po_selector;
+                cout << "Output filename prefix: ";
+                cin >> out_prefix;
+            }
+            else
+            {
+                soln_file = token_cmd[1];
+                src_hsa = token_cmd[2];
+                tgt_hsa = token_cmd[3];
+                path_mode = token_cmd[4];
+                po_selector = token_cmd[5];
+                out_prefix = token_cmd[6];
+            }
+            graph_man->plot_solution_paths(soln_file, src_hsa, tgt_hsa, path_mode, po_selector, out_prefix);
+        }
+
         else if (command == "help" || command == "h")
         {
             display_commands();

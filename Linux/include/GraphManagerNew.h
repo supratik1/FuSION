@@ -584,6 +584,7 @@ public:
         std::string get_identifier(std::string key);
         std::string get_display_names_from_rep_id(std::string rep_id);
         std::string get_pathway_names_from_path_id(std::string path_id);
+        void plot_solution_paths(std::string soln_file, std::string src_hsa, std::string tgt_hsa, std::string path_mode, std::string po_selector, std::string out_prefix);
         // int check_if_node_already_created(GraphNew * new_graph, std::string rep_id);
         // int check_if_edge_already_created(GraphNew * new_graph, int new_source_nid, int new_target_nid, std::string edge_type, std::vector<std::string> edge_subtypes);//returne eid in new_graph if found, -1 if not found
 
