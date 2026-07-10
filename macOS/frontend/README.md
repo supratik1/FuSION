@@ -1,57 +1,92 @@
-# FuSION Application Guide
+# FuSION Frontend (macOS)
 
-This guide provides instructions on how to compile and run the FuSION Java application.
+How to compile and run the FuSION Java frontend on macOS.
 
 ## Prerequisites
 
-Before you begin, ensure you have the **Java Development Kit (JDK)** version 21 (Check with `java -version`) installed on your system and that the `javac` and `java` commands are accessible from your terminal.
+- **JDK 21 or newer** — verify with `java -version` (tested with 25). Install via
+  `brew install openjdk` if needed.
+- **The `fusion` executable must already be built.** The frontend runs it to
+  perform the analysis. From the `macOS` directory, run `make`. See
+  [../README.md](../README.md).
 
-## Directory Structure
+## Directory layout
 
-The project expects the following directory layout. The `out` directory will be created automatically during compilation.
+`out/` is created by compilation; `sessions/` is created on first save. Neither is
+tracked in git.
 
 ```
 FuSION/
-└── Linux/
+└── macOS/
+    ├── fusion                 (built by `make`, run by the frontend)
+    ├── advtempscript.txt      (batch script template, read at runtime)
+    ├── output_script.txt      (generated per run)
     └── frontend/
-        ├── lib/
-        ├── out/      (Created after compilation)
-        ├── resources/
-        ├── sessions/ (Will be created automatically)
+        ├── lib/               (json-20250517.jar)
+        ├── out/               (created after compilation)
+        ├── resources/         (icons)
+        ├── sessions/          (created automatically)
         └── src/
-            ├── LoginPage.java
-            └── ... (other .java source files)
-
+            ├── LoginPage.java (main class)
+            └── ...
 ```
 
-## Compilation and Execution
+## Compile and run
 
-Follow these steps from your terminal to compile and run the application.
+> Run every command from the **`macOS` directory**, not from `macOS/frontend`.
+>
+> The frontend opens `./fusion`, `advtempscript.txt`, and `output_script.txt` as
+> paths relative to the working directory. Launching from `frontend/` — or from
+> anywhere else — means it will not find the executable or the template.
 
----
-
-### 1. Navigate to the Project Directory
-
-First, change your current directory to the `FuSION/Linux` folder where the project files are located.
+### 1. Change into the macOS directory
 
 ```bash
-cd FuSION/Linux
+cd FuSION/macOS
 ```
 
-### 2. Compile the Java Source Code
+### 2. Compile the sources
 
-Next, compile all .java files from the `frontend/src` directory. This command places the compiled .class files into the `frontend/out` directory and includes the necessary JSON library in the classpath.
+Compiles every `.java` under `frontend/src` into `frontend/out`, with the JSON
+library on the classpath.
 
 ```bash
 javac -d frontend/out -cp "frontend/lib/json-20250517.jar" frontend/src/*.java
 ```
 
-### 3. Run the Application
+Re-run this after any change under `frontend/src`. The application loads compiled
+classes from `frontend/out`; editing a `.java` file alone has no effect.
 
-Finally, execute the application by running the `LoginPage` main class. This command sets the classpath to include the compiled classes, the resources folder, and the JSON library.
+### 3. Launch
 
 ```bash
 java -cp "frontend/out:frontend/resources:frontend/lib/json-20250517.jar" LoginPage
 ```
 
-The application's login page should now be running.
+The login page should appear.
+
+## How a run works
+
+1. You fill in the input fields across the wizard panels.
+2. `ScriptFile` reads the `advtempscript.txt` template, substitutes your values
+   into its `%__...__%` placeholders, and writes `output_script.txt`.
+3. The GUI runs `./fusion -b output_script.txt`.
+4. Results are written to the working directory you selected, and `gnuplot`
+   renders the Pareto plot.
+
+Because step 2 is a plain text substitution, `output_script.txt` is the single
+best place to check what the backend actually received. If a run misbehaves, open
+it and confirm your inputs appear as you expect.
+
+## Notes
+
+- **The regulatory thresholds only register when you press `Filter`.** On the
+  threshold panel, `Next` does not read the up/down fields. Other panels commit
+  their typed values on `return`, focus loss, or `Next`.
+- **The coexpression CSV is optional.** Leaving it empty means no coexpression
+  pairs are loaded, so that constraint contributes nothing. The frozen-edge
+  constraints are independent of it and still apply, driven by the frozen
+  threshold and the edge `experiment_score` values in the pathway XML.
+- **Sessions** are stored as JSON under `sessions/` and reloaded on login, so
+  fields carry over between runs. Values you never touch keep whatever the saved
+  session held.

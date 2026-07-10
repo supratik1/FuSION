@@ -4529,27 +4529,54 @@ int main(int argc, char *argv[])
                 int z3_random_seed = 42;
                 if (b_mode)
                 {
-                    if (cmd_index < (int)token_cmd.size() && !token_cmd[cmd_index].empty())
-                        coexpression_csv_filename = token_cmd[cmd_index++];
-                    if (cmd_index < (int)token_cmd.size() && !token_cmd[cmd_index].empty())
+                    // These five are positional, so each slot is consumed whenever it is
+                    // present, even when the value is blank. An unset $VAR expands to an
+                    // empty token rather than disappearing; skipping the slot without
+                    // advancing would make every later argument re-read that same blank
+                    // token. An empty $COEXPRESSION_CSV would then swallow $FROZEN_THRESH
+                    // and $NEW_CONSTRAINTS_ENABLED, silently disabling the frozen-edge
+                    // constraints, which do not depend on the coexpression CSV at all.
+                    if (cmd_index < (int)token_cmd.size())
                     {
-                        try { coexp_threshold = stof(token_cmd[cmd_index]); cmd_index++; }
-                        catch (...) { /* leave default */ }
+                        if (!token_cmd[cmd_index].empty())
+                            coexpression_csv_filename = token_cmd[cmd_index];
+                        cmd_index++;
                     }
-                    if (cmd_index < (int)token_cmd.size() && !token_cmd[cmd_index].empty())
+                    if (cmd_index < (int)token_cmd.size())
                     {
-                        try { exp_score_threshold = stof(token_cmd[cmd_index]); cmd_index++; }
-                        catch (...) { /* leave default */ }
+                        if (!token_cmd[cmd_index].empty())
+                        {
+                            try { coexp_threshold = stof(token_cmd[cmd_index]); }
+                            catch (...) { /* leave default */ }
+                        }
+                        cmd_index++;
                     }
-                    if (cmd_index < (int)token_cmd.size() && !token_cmd[cmd_index].empty())
+                    if (cmd_index < (int)token_cmd.size())
                     {
-                        try { new_constraints_enabled = (stoi(token_cmd[cmd_index]) != 0); cmd_index++; }
-                        catch (...) { /* leave default */ }
+                        if (!token_cmd[cmd_index].empty())
+                        {
+                            try { exp_score_threshold = stof(token_cmd[cmd_index]); }
+                            catch (...) { /* leave default */ }
+                        }
+                        cmd_index++;
                     }
-                    if (cmd_index < (int)token_cmd.size() && !token_cmd[cmd_index].empty())
+                    if (cmd_index < (int)token_cmd.size())
                     {
-                        try { z3_random_seed = stoi(token_cmd[cmd_index]); cmd_index++; }
-                        catch (...) { /* leave default */ }
+                        if (!token_cmd[cmd_index].empty())
+                        {
+                            try { new_constraints_enabled = (stoi(token_cmd[cmd_index]) != 0); }
+                            catch (...) { /* leave default */ }
+                        }
+                        cmd_index++;
+                    }
+                    if (cmd_index < (int)token_cmd.size())
+                    {
+                        if (!token_cmd[cmd_index].empty())
+                        {
+                            try { z3_random_seed = stoi(token_cmd[cmd_index]); }
+                            catch (...) { /* leave default */ }
+                        }
+                        cmd_index++;
                     }
                 }
 

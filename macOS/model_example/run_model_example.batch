@@ -26,9 +26,22 @@ let $BOTH_ACT_EXPR_EDGES_TO_TARGET 0
 
 ;; **********************************************************************
 ;; Working directory layout
+;;
+;; EDIT THE NEXT LINE BEFORE RUNNING.
+;;
+;; $WORK_DIR must be an ABSOLUTE path. It has to contain an `inputs/`
+;; directory holding this example's input files; results are written to
+;; $WORK_DIR/run. Pointing it at this directory is the usual choice:
+;;
+;;   let $WORK_DIR /Users/<you>/path/to/FuSION/macOS/model_example
+;;
+;; A relative path will NOT work. Several steps below `cd` into $WRITE_DIR and
+;; then reference paths built from $WORK_DIR, which would resolve twice. The
+;; run still exits 0 but silently produces no plot, so the failure is easy to
+;; miss -- always use an absolute path.
 ;; **********************************************************************
 
-let $WORK_DIR /home/ks-149-u24/Desktop/arjun/FuSION/macOS/model_example
+let $WORK_DIR /ABSOLUTE/PATH/TO/FuSION/macOS/model_example
 let $INPUT_DIR $WORK_DIR/inputs
 let $WRITE_SUBDIR run
 let $WRITE_DIR $WORK_DIR/$WRITE_SUBDIR

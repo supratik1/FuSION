@@ -1,73 +1,176 @@
-# Installing FuSION on macOS (tested on macOS Sonoma 14.4.1)
+# FuSION on macOS
 
-The following instruction need to be executed a Terminal window. To open Terminal on your mac, go to your applications,open the "Other" folder and click on the terminal app. Alternatively, you may press `command + space`, type in `Terminal` in the spotlight search and press `return`.
+Build and run instructions for the macOS port. Verified on macOS 26.5.1 (Tahoe),
+Apple Silicon (arm64).
 
-1. Install Homebrew (We have used version 4.3.2), from where the remaining libraries need to be installed to run the program. To install Homebrew use the following command in terminal (in the home directory):
+All commands below are run in Terminal. To open it, press `command + space`, type
+`Terminal`, and press `return`.
 
-    `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"` // installation.
-    
-    `brew --version` // verify installation.
+---
 
-2. Download libxml2 and libxml++-2.6 to run the program. Download files in WSL (Debian) or Linux (Ubuntu) environment using the following commands :
+## 1. Prerequisites
 
-   ​ For libxml2 :-
+### Xcode Command Line Tools
 
-   ​ `brew install libxml2` // installation.
+These supply `clang`/`g++`, `make`, `bison`, and `flex`. Install them first:
 
-   ​ `brew info libxml2` // verify installation.
-   ​   ​ 
-   ​ For libxml++
+```bash
+xcode-select --install
+```
 
-   ​ `brew install libxml++` // installation.
+You do **not** need Homebrew's `bison`. Apple ships bison 2.3, and the grammars in
+this tree are written to stay compatible with it (see [Troubleshooting](#troubleshooting)).
 
-   ​ `brew info libxml++` // verify installation
-   ​ 
-   ​ The brew info commands also list out the dependencies. Make sure all the dependencies(python_setuptools, python@3.11 and python@3.12 for libxml and meson, ninja, pkg-config for libxml++) listed as part of the info are installed (indicated by a green tick mark). 
-   ​ In case a certain dependency is not present(indicated by a red cross), use command `brew install <dependancy name>` in terminal.
-   ​ 
-   ​ example: If you wish to install dependency "python-setuptools". Enter command `brew install python-setuptools` in terminal.
+### Homebrew
 
+Install Homebrew, which provides the remaining libraries:
 
-3. After successful installation, we need to download the SMT solver Z3. We have used version 4.8.12.0 of Z3 for FuSION. Z3 can  be downloaded from Homebrew using the following command:
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew --version   # verify
+```
 
-   ​ `brew install z3` // installation.
+### Libraries
 
-   ​ `z3 --version` // verify installation
-   ​ 
-   ​ `brew info z3` // verify dependencies
-   ​ 
-   ​ The brew info commands also list out the dependencies. Make sure all the dependencies(cmake, python@3.12) listed as part of the info are installed (indicated by a green tick mark). 
-   ​ In case a certain dependency is not present(indicated by a red cross), use command `brew install <dependancy name>` in terminal.
-   ​ 
-   ​ example: If you wish to install dependency "cmake". Enter command `brew install cmake` in terminal.
+```bash
+brew install libxml2 libxml++ z3 gnuplot openjdk
+```
 
-4. Check if bison is installed in the computer by running `bison --version` . If it is shown not to be found then run the following command for installation and verification :
+`libxml++` automatically pulls in `glibmm@2.66`, `libsigc++@2`, and `glib`, which
+the tool also links against. Verify with:
 
-   ​ `brew install bison` // installation
+```bash
+z3 --version         # tested with 4.15.4
+gnuplot --version    # tested with 6.0
+java -version        # JDK 21 or newer; tested with 25
+brew list --versions libxml++ libxml2 glibmm@2.66 libsigc++@2 glib
+```
 
-   ​ `bison --version` // verify installation
-   ​ 
-5. Check if java is installed in the computer by running `java --version`. If it is not shown to be found then you can either download it from [Here]{https://www.oracle.com/in/java/technologies/downloads/#jdk22-mac} as any other app from the internet or run the following command in terminal:
+`gnuplot` is required — the tool shells out to it to render the Pareto plots.
+Without it the analysis still runs, but no `.png` is produced.
 
-    `brew install openjdk` // installation
-    
-    `brew info openjdk` // verify installation
-    
-6. Install gnuplot for seeing the graph plots output by the tool by running the following commads in terminal:
+---
 
-    `brew install gnuplot` // installation
+## 2. Build the `fusion` executable
 
-    `brew info gnuplot` // verification
+From the `macOS` directory:
 
-7. Navigate to the `macOS` directory in the terminal and run the following command to build the tool.  
+```bash
+cd macOS
+make
+```
 
-   ​ `make`
+This produces the executable `fusion` in the `macOS` directory.
 
-  The executable called `fusion` is generated in the `macOS` directory.
-  
-8. To run the tool, navigate to the `macOS` directory under FuSION, then enter the following commands:
+The `Makefile` assumes Homebrew's Apple Silicon prefix (`/opt/homebrew`). On an
+Intel Mac, Homebrew installs to `/usr/local` instead, so override the prefix:
 
-    `javac GUIForExecutable.java` // compiles the java application
-    
-    `java GUIForExecutable` // to launch the app
+```bash
+make BREW_HOME=$(brew --prefix)
+```
 
+To rebuild from scratch:
+
+```bash
+make clean && make
+```
+
+---
+
+## 3. Run the graphical frontend
+
+The frontend is a Java application under `macOS/frontend`. Compile it once:
+
+```bash
+javac -d frontend/out -cp "frontend/lib/json-20250517.jar" frontend/src/*.java
+```
+
+Then launch it:
+
+```bash
+java -cp "frontend/out:frontend/resources:frontend/lib/json-20250517.jar" LoginPage
+```
+
+> **Run both commands from the `macOS` directory, not from `macOS/frontend`.**
+> The frontend resolves `./fusion`, `advtempscript.txt`, and `output_script.txt`
+> as paths relative to the working directory. Launching from anywhere else will
+> fail to find the executable or the script template.
+
+Build `fusion` (step 2) before launching the frontend — the GUI invokes it to run
+the analysis.
+
+Recompile the frontend whenever you change anything under `frontend/src`; the GUI
+loads the compiled `.class` files from `frontend/out`, not the sources.
+
+See [frontend/README.md](frontend/README.md) for more detail.
+
+### The older `GUIForExecutable` launcher
+
+`GUIForExecutable.java` in this directory is an earlier, standalone GUI. It still
+works for basic runs, but it does not populate the coexpression CSV, coexpression
+threshold, or frozen-edge threshold inputs, so analyses launched from it always
+run with the new constraints disabled. Prefer the `LoginPage` frontend above.
+
+---
+
+## 4. Run from the command line
+
+`fusion` reads a batch script:
+
+```bash
+./fusion -b <batch_script>
+./fusion --help          # list available commands
+```
+
+The frontend simply generates such a script (`output_script.txt`) from the values
+you enter, then runs `./fusion -b output_script.txt`.
+
+---
+
+## 5. Verify your install with the model example
+
+`model_example/` contains a complete worked analysis (EGFR → CXCL8, testing JUN
+for significance). It is the fastest way to confirm the tool is working.
+
+- **[model_example/RUNNING.md](model_example/RUNNING.md)** — how to run it, from
+  the command line and from the frontend, with every parameter value listed.
+- [model_example/README.md](model_example/README.md) — what the example means and
+  how the reduced master graph was built.
+
+`run_model_example.batch` ships with a placeholder working directory, so you must
+edit its `let $WORK_DIR` line before running:
+
+```
+let $WORK_DIR /ABSOLUTE/PATH/TO/FuSION/macOS/model_example
+```
+
+Change it to an absolute path of your choosing (it must contain the example's
+`inputs/` directory). Then, from the `macOS` directory:
+
+```bash
+./fusion -b model_example/run_model_example.batch
+```
+
+Results land in `$WORK_DIR/run/`. A correct install reproduces this Pareto
+frontier:
+
+```
+with JUN    : (2,0) (1,1) (0,2)
+without JUN : (3,0) (2,1) (1,2) (0,3)
+```
+
+and writes an overlaid plot, `PO_hsa1956_to_hsa3576_fsc_hsa3725_..._b10.png`.
+
+---
+
+## Troubleshooting
+
+**`ld: library not found for -lxml++-2.6` (or `-lz3`)**
+Homebrew is installed under a prefix the `Makefile` does not expect. Rebuild with
+`make BREW_HOME=$(brew --prefix)`.
+
+**The GUI reports it cannot find `./fusion`**
+You launched Java from the wrong directory, or you have not run `make`. See step 3.
+
+**No `.png` plot is produced**
+`gnuplot` is not installed, or not on your `PATH`.

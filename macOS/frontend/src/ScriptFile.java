@@ -70,8 +70,9 @@ public class ScriptFile{
         replacements.put("%__a20__%", user.gethsaNotFile());
 
         // Coexpression / frozen-edge inputs consumed by the trailing pathz3 args.
-        // An empty $COEXPRESSION_CSV leaves an empty token, which makes pathz3
-        // skip the whole trailing group and run with the new constraints off.
+        // An empty $COEXPRESSION_CSV is fine: pathz3 consumes the slot regardless,
+        // so the frozen-edge constraints still apply. Only the coexpression pairs
+        // are skipped.
         String coexpCsv = user.getCoexpressionCsv();
         replacements.put("%__a21__%", coexpCsv == null ? "" : coexpCsv);
         replacements.put("%__a22__%", ""+user.getCoexpThresh());

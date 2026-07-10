@@ -32,13 +32,17 @@ model_example/
 
 ## Running
 
+See **[RUNNING.md](RUNNING.md)** for full instructions, including the parameter
+values to enter in the graphical frontend.
+
+In short: edit the `let $WORK_DIR` line near the top of `run_model_example.batch`
+to an absolute path, then from the `macOS` directory run
+
 ```
-cd macOS/model_example
-mkdir -p run && cd run
-../../fusion -b ../run_model_example.batch    # or Linux/fusion for this box
+./fusion -b model_example/run_model_example.batch
 ```
 
-Outputs land in `run/`:
+Outputs land in `$WORK_DIR/run/`:
 
 - `hsa1956_to_hsa3576_w_hsa3725_..._b10.dat`  PO points, with JUN
 - `hsa1956_to_hsa3576_wo_hsa3725_..._b10.dat` PO points, without JUN
