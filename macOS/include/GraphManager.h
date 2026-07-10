@@ -279,16 +279,16 @@ private:
 
     // functions associated with modular rules parser
     t_Expression *get_constraints_for_rule(rule_t *rule_ptr, Graph *graph, set<Node *> &set_potential_conflct_nodes, t_ExpressionManager *em);
-    void access_antecdents_for_filling_tuples(list_antecedent_t *antecedent_list, set<map<string, Node *> > &set_tuples, Graph *graph);
+    void access_antecdents_for_filling_tuples(list_antecedent_t *antecedent_list, set<map<string, Node *>> &set_tuples, Graph *graph);
     // void fill_node_tuple(quantifier_t quant, const string& curr_var_name, Graph* graph, set_nodes_t* set_nodes, set<map<string, Node*> * >& node_tuple);
     void get_source_nodes(set<Node *> &source_node_array, Node *target_node, edge_t edge_type);
     void get_source_nodes(set<Node *> &source_node_array, Node *target_node, edge_subt edge_subtype);
     void get_target_nodes(set<Node *> &target_node_array, Node *source_node, edge_t edge_type_subtype);
     void get_target_nodes(set<Node *> &target_node_array, Node *source_node, edge_subt edge_subtype);
-    void fill_set_tuple_for_antecedent(quantifier_t quant, string &var_name, Graph *graph, set_nodes_t *set_nodes_parser, set<map<string, Node *> > &set_tuples);
+    void fill_set_tuple_for_antecedent(quantifier_t quant, string &var_name, Graph *graph, set_nodes_t *set_nodes_parser, set<map<string, Node *>> &set_tuples);
 
-    void fill_temp_tuple_set(quantifier_t quant, string &var_name, set<Node *> &set_nodes_for_current_tuple, map<string, Node *> &tuple_ref, set<map<string, Node *> > &temp_tuple_set);
-    void print_all_tuples(set<map<string, Node *> > &set_tuples);
+    void fill_temp_tuple_set(quantifier_t quant, string &var_name, set<Node *> &set_nodes_for_current_tuple, map<string, Node *> &tuple_ref, set<map<string, Node *>> &temp_tuple_set);
+    void print_all_tuples(set<map<string, Node *>> &set_tuples);
     void print_single_tuple(map<string, Node *> &tuple_ref);
 
 public:
@@ -320,7 +320,7 @@ public:
 
     // constraint solving
     void solve_constraints(vector<t_Expression *> cons, t_ExpressionManager *em);
-    vector<int> write_edgecount_cnf(string CNF_filename, map<t_Expression *, pair<string, int> > getCNFIndexMap, int &idx, int &clauses);
+    vector<int> write_edgecount_cnf(string CNF_filename, map<t_Expression *, pair<string, int>> getCNFIndexMap, int &idx, int &clauses);
 
     /* Display of graphs */
     void write_node_in_dot(ofstream &myfile, Node *node, map<string, colorTriple> &colorMap, map<string, char> &alreadySeenNode);

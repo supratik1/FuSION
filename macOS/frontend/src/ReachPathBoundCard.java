@@ -55,14 +55,27 @@ public class ReachPathBoundCard extends RoundedPanel {
             user.setSignallingPathLength(value);
         });
 
-        reachValueField.addActionListener(e -> {
+        // Commit whatever is typed in the text field. Without this the value only
+        // reached UserInput when the slider moved or Enter was pressed, so typing a
+        // bound and clicking Next/Save silently kept the previously loaded value.
+        Runnable commitReachValue = () -> {
             try {
-                int value = Integer.parseInt(reachValueField.getText());
+                int value = Integer.parseInt(reachValueField.getText().trim());
                 if (value >= reachSlider.getMinimum() && value <= reachSlider.getMaximum()) {
                     reachSlider.setValue(value);
                     user.setSignallingPathLength(value);
+                    return;
                 }
             } catch (NumberFormatException ignored) {
+            }
+            reachValueField.setText(String.valueOf(user.getSignallingPathLength()));
+        };
+
+        reachValueField.addActionListener(e -> commitReachValue.run());
+        reachValueField.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                commitReachValue.run();
             }
         });
 
@@ -208,6 +221,7 @@ public class ReachPathBoundCard extends RoundedPanel {
         
 
         nextButton.addActionListener(e -> {
+            commitReachValue.run();
             int i = -1;
 
             if (rb1.isSelected()) {
@@ -235,6 +249,7 @@ public class ReachPathBoundCard extends RoundedPanel {
         goToSessions.addActionListener(e -> cardLayout.show(cardPanel, "sessions"));
 
         saveButton.addActionListener(e -> {
+            commitReachValue.run();
             int i = -1;
 
             if (rb1.isSelected()) {

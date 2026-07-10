@@ -23,6 +23,9 @@ list<rule_t*> list_of_rules;
 //add code requires code here when when integration has to be done
 
 //%error-verbose
+// Apple's /usr/bin/bison is 2.3 and rejects `%define parse.error verbose`
+// (bison >= 3 syntax). Keep this commented unless the build is pointed at
+// Homebrew bison (/opt/homebrew/opt/bison/bin).
 //%define parse.error verbose
 %start list_rules
 

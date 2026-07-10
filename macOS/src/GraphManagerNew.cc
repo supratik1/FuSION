@@ -268,6 +268,8 @@ EdgeNew::EdgeNew()
     weight_tuple.push_back(0);
     weight_tuple.push_back(0);
     weight_tuple.push_back(0);
+
+    weight_f = 0.0f;
 }
 
 inline int EdgeNew::get_edge_id()
@@ -2929,8 +2931,20 @@ void GraphNew::write_edge_to_xml_file(int eid, map<int, int> &nid_to_xml_node_id
     string type = get_edge_type(eid);
     vector<string> subtypes = get_edge_subtypes_of_edge(eid);
 
+    // experiment_score is stored as the edge weight float; emit it so the
+    // attribute survives the wgx/rgx round-trip and frozen-edge constraints
+    // can be formed. Whole-number scores are written without a decimal point
+    // to match the source KGML format (e.g. "625", "0").
+    float exp_score = get_edge_weight_float(eid);
+    std::ostringstream exp_score_ss;
+    if (exp_score == (long)exp_score)
+        exp_score_ss << (long)exp_score;
+    else
+        exp_score_ss << exp_score;
+    string exp_score_str = exp_score_ss.str();
+
     // fout << "\t<relation entry1=\"" << source_id_xml <<"\" entry2=\"" << target_id_xml << "\" type=\""+type+"\">"<< endl;
-    fout << "\t<relation entry1=\"" << source_id_xml << "\" entry2=\"" << target_id_xml << "\" type=\"" + type << "\" pathways=\"" << concatenated_pathways + "\">" << endl;
+    fout << "\t<relation entry1=\"" << source_id_xml << "\" entry2=\"" << target_id_xml << "\" type=\"" + type << "\" pathways=\"" << concatenated_pathways << "\" experiment_score=\"" << exp_score_str << "\">" << endl;
     for (vector<string>::iterator itr = subtypes.begin(); itr != subtypes.end(); ++itr)
     {
         fout << "\t\t<subtype name=\"" + *itr + "\"/>" << endl;
@@ -8161,6 +8175,8 @@ GraphManagerNew::GraphManagerNew(vector<string> &commands, int &cnt_cmd, bool b_
         std::cerr << "\nUnable to open file " + pathway_file << std::endl;
 
     unique_prefix = ""; // Added by Supratik: default value of unique_prefix
+    smt_dump_dir = "";  // empty => write SMT debug dumps to CWD (legacy behaviour)
+    z3_random_seed = -1; // -1 => no seed pinning, no (set-option ...) prepended to dumps
 }
 
 GraphManagerNew::~GraphManagerNew()
@@ -8175,6 +8191,26 @@ void GraphManagerNew::set_unique_prefix(std::string u_prefix)
 inline std::string GraphManagerNew::get_unique_prefix()
 {
     return unique_prefix;
+}
+
+void GraphManagerNew::set_smt_dump_dir(std::string d)
+{
+    smt_dump_dir = d;
+}
+
+std::string GraphManagerNew::get_smt_dump_dir()
+{
+    return smt_dump_dir;
+}
+
+void GraphManagerNew::set_z3_random_seed(int seed)
+{
+    z3_random_seed = seed;
+}
+
+int GraphManagerNew::get_z3_random_seed()
+{
+    return z3_random_seed;
 }
 
 template <typename Key, typename Val>
@@ -8721,7 +8757,13 @@ std::string GraphManagerNew::get_identifier(std::string key)
 inline std::string GraphManagerNew::get_display_names_from_rep_id(std::string rep_id)
 {
     std::map<std::string, std::string>::iterator map_iter = kegg_hsa_id_to_display_name_map.find(rep_id);
-    if (map_iter == kegg_hsa_id_to_display_name_map.end())
+    // Fall back to rep_id for a missing key OR an empty value. operator[] lookups on
+    // this map elsewhere (e.g. XMLParser.cc:1004, GraphManagerNew.cc:2696/6711/6718)
+    // default-insert "" for absent keys; during a merge that poisons entries so a
+    // later graph read's new node gets no display id, and the unguarded
+    // get_all_display_ids_of_node(...)[0] in complex handling (XMLParser.cc:1105)
+    // segfaults. This is the "two graph reads in one session" crash.
+    if (map_iter == kegg_hsa_id_to_display_name_map.end() || (*map_iter).second.empty())
     {
         // cout << "Rep id " << rep_id << " not found in KEGG map" << endl;
         return rep_id;
@@ -8744,6 +8786,352 @@ inline std::string GraphManagerNew::get_pathway_names_from_path_id(std::string p
         return (*map_iter).second;
     }
 }
+
+// ------------------------------------------------------------------------
+// plot_solution_paths: render source->target paths from a pathz3 solution
+// dump (temp_w_solutions.txt / temp_wo_solutions.txt) and write a companion
+// CSV listing, per drawn edge, the KEGG pathway(s) that edge came from.
+//
+// Self-contained: reads only the solution file for structure; uses this
+// GraphManagerNew's pathway_name_map (loaded by `start`) to translate the
+// [path:hsaXXXXX] ids into proper pathway names. Works on any old run.
+//
+//   soln_file   : a *_solutions.txt produced by pathz3 (with- or without-FSC)
+//   src_hsa     : source node rep id  (e.g. hsa1956)
+//   tgt_hsa     : target node rep id  (e.g. hsa3576)
+//   path_mode   : shortest | alt[:W] | all | subgraph
+//                   shortest - edges on a shortest src->tgt path
+//                   alt[:W]  - edges on any src->tgt path within +W of shortest (default W=2)
+//                   all      - edges lying on some src->tgt path (union subgraph)
+//                   subgraph - the entire active solution subgraph
+//   po_selector : all | least | <node_relax>,<edge_relax>   (e.g. 7,1)
+//   out_prefix  : output prefix; per PO point (n,e) writes
+//                   <out_prefix>_n<n>_e<e>.dot / .svg and
+//                   <out_prefix>_n<n>_e<e>_edge_sources.csv
+// ------------------------------------------------------------------------
+void GraphManagerNew::plot_solution_paths(string soln_file, string src_hsa, string tgt_hsa, string path_mode, string po_selector, string out_prefix)
+{
+    struct SolNode { string hsa; string sym; bool active; };
+    struct SolEdge { string s_hsa, s_sym, t_hsa, t_sym, subtype; bool both_active; vector<string> pathways; };
+
+    // parse the requested path mode (and optional +window for "alt")
+    string mode = path_mode;
+    int alt_window = 2;
+    {
+        size_t colon = path_mode.find(':');
+        if (colon != string::npos)
+        {
+            mode = path_mode.substr(0, colon);
+            alt_window = atoi(path_mode.substr(colon + 1).c_str());
+        }
+    }
+    if (mode != "shortest" && mode != "alt" && mode != "all" && mode != "subgraph")
+    {
+        cerr << "plot_solution_paths: unknown path_mode '" << path_mode << "' (use shortest|alt[:W]|all|subgraph)" << endl;
+        return;
+    }
+
+    ifstream fin(soln_file.c_str());
+    if (!fin.is_open())
+    {
+        cerr << "plot_solution_paths: cannot open solution file " << soln_file << endl;
+        return;
+    }
+
+    // Parse the dump into per-PO-point blocks. We only keep "Solution 1"
+    // (the first witness) at each PO point.
+    map<pair<int, int>, vector<SolNode>> po_to_nodes;
+    map<pair<int, int>, vector<SolEdge>> po_to_edges;
+
+    pair<int, int> curr_po(-1, -1);
+    int curr_soln = 0;
+    string line;
+    while (getline(fin, line))
+    {
+        if (line.empty())
+            continue;
+        if (line.compare(0, 17, "Current PO point:") == 0)
+        {
+            int n = -1, e = -1;
+            // format: "Current PO point: N nodes, M edges relaxed"
+            sscanf(line.c_str(), "Current PO point: %d nodes, %d edges relaxed", &n, &e);
+            curr_po = make_pair(n, e);
+            curr_soln = 0;
+            continue;
+        }
+        if (line.compare(0, 8, "Solution") == 0)
+        {
+            curr_soln = atoi(line.c_str() + 8);
+            continue;
+        }
+        if (curr_soln != 1) // only the first witness per PO point
+            continue;
+
+        // tokenize on tabs
+        vector<string> tok;
+        {
+            size_t start = 0;
+            while (true)
+            {
+                size_t tab = line.find('\t', start);
+                if (tab == string::npos) { tok.push_back(line.substr(start)); break; }
+                tok.push_back(line.substr(start, tab - start));
+                start = tab + 1;
+            }
+        }
+
+        if (tok.size() == 6) // node line: nid hsa sym expr present active|inactive
+        {
+            SolNode nd;
+            nd.hsa = tok[1];
+            nd.sym = tok[2];
+            nd.active = (tok[5] == "active");
+            po_to_nodes[curr_po].push_back(nd);
+        }
+        else if (tok.size() >= 11) // edge line
+        {
+            SolEdge ed;
+            ed.subtype = tok[2];
+            ed.s_hsa = tok[3];
+            ed.s_sym = tok[4];
+            ed.t_hsa = tok[5];
+            ed.t_sym = tok[6];
+            bool src_active = (tok[8] == "src_active");
+            // tok[10] is "tgt_active [path:.. path:..]" (or tgt_inactive / empty [])
+            bool tgt_active = (tok[10].compare(0, 10, "tgt_active") == 0);
+            ed.both_active = src_active && tgt_active;
+            size_t lb = tok[10].find('[');
+            size_t rb = tok[10].find(']');
+            if (lb != string::npos && rb != string::npos && rb > lb + 1)
+            {
+                string inside = tok[10].substr(lb + 1, rb - lb - 1);
+                stringstream ss(inside);
+                string pw;
+                while (ss >> pw)
+                    ed.pathways.push_back(pw);
+            }
+            po_to_edges[curr_po].push_back(ed);
+        }
+    }
+    fin.close();
+
+    if (po_to_nodes.empty())
+    {
+        cerr << "plot_solution_paths: no PO points parsed from " << soln_file << endl;
+        return;
+    }
+
+    // Decide which PO points to render.
+    vector<pair<int, int>> selected_pos;
+    if (po_selector == "all")
+    {
+        for (auto &kv : po_to_nodes)
+            selected_pos.push_back(kv.first);
+    }
+    else if (po_selector == "least")
+    {
+        // least relaxed = fewest total relaxations (node+edge); tie-break fewer node relaxations
+        pair<int, int> best(-1, -1);
+        int best_total = 1 << 30;
+        for (auto &kv : po_to_nodes)
+        {
+            int total = kv.first.first + kv.first.second;
+            if (total < best_total || (total == best_total && kv.first.first < best.first))
+            { best_total = total; best = kv.first; }
+        }
+        selected_pos.push_back(best);
+    }
+    else
+    {
+        int n = -1, e = -1;
+        if (sscanf(po_selector.c_str(), "%d,%d", &n, &e) != 2)
+        {
+            cerr << "plot_solution_paths: bad po_selector '" << po_selector << "' (use all|least|<n>,<e>)" << endl;
+            return;
+        }
+        pair<int, int> key(n, e);
+        if (po_to_nodes.find(key) == po_to_nodes.end())
+        {
+            cerr << "plot_solution_paths: PO point " << n << "," << e << " not in file. Available:";
+            for (auto &kv : po_to_nodes)
+                cerr << " " << kv.first.first << "," << kv.first.second;
+            cerr << endl;
+            return;
+        }
+        selected_pos.push_back(key);
+    }
+
+    const int INFDIST = 1 << 30;
+
+    for (auto &po : selected_pos)
+    {
+        vector<SolNode> &nodes = po_to_nodes[po];
+        vector<SolEdge> &edges = po_to_edges[po];
+
+        // active node label map, and active-endpoint edge list
+        map<string, string> hsa_to_sym;
+        set<string> active_nodes;
+        for (auto &nd : nodes)
+        {
+            hsa_to_sym[nd.hsa] = nd.sym;
+            if (nd.active)
+                active_nodes.insert(nd.hsa);
+        }
+
+        // directed adjacency over both-active edges (for BFS)
+        map<string, vector<string>> fwd, rev;
+        vector<SolEdge *> active_edges;
+        for (auto &ed : edges)
+        {
+            if (!ed.both_active)
+                continue;
+            fwd[ed.s_hsa].push_back(ed.t_hsa);
+            rev[ed.t_hsa].push_back(ed.s_hsa);
+            active_edges.push_back(&ed);
+        }
+
+        // bidirectional BFS distances
+        map<string, int> dist_from_src, dist_to_tgt;
+        {
+            queue<string> q;
+            if (active_nodes.count(src_hsa)) { dist_from_src[src_hsa] = 0; q.push(src_hsa); }
+            while (!q.empty())
+            {
+                string u = q.front(); q.pop();
+                for (auto &v : fwd[u])
+                    if (dist_from_src.find(v) == dist_from_src.end())
+                    { dist_from_src[v] = dist_from_src[u] + 1; q.push(v); }
+            }
+        }
+        {
+            queue<string> q;
+            if (active_nodes.count(tgt_hsa)) { dist_to_tgt[tgt_hsa] = 0; q.push(tgt_hsa); }
+            while (!q.empty())
+            {
+                string u = q.front(); q.pop();
+                for (auto &v : rev[u])
+                    if (dist_to_tgt.find(v) == dist_to_tgt.end())
+                    { dist_to_tgt[v] = dist_to_tgt[u] + 1; q.push(v); }
+            }
+        }
+
+        auto dsrc = [&](const string &h) { auto it = dist_from_src.find(h); return it == dist_from_src.end() ? INFDIST : it->second; };
+        auto dtgt = [&](const string &h) { auto it = dist_to_tgt.find(h); return it == dist_to_tgt.end() ? INFDIST : it->second; };
+
+        int L = dtgt(src_hsa); // == shortest src->tgt distance
+
+        if (mode != "subgraph" && L >= INFDIST)
+        {
+            cerr << "plot_solution_paths: no active src->tgt path at PO (" << po.first << "," << po.second << ") in " << soln_file << " - skipping" << endl;
+            continue;
+        }
+
+        // select edges to draw per mode
+        vector<SolEdge *> drawn;
+        for (auto ep : active_edges)
+        {
+            bool keep = false;
+            if (mode == "subgraph")
+                keep = true;
+            else
+            {
+                int du = dsrc(ep->s_hsa), dv = dtgt(ep->t_hsa);
+                if (du < INFDIST && dv < INFDIST)
+                {
+                    int through = du + 1 + dv;
+                    if (mode == "shortest") keep = (through == L);
+                    else if (mode == "alt") keep = (through <= L + alt_window);
+                    else if (mode == "all") keep = true; // on some src->tgt path
+                }
+            }
+            if (keep)
+                drawn.push_back(ep);
+        }
+
+        // nodes to draw = endpoints of drawn edges (+ src/tgt); subgraph = all active
+        set<string> drawn_nodes;
+        if (mode == "subgraph")
+            drawn_nodes = active_nodes;
+        else
+        {
+            for (auto ep : drawn) { drawn_nodes.insert(ep->s_hsa); drawn_nodes.insert(ep->t_hsa); }
+            if (active_nodes.count(src_hsa)) drawn_nodes.insert(src_hsa);
+            if (active_nodes.count(tgt_hsa)) drawn_nodes.insert(tgt_hsa);
+        }
+
+        // ---- write dot ----
+        stringstream base_ss;
+        base_ss << out_prefix << "_n" << po.first << "_e" << po.second;
+        string base = base_ss.str();
+        string dot_name = base + ".dot";
+        string svg_name = base + ".svg";
+
+        ofstream dot(dot_name.c_str());
+        dot << "digraph G {\n";
+        dot << "rankdir=LR;\n";
+        dot << "label=\"" << mode << " : " << src_hsa << " -> " << tgt_hsa
+            << "  [PO " << po.first << " nodes, " << po.second << " edges relaxed]\";\n";
+        dot << "labelloc=top; labeljust=left; fontname=\"Helvetica\";\n";
+        dot << "node [shape=box, style=filled, fillcolor=\"#EEEEEE\", fontname=\"Helvetica\"];\n";
+        dot << "edge [fontname=\"Helvetica\", fontsize=9];\n";
+        for (auto &h : drawn_nodes)
+        {
+            string sym = hsa_to_sym.count(h) ? hsa_to_sym[h] : h;
+            string fill = "#EEEEEE";
+            if (h == src_hsa) fill = "#A6E3A1";      // source: green
+            else if (h == tgt_hsa) fill = "#F5A9A9"; // target: red
+            dot << "  \"" << h << "\" [label=\"" << sym << "\", fillcolor=\"" << fill << "\"];\n";
+        }
+        // one dot edge per distinct (src,tgt,subtype)
+        set<string> emitted_edge_keys;
+        for (auto ep : drawn)
+        {
+            string key = ep->s_hsa + "|" + ep->t_hsa + "|" + ep->subtype;
+            if (!emitted_edge_keys.insert(key).second)
+                continue;
+            dot << "  \"" << ep->s_hsa << "\" -> \"" << ep->t_hsa << "\" [label=\"" << ep->subtype << "\"];\n";
+        }
+        dot << "}\n";
+        dot.close();
+
+        // render svg
+        string cmd = string(DOT_PATH_NAME) + "-Tsvg " + dot_name + " -o " + svg_name;
+        int rv = system(cmd.c_str());
+        if (rv != 0)
+            cerr << "plot_solution_paths: graphviz returned " << rv << " for " << dot_name << endl;
+
+        // ---- write edge-sources CSV (one row per drawn edge, deterministic order) ----
+        // sort by (source_sym, target_sym, subtype)
+        sort(drawn.begin(), drawn.end(), [](const SolEdge *a, const SolEdge *b) {
+            if (a->s_sym != b->s_sym) return a->s_sym < b->s_sym;
+            if (a->t_sym != b->t_sym) return a->t_sym < b->t_sym;
+            return a->subtype < b->subtype;
+        });
+        string csv_name = base + "_edge_sources.csv";
+        ofstream csv(csv_name.c_str());
+        csv << "edge_index,source_symbol,source_hsa,target_symbol,target_hsa,subtype,pathway_ids,pathway_names\n";
+        int idx = 1;
+        for (auto ep : drawn)
+        {
+            string ids, names;
+            for (size_t i = 0; i < ep->pathways.size(); i++)
+            {
+                if (i) { ids += ";"; names += ";"; }
+                ids += ep->pathways[i];
+                names += get_pathway_names_from_path_id(ep->pathways[i]);
+            }
+            csv << idx++ << ",\"" << ep->s_sym << "\",\"" << ep->s_hsa << "\",\""
+                << ep->t_sym << "\",\"" << ep->t_hsa << "\",\"" << ep->subtype << "\",\""
+                << ids << "\",\"" << names << "\"\n";
+        }
+        csv.close();
+
+        cout << "plot_solution_paths: PO (" << po.first << "," << po.second << ") mode=" << mode
+             << " -> " << svg_name << " (" << drawn_nodes.size() << " nodes, " << drawn.size()
+             << " edges); sources -> " << csv_name << endl;
+    }
+}
+
 // int GraphManagerNew::check_if_node_already_created(GraphNew * new_graph, std::string rep_id) {
 //         // get all node ids from new graph
 //         std::vector<int> all_nids = new_graph->get_node_ids();
@@ -9053,6 +9441,11 @@ int GraphManagerNew::duplicate_edge(GraphNew *new_graph, GraphNew *old_graph, in
                 new_graph->add_pathway_for_edge(eid_to_check, path);
             }
         }
+        // aggregate experiment_score (edge weight float) as the max across
+        // pathways so a high-confidence score from any pathway is preserved.
+        float incoming_wt = old_graph->get_edge_weight_float(eid);
+        if (incoming_wt > new_graph->get_edge_weight_float(eid_to_check))
+            new_graph->set_edge_weight_float(eid_to_check, incoming_wt);
         // return existing edge id
         return eid_to_check;
     }
@@ -9155,6 +9548,11 @@ int GraphManagerNew::duplicate_edge_without_splitting_nodes(GraphNew *new_graph,
                 new_graph->add_pathway_for_edge(eid_to_check, path);
             }
         }
+        // aggregate experiment_score (edge weight float) as the max across
+        // pathways so a high-confidence score from any pathway is preserved.
+        float incoming_wt = old_graph->get_edge_weight_float(eid);
+        if (incoming_wt > new_graph->get_edge_weight_float(eid_to_check))
+            new_graph->set_edge_weight_float(eid_to_check, incoming_wt);
         // return existing edge id
         return eid_to_check;
     }
@@ -9866,6 +10264,9 @@ GraphNew *GraphManagerNew::merge_two_graphs_without_splitting_nodes(GraphNew *gr
             {
                 new_graph->merged_eid_to_construction_eids_map[eid_to_check].insert(*i_eids);
             }
+            // aggregate experiment_score (edge weight float) as max across pathways
+            if (graph1->get_edge_weight_float(curr_eid) > new_graph->get_edge_weight_float(eid_to_check))
+                new_graph->set_edge_weight_float(eid_to_check, graph1->get_edge_weight_float(curr_eid));
             continue;
         }
 
@@ -9897,6 +10298,9 @@ GraphNew *GraphManagerNew::merge_two_graphs_without_splitting_nodes(GraphNew *gr
         // insert new edge in outlist of source and inlist of target nodes
         new_graph->add_edge_to_outlist_of_node(new_source_nid, new_eid);
         new_graph->add_edge_to_inlist_of_node(new_target_nid, new_eid);
+
+        // carry over experiment_score (edge weight float) to the merged edge
+        new_graph->set_edge_weight_float(new_eid, graph1->get_edge_weight_float(curr_eid));
 
         // update construction info of edge
         //        if (merged_eid_to_construction_info_map.find(new_eid) == merged_eid_to_construction_info_map.end(new_eid)) {
@@ -9958,6 +10362,9 @@ GraphNew *GraphManagerNew::merge_two_graphs_without_splitting_nodes(GraphNew *gr
                     new_graph->add_pathway_for_edge(eid_to_check, path);
                 }
             }
+            // aggregate experiment_score (edge weight float) as max across pathways
+            if (graph2->get_edge_weight_float(curr_eid) > new_graph->get_edge_weight_float(eid_to_check))
+                new_graph->set_edge_weight_float(eid_to_check, graph2->get_edge_weight_float(curr_eid));
             new_graph->merged_eid_to_construction_eids_map[eid_to_check].insert(curr_eid);
             continue;
         }
@@ -9990,6 +10397,9 @@ GraphNew *GraphManagerNew::merge_two_graphs_without_splitting_nodes(GraphNew *gr
         // insert new edge in outlist of source and inlist of target nodes
         new_graph->add_edge_to_outlist_of_node(new_source_nid, new_eid);
         new_graph->add_edge_to_inlist_of_node(new_target_nid, new_eid);
+
+        // carry over experiment_score (edge weight float) to the merged edge
+        new_graph->set_edge_weight_float(new_eid, graph2->get_edge_weight_float(curr_eid));
 
         new_graph->merged_eid_to_construction_eids_map[new_eid].insert(curr_eid);
     }
@@ -27287,7 +27697,7 @@ void GraphManagerNew::compute_min_cut_for_ghtree_relabel_to_front(GraphNew *orig
         var_to_expr_map.insert(pair<string, z3::expr>(var, curr_expr));
     }
 
-    void GraphManagerNew::get_connectivity_with_z3(z3::context & c, z3::solver & s, map<string, z3::expr> & all_z3_var_to_expr_map, int graph_gid, int ugraph_gid, vector<vector<bool>> &closure_matrix, vector<set<int>> &cut_edges, vector<int> &gomoryhu_parents, vector<vector<int>> &call_level_matrix, vector<vector<int>> &edge_level_matrix, vector<vector<int>> &call_count_matrix, vector<vector<int>> &edge_count_matrix, vector<pair<int, int>> &connect_pairs, int path_bound, set<int> &nids_as_source, set<int> &nids_as_target, set<int> &up_reg_nids_to_use, set<int> &down_reg_nids_to_use, set<int> &essential_nids, set<int> &avoid_nids, set<int> &essential_eids, set<int> &avoid_eids, set<int> &active_nids, set<int> &inactive_nids, set<int> &confirmed_up_reg_nids, set<int> &confirmed_down_reg_nids, set<int> &relaxed_nids, set<int> &nonrelaxed_nids, set<int> &relaxed_eids, set<int> &nonrelaxed_eids, string fold_change_filename, string file_prefix)
+    void GraphManagerNew::get_connectivity_with_z3(z3::context & c, z3::solver & s, map<string, z3::expr> & all_z3_var_to_expr_map, int graph_gid, int ugraph_gid, vector<vector<bool>> &closure_matrix, vector<set<int>> &cut_edges, vector<int> &gomoryhu_parents, vector<vector<int>> &call_level_matrix, vector<vector<int>> &edge_level_matrix, vector<vector<int>> &call_count_matrix, vector<vector<int>> &edge_count_matrix, vector<pair<int, int>> &connect_pairs, int path_bound, set<int> &nids_as_source, set<int> &nids_as_target, set<int> &up_reg_nids_to_use, set<int> &down_reg_nids_to_use, set<int> &essential_nids, set<int> &avoid_nids, set<int> &essential_eids, set<int> &avoid_eids, set<int> &active_nids, set<int> &inactive_nids, set<int> &confirmed_up_reg_nids, set<int> &confirmed_down_reg_nids, set<int> &relaxed_nids, set<int> &nonrelaxed_nids, set<int> &relaxed_eids, set<int> &nonrelaxed_eids, string fold_change_filename, string file_prefix, const set<pair<int, int>> & coexp_pairs, float exp_score_threshold, bool new_constraints_enabled)
     {
 
         GraphNew *graph = get_graph(graph_gid);
@@ -27304,10 +27714,10 @@ void GraphManagerNew::compute_min_cut_for_ghtree_relabel_to_front(GraphNew *orig
             return;
         }
 
-        generate_connectivity_constraints_with_z3(c, s, all_z3_var_to_expr_map, graph, ugraph, closure_matrix, cut_edges, gomoryhu_parents, call_level_matrix, edge_level_matrix, call_count_matrix, edge_count_matrix, connect_pairs, path_bound, nids_as_source, nids_as_target, up_reg_nids_to_use, down_reg_nids_to_use, essential_nids, avoid_nids, essential_eids, avoid_eids, active_nids, inactive_nids, confirmed_up_reg_nids, confirmed_down_reg_nids, relaxed_nids, nonrelaxed_nids, relaxed_eids, nonrelaxed_eids, fold_change_filename, file_prefix);
+        generate_connectivity_constraints_with_z3(c, s, all_z3_var_to_expr_map, graph, ugraph, closure_matrix, cut_edges, gomoryhu_parents, call_level_matrix, edge_level_matrix, call_count_matrix, edge_count_matrix, connect_pairs, path_bound, nids_as_source, nids_as_target, up_reg_nids_to_use, down_reg_nids_to_use, essential_nids, avoid_nids, essential_eids, avoid_eids, active_nids, inactive_nids, confirmed_up_reg_nids, confirmed_down_reg_nids, relaxed_nids, nonrelaxed_nids, relaxed_eids, nonrelaxed_eids, fold_change_filename, file_prefix, coexp_pairs, exp_score_threshold, new_constraints_enabled);
     }
 
-    void GraphManagerNew::generate_connectivity_constraints_with_z3(z3::context & c, z3::solver & s, map<string, z3::expr> & all_z3_var_to_expr_map, GraphNew * graph, GraphNew * ugraph, vector<vector<bool>> & closure_matrix, vector<set<int>> & cut_edges, vector<int> & gomoryhu_parents, vector<vector<int>> & call_level_matrix, vector<vector<int>> & edge_level_matrix, vector<vector<int>> & call_count_matrix, vector<vector<int>> & edge_count_matrix, vector<pair<int, int>> & connect_pairs, int path_bound, set<int> &nids_as_source, set<int> &nids_as_target, set<int> &up_reg_nids_to_use, set<int> &down_reg_nids_to_use, set<int> &essential_nids, set<int> &avoid_nids, set<int> &essential_eids, set<int> &avoid_eids, set<int> &active_nids, set<int> &inactive_nids, set<int> &confirmed_up_reg_nids, set<int> &confirmed_down_reg_nids, set<int> &relaxed_nids, set<int> &nonrelaxed_nids, set<int> &relaxed_eids, set<int> &nonrelaxed_eids, string fold_change_filename, string file_prefix)
+    void GraphManagerNew::generate_connectivity_constraints_with_z3(z3::context & c, z3::solver & s, map<string, z3::expr> & all_z3_var_to_expr_map, GraphNew * graph, GraphNew * ugraph, vector<vector<bool>> & closure_matrix, vector<set<int>> & cut_edges, vector<int> & gomoryhu_parents, vector<vector<int>> & call_level_matrix, vector<vector<int>> & edge_level_matrix, vector<vector<int>> & call_count_matrix, vector<vector<int>> & edge_count_matrix, vector<pair<int, int>> & connect_pairs, int path_bound, set<int> &nids_as_source, set<int> &nids_as_target, set<int> &up_reg_nids_to_use, set<int> &down_reg_nids_to_use, set<int> &essential_nids, set<int> &avoid_nids, set<int> &essential_eids, set<int> &avoid_eids, set<int> &active_nids, set<int> &inactive_nids, set<int> &confirmed_up_reg_nids, set<int> &confirmed_down_reg_nids, set<int> &relaxed_nids, set<int> &nonrelaxed_nids, set<int> &relaxed_eids, set<int> &nonrelaxed_eids, string fold_change_filename, string file_prefix, const set<pair<int, int>> & coexp_pairs, float exp_score_threshold, bool new_constraints_enabled)
     {
 
         string all_pair_file_name = file_prefix + "_mincuts";
@@ -27351,6 +27761,21 @@ void GraphManagerNew::compute_min_cut_for_ghtree_relabel_to_front(GraphNew *orig
         get_every_path_has_diff_exp_node_constraints_with_z3(c, s, all_z3_var_to_expr_map, graph, nids_to_consider, eids_to_consider, up_reg_nids_to_use, down_reg_nids_to_use, nids_as_source, nids_as_target);
 
         get_edge_activation_status_relaxation_constraints_with_z3(c, s, all_z3_var_to_expr_map, graph, eids_to_consider, up_reg_nids_to_use, down_reg_nids_to_use);
+
+        // Gated by NEW_CONSTRAINTS_ENABLED batch flag (5th-from-last pathz3 arg).
+        // When disabled, neither family of asserts is emitted, so the SMT2 dump
+        // diff against an enabled run is exactly: one block of coexpression
+        // implications + one block of frozen-edge negations. No new variables
+        // are introduced by either function, so declare-fun lines are unchanged.
+        if (new_constraints_enabled)
+        {
+            get_coexpression_constraints_with_z3(c, s, all_z3_var_to_expr_map, graph, coexp_pairs, nids_to_consider);
+            get_frozen_edge_constraints_with_z3(c, s, all_z3_var_to_expr_map, graph, eids_to_consider, exp_score_threshold);
+        }
+        else
+        {
+            cerr << "[new-constraints] disabled (coexpression + frozen-edge constraints skipped)" << endl;
+        }
 
         // Currently asserting single source node must be active
         string main_src_active_var = "__nodeactive_" + IntToString(main_src_nid);
@@ -28146,6 +28571,136 @@ void GraphManagerNew::compute_min_cut_for_ghtree_relabel_to_front(GraphNew *orig
         s.add(ule(to_ADD, all_z3_var_to_expr_map.at(edge_bound_var)));
     }
 
+    void GraphManagerNew::load_coexpression_pairs_from_csv(GraphNew * graph, const string & csv_filename, float threshold, set<pair<int, int>> & out_pairs)
+    {
+        if (csv_filename.empty() || threshold < 0)
+            return;
+
+        ifstream in(csv_filename.c_str());
+        if (!in.is_open())
+        {
+            cerr << "Coexpression CSV " + csv_filename + " could not be opened." << endl;
+            return;
+        }
+
+        string line;
+        if (!getline(in, line))
+            return;
+
+        while (getline(in, line))
+        {
+            int comma_count = 0;
+            size_t col2_start = 0, col3_start = 0, col4_start = 0;
+            
+            for (size_t i = 0; i < line.length(); ++i) {
+                if (line[i] == ',') {
+                    comma_count++;
+                    if (comma_count == 2) col2_start = i + 1;
+                    else if (comma_count == 3) col3_start = i + 1;
+                    else if (comma_count == 4) col4_start = i + 1;
+                }
+            }
+
+            if (comma_count < 4) continue;
+
+            float score;
+            try { score = stof(line.substr(col4_start)); } 
+            catch (...) { continue; }
+            
+            if (score <= threshold) continue;
+
+            string hsa1 = line.substr(col2_start, col3_start - col2_start - 1);
+            string hsa2 = line.substr(col3_start, col4_start - col3_start - 1);
+
+            // Some StringDB rows pack a paralog cluster into a single column as
+            // whitespace-separated hsa IDs (e.g. "hsa:3108 hsa:3109 ..."). Tokenise
+            // and resolve each ID independently, then take the cross-product.
+            auto tokenize_hsa = [&graph](const string & cell, vector<int> & out_nids) {
+                stringstream ss(cell);
+                string tok;
+                while (ss >> tok)
+                {
+                    tok.erase(std::remove(tok.begin(), tok.end(), ':'), tok.end());
+                    if (tok.empty()) continue;
+                    string r = graph->get_rep_id_from_id(tok);
+                    if (r.empty()) continue;
+                    int n = graph->get_nid_from_rep_id(r);
+                    if (n < 0) continue;
+                    out_nids.push_back(n);
+                }
+            };
+
+            vector<int> nids1, nids2;
+            tokenize_hsa(hsa1, nids1);
+            tokenize_hsa(hsa2, nids2);
+            if (nids1.empty() || nids2.empty()) continue;
+
+            for (int u : nids1)
+            {
+                for (int v : nids2)
+                {
+                    if (u == v) continue;
+                    int a = u, b = v;
+                    if (a > b) std::swap(a, b);
+                    out_pairs.insert(make_pair(a, b));
+                }
+            }
+        }
+        in.close();
+
+        cout << "Loaded " << out_pairs.size() << " coexpression pairs from " << csv_filename
+             << " at threshold > " << threshold << endl;
+    }
+
+    void GraphManagerNew::get_coexpression_constraints_with_z3(z3::context & c, z3::solver & s, map<string, z3::expr> & all_z3_var_to_expr_map, GraphNew * graph, const set<pair<int, int>> & coexp_pairs, set<int> & nids_to_consider)
+    {
+        size_t added = 0;
+        for (auto & pr : coexp_pairs)
+        {
+            int u = pr.first;
+            int v = pr.second;
+            if (!nids_to_consider.count(u) || !nids_to_consider.count(v))
+                continue;
+
+            string pu_key = "__node_" + IntToString(u);
+            string pv_key = "__node_" + IntToString(v);
+            string au_key = "__nodeactive_" + IntToString(u);
+            string av_key = "__nodeactive_" + IntToString(v);
+
+            auto pu = all_z3_var_to_expr_map.find(pu_key);
+            auto pv = all_z3_var_to_expr_map.find(pv_key);
+            auto au = all_z3_var_to_expr_map.find(au_key);
+            auto av = all_z3_var_to_expr_map.find(av_key);
+            if (pu == all_z3_var_to_expr_map.end() || pv == all_z3_var_to_expr_map.end()
+                || au == all_z3_var_to_expr_map.end() || av == all_z3_var_to_expr_map.end())
+                continue;
+
+            s.add(z3::implies(pu->second && pv->second, au->second == av->second));
+            added++;
+        }
+        cerr << "[coexpression] emitted " << added << " clauses" << endl;
+    }
+
+    void GraphManagerNew::get_frozen_edge_constraints_with_z3(z3::context & c, z3::solver & s, map<string, z3::expr> & all_z3_var_to_expr_map, GraphNew * graph, set<int> & eids_to_consider, float exp_score_threshold)
+    {
+        if (exp_score_threshold < 0)
+            return;
+
+        size_t added = 0;
+        for (int eid : eids_to_consider)
+        {
+            if (graph->get_edge_weight_float(eid) <= exp_score_threshold)
+                continue;
+            string rk = "__edgerelax_" + IntToString(eid);
+            auto it = all_z3_var_to_expr_map.find(rk);
+            if (it == all_z3_var_to_expr_map.end())
+                continue;
+            s.add(!it->second);
+            added++;
+        }
+        cerr << "[frozen-edge] emitted " << added << " clauses" << endl;
+    }
+
     void GraphManagerNew::get_every_path_has_diff_exp_node_constraints_with_z3(z3::context & c, z3::solver & s, map<string, z3::expr> & all_z3_var_to_expr_map, GraphNew * graph, set<int> & nids_to_consider, set<int> & eids_to_consider, set<int> & up_reg_nids, set<int> & down_reg_nids, set<int> & nids_as_source, set<int> & nids_as_target)
     {
 
@@ -28407,8 +28962,10 @@ void GraphManagerNew::compute_min_cut_for_ghtree_relabel_to_front(GraphNew *orig
         /********* Commented out by Supratik: Nov 19, 2019
          ********* This is needed only for debugging purposes  */
 
-        string smtfile = "getSolutionZ3_smtfile.smt2";
+        string smtfile = get_smt_dump_dir() + "getSolutionZ3_smtfile.smt2";
         ofstream smt_out(smtfile.c_str());
+        if (get_z3_random_seed() >= 0)
+            smt_out << "(set-option :smt.random-seed " << get_z3_random_seed() << ")" << endl;
         smt_out << s.to_smt2() << endl;
         smt_out.close();
 
@@ -28850,9 +29407,11 @@ void GraphManagerNew::compute_min_cut_for_ghtree_relabel_to_front(GraphNew *orig
                 /********* Commented out by Supratik: Nov 19, 2019
                  ********* This is needed only for debugging purposes */
 
-                string smt_file = "PO_constraints_nr_";
+                string smt_file = get_smt_dump_dir() + "PO_constraints_nr_";
                 smt_file += (to_string(curr_n) + "_er_" + to_string(curr_e) + ".smt2");
                 ofstream smt_out(smt_file.c_str());
+                if (get_z3_random_seed() >= 0)
+                    smt_out << "(set-option :smt.random-seed " << get_z3_random_seed() << ")" << endl;
                 smt_out << s.to_smt2() << endl;
                 smt_out.close();
 
@@ -28873,6 +29432,22 @@ void GraphManagerNew::compute_min_cut_for_ghtree_relabel_to_front(GraphNew *orig
                 {
                     sat_state_matrix.at(curr_e).at(curr_n) = sat_state_t::UNSAT;
                 }
+                else if (is_sat == z3::unknown)
+                {
+                    string reason = s.reason_unknown();
+                    if (reason.find("timeout") != string::npos)
+                    {
+                        sat_state_matrix.at(curr_e).at(curr_n) = sat_state_t::TIMEOUT;
+                        fout << "TIMEOUT (diagonal-loop cache) at point e=" << curr_e << " n=" << curr_n << " (z3 reason: " << reason << "). Consider increasing the solver timeout ($CONSTR_SOLVER_TIMEOUT1/$CONSTR_SOLVER_TIMEOUT2 in the batch file)." << endl;
+                        cout << "TIMEOUT (diagonal-loop cache) at point e=" << curr_e << " n=" << curr_n << " (z3 reason: " << reason << "). Consider increasing the solver timeout ($CONSTR_SOLVER_TIMEOUT1/$CONSTR_SOLVER_TIMEOUT2 in the batch file)." << endl;
+                    }
+                    else
+                    {
+                        sat_state_matrix.at(curr_e).at(curr_n) = sat_state_t::UNDEFINED;
+                        fout << "UNDEFINED (diagonal-loop cache; z3::unknown, reason: " << reason << ") at point e=" << curr_e << " n=" << curr_n << endl;
+                        cout << "UNDEFINED (diagonal-loop cache; z3::unknown, reason: " << reason << ") at point e=" << curr_e << " n=" << curr_n << endl;
+                    }
+                }
             }
 
             fout << is_sat << endl;
@@ -28886,6 +29461,25 @@ void GraphManagerNew::compute_min_cut_for_ghtree_relabel_to_front(GraphNew *orig
                 E_h = prev_along_diagonal(curr_e, E_l);
 
                 fout << "N_h: " << N_h << " E_h: " << E_h << endl;
+            }
+            else if (is_sat == z3::unknown)
+            {
+                string reason = s.reason_unknown();
+                if (reason.find("timeout") != string::npos)
+                {
+                    fout << "TIMEOUT (diagonal-loop steering) at point e=" << curr_e << " n=" << curr_n << " (z3 reason: " << reason << "). Consider increasing the solver timeout ($CONSTR_SOLVER_TIMEOUT1/$CONSTR_SOLVER_TIMEOUT2 in the batch file)." << endl;
+                    cout << "TIMEOUT (diagonal-loop steering) at point e=" << curr_e << " n=" << curr_n << " (z3 reason: " << reason << "). Consider increasing the solver timeout ($CONSTR_SOLVER_TIMEOUT1/$CONSTR_SOLVER_TIMEOUT2 in the batch file)." << endl;
+                }
+                else
+                {
+                    fout << "UNDEFINED (diagonal-loop steering; z3::unknown, reason: " << reason << ") at point e=" << curr_e << " n=" << curr_n << endl;
+                    cout << "UNDEFINED (diagonal-loop steering; z3::unknown, reason: " << reason << ") at point e=" << curr_e << " n=" << curr_n << endl;
+                }
+                seen_non_sat_along_diagonal = true;
+                N_l = next_along_diagonal(curr_n, N_h);
+                E_l = next_along_diagonal(curr_e, E_h);
+
+                fout << "N_l: " << N_l << " E_l: " << E_l << endl;
             }
             else
             {
@@ -28962,9 +29556,11 @@ void GraphManagerNew::compute_min_cut_for_ghtree_relabel_to_front(GraphNew *orig
                         /********* Commented out by Supratik: Nov 19, 2019
                          ********* This is needed only for debugging purposes */
 
-                        string smt_file1 = "PO_constraints_nr_";
+                        string smt_file1 = get_smt_dump_dir() + "PO_constraints_nr_";
                         smt_file1 += (to_string(curr_n) + "_er_" + to_string(ed) + ".smt2");
                         ofstream smt_out1(smt_file1.c_str());
+                        if (get_z3_random_seed() >= 0)
+                            smt_out1 << "(set-option :smt.random-seed " << get_z3_random_seed() << ")" << endl;
                         smt_out1 << s.to_smt2() << endl;
                         smt_out1.close();
 
@@ -28984,6 +29580,22 @@ void GraphManagerNew::compute_min_cut_for_ghtree_relabel_to_front(GraphNew *orig
                         {
                             sat_state_matrix.at(ed).at(curr_n) = sat_state_t::UNSAT;
                         }
+                        else if (is_sat == z3::unknown)
+                        {
+                            string reason = s.reason_unknown();
+                            if (reason.find("timeout") != string::npos)
+                            {
+                                sat_state_matrix.at(ed).at(curr_n) = sat_state_t::TIMEOUT;
+                                fout << "TIMEOUT (smallest-n cache) at point e=" << ed << " n=" << curr_n << " (z3 reason: " << reason << "). Consider increasing the solver timeout ($CONSTR_SOLVER_TIMEOUT1/$CONSTR_SOLVER_TIMEOUT2 in the batch file)." << endl;
+                                cout << "TIMEOUT (smallest-n cache) at point e=" << ed << " n=" << curr_n << " (z3 reason: " << reason << "). Consider increasing the solver timeout ($CONSTR_SOLVER_TIMEOUT1/$CONSTR_SOLVER_TIMEOUT2 in the batch file)." << endl;
+                            }
+                            else
+                            {
+                                sat_state_matrix.at(ed).at(curr_n) = sat_state_t::UNDEFINED;
+                                fout << "UNDEFINED (smallest-n cache; z3::unknown, reason: " << reason << ") at point e=" << ed << " n=" << curr_n << endl;
+                                cout << "UNDEFINED (smallest-n cache; z3::unknown, reason: " << reason << ") at point e=" << ed << " n=" << curr_n << endl;
+                            }
+                        }
                     }
 
                     fout << is_sat << endl; // --
@@ -28991,6 +29603,23 @@ void GraphManagerNew::compute_min_cut_for_ghtree_relabel_to_front(GraphNew *orig
                     if (is_sat == z3::sat)
                     {
                         N_h = curr_n;
+                    }
+                    else if (is_sat == z3::unknown)
+                    {
+                        string reason = s.reason_unknown();
+                        if (reason.find("timeout") != string::npos)
+                        {
+                            fout << "TIMEOUT (smallest-n steering) at point e=" << ed << " n=" << curr_n << " (z3 reason: " << reason << "). Consider increasing the solver timeout ($CONSTR_SOLVER_TIMEOUT1/$CONSTR_SOLVER_TIMEOUT2 in the batch file)." << endl;
+                            cout << "TIMEOUT (smallest-n steering) at point e=" << ed << " n=" << curr_n << " (z3 reason: " << reason << "). Consider increasing the solver timeout ($CONSTR_SOLVER_TIMEOUT1/$CONSTR_SOLVER_TIMEOUT2 in the batch file)." << endl;
+                        }
+                        else
+                        {
+                            fout << "UNDEFINED (smallest-n steering; z3::unknown, reason: " << reason << ") at point e=" << ed << " n=" << curr_n << endl;
+                            cout << "UNDEFINED (smallest-n steering; z3::unknown, reason: " << reason << ") at point e=" << ed << " n=" << curr_n << endl;
+                        }
+                        if (N_l == curr_n)
+                            break;
+                        N_l = curr_n;
                     }
                     else
                     {
@@ -29039,7 +29668,7 @@ void GraphManagerNew::compute_min_cut_for_ghtree_relabel_to_front(GraphNew *orig
                         /********* Commented out by Supratik: Nov 19, 2019
                          ********* This is needed only for debugging purposes */
 
-                        string smt_file2 = "PO_constraints_nr_";
+                        string smt_file2 = get_smt_dump_dir() + "PO_constraints_nr_";
                         smt_file2 += (to_string(nd) + "_er_" + to_string(curr_e) + ".smt2");
                         ofstream smt_out2(smt_file2.c_str());
                         smt_out2 << s.to_smt2() << endl;
@@ -29061,6 +29690,22 @@ void GraphManagerNew::compute_min_cut_for_ghtree_relabel_to_front(GraphNew *orig
                         {
                             sat_state_matrix.at(curr_e).at(nd) = sat_state_t::UNSAT;
                         }
+                        else if (is_sat == z3::unknown)
+                        {
+                            string reason = s.reason_unknown();
+                            if (reason.find("timeout") != string::npos)
+                            {
+                                sat_state_matrix.at(curr_e).at(nd) = sat_state_t::TIMEOUT;
+                                fout << "TIMEOUT (smallest-e cache) at point e=" << curr_e << " n=" << nd << " (z3 reason: " << reason << "). Consider increasing the solver timeout ($CONSTR_SOLVER_TIMEOUT1/$CONSTR_SOLVER_TIMEOUT2 in the batch file)." << endl;
+                                cout << "TIMEOUT (smallest-e cache) at point e=" << curr_e << " n=" << nd << " (z3 reason: " << reason << "). Consider increasing the solver timeout ($CONSTR_SOLVER_TIMEOUT1/$CONSTR_SOLVER_TIMEOUT2 in the batch file)." << endl;
+                            }
+                            else
+                            {
+                                sat_state_matrix.at(curr_e).at(nd) = sat_state_t::UNDEFINED;
+                                fout << "UNDEFINED (smallest-e cache; z3::unknown, reason: " << reason << ") at point e=" << curr_e << " n=" << nd << endl;
+                                cout << "UNDEFINED (smallest-e cache; z3::unknown, reason: " << reason << ") at point e=" << curr_e << " n=" << nd << endl;
+                            }
+                        }
                     }
 
                     fout << is_sat << endl;
@@ -29068,6 +29713,23 @@ void GraphManagerNew::compute_min_cut_for_ghtree_relabel_to_front(GraphNew *orig
                     if (is_sat == z3::sat)
                     {
                         E_h = curr_e;
+                    }
+                    else if (is_sat == z3::unknown)
+                    {
+                        string reason = s.reason_unknown();
+                        if (reason.find("timeout") != string::npos)
+                        {
+                            fout << "TIMEOUT (smallest-e steering) at point e=" << curr_e << " n=" << nd << " (z3 reason: " << reason << "). Consider increasing the solver timeout ($CONSTR_SOLVER_TIMEOUT1/$CONSTR_SOLVER_TIMEOUT2 in the batch file)." << endl;
+                            cout << "TIMEOUT (smallest-e steering) at point e=" << curr_e << " n=" << nd << " (z3 reason: " << reason << "). Consider increasing the solver timeout ($CONSTR_SOLVER_TIMEOUT1/$CONSTR_SOLVER_TIMEOUT2 in the batch file)." << endl;
+                        }
+                        else
+                        {
+                            fout << "UNDEFINED (smallest-e steering; z3::unknown, reason: " << reason << ") at point e=" << curr_e << " n=" << nd << endl;
+                            cout << "UNDEFINED (smallest-e steering; z3::unknown, reason: " << reason << ") at point e=" << curr_e << " n=" << nd << endl;
+                        }
+                        if (E_l == curr_e)
+                            break;
+                        E_l = curr_e;
                     }
                     else
                     {
@@ -29127,8 +29789,7 @@ void GraphManagerNew::compute_min_cut_for_ghtree_relabel_to_front(GraphNew *orig
     bool GraphManagerNew::is_sat_at_existing_PO_points(z3::context & c, z3::solver & s, map<string, z3::expr> & expr_map, GraphNew * graph, vector<pair<int, int>> & PO_value_pairs, int up_reg_down_reg_size)
     {
 
-        vector<pair<int, int>>::iterator i = PO_value_pairs.begin();
-        while (i != PO_value_pairs.end())
+        for (auto i = PO_value_pairs.begin(); i != PO_value_pairs.end(); ++i)
         {
             int curr_e = i->first;
             int curr_n = i->second;
@@ -29155,14 +29816,19 @@ void GraphManagerNew::compute_min_cut_for_ghtree_relabel_to_front(GraphNew *orig
             else if (is_sat == z3::unsat)
             {
                 cout << "Unsat at node relax " << curr_n << " edge relax " << curr_e << endl;
-                continue;
             }
-            else
+            else if (is_sat == z3::unknown)
             {
-                continue;
+                string reason = s.reason_unknown();
+                if (reason.find("timeout") != string::npos)
+                {
+                    cout << "TIMEOUT (is_sat_at_existing_PO_points) at node relax " << curr_n << " edge relax " << curr_e << " (z3 reason: " << reason << "). Consider increasing the solver timeout ($CONSTR_SOLVER_TIMEOUT1/$CONSTR_SOLVER_TIMEOUT2 in the batch file)." << endl;
+                }
+                else
+                {
+                    cout << "UNDEFINED (is_sat_at_existing_PO_points; z3::unknown, reason: " << reason << ") at node relax " << curr_n << " edge relax " << curr_e << endl;
+                }
             }
-
-            i++;
         }
 
         return false;
