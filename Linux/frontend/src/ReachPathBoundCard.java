@@ -20,7 +20,7 @@ public class ReachPathBoundCard extends RoundedPanel {
         reachPanelWrapper.setBackground(Theme.BG);
 
         JPanel reachPanel = new JPanel(new BorderLayout());
-        reachPanel.setBorder(Theme.section("Maximum Signalling Path Length"));
+        reachPanel.setBorder(Theme.section("Maximum Pathway Length"));
         reachPanel.setBackground(Theme.BG_CARD);
 
         JSlider reachSlider = new JSlider(0, 100, user.getSignallingPathLength());
@@ -72,7 +72,7 @@ public class ReachPathBoundCard extends RoundedPanel {
         targetPanelWrapper.setBackground(Theme.BG);
 
         JPanel targetPanel = new JPanel(new GridLayout(4, 1));
-        targetPanel.setBorder(Theme.section("Final Edges in pathways restricted to:"));
+        targetPanel.setBorder(Theme.section("Interaction Type Near Ending Gene:"));
         targetPanel.setBackground(Theme.BG_CARD);
 
         JRadioButton rb1 = new JRadioButton("Activation edges only");
@@ -105,7 +105,7 @@ public class ReachPathBoundCard extends RoundedPanel {
 
         // === Backend solver configuration panel ===
         JPanel configPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 16, 0));
-        JLabel configLabel = new JLabel("Backend solver configuration:");
+        JLabel configLabel = new JLabel("Search Algorithm Settings:");
         configLabel.setFont(Theme.body(14));
         configLabel.setForeground(Theme.TEXT_MED);
         configPanel.setBackground(Theme.BG);
@@ -125,10 +125,10 @@ public class ReachPathBoundCard extends RoundedPanel {
             mainPanel.setBackground(Theme.BG);
             mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 30, 10, 30));
             int[] solver = user.getSolverConfig();
-            mainPanel.add(configPanel("Increment Solver Timeout", solver[0]));
-            mainPanel.add(configPanel("Overall Solver Timeout", solver[1]));
-            mainPanel.add(configPanel("Solutions to Count", solver[2]));
-            mainPanel.add(configPanel("Solutions to Explore", solver[3]));
+            mainPanel.add(configPanel("Search Time Limit — Phase 1 (s)", solver[0]));
+            mainPanel.add(configPanel("Search Time Limit — Phase 2 (s)", solver[1]));
+            mainPanel.add(configPanel("Pathways to Count", solver[2]));
+            mainPanel.add(configPanel("Pathways to Save Details For", solver[3]));
 
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 10));
             buttonPanel.setBackground(Theme.BG);

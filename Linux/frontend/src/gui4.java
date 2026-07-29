@@ -1,6 +1,7 @@
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.CubicCurve2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.QuadCurve2D;
 import java.io.IOException;
@@ -43,6 +44,9 @@ public class gui4 extends JFrame {
     private JLabel filePanelSourceLabel;
     private static final String DEFAULT_INPUT_FILE = "Data_Coming_From_Frontend.txt";
     private String currentInputFilePath = DEFAULT_INPUT_FILE;
+    private File lastSavedPipelineFile = null;
+    private int  selectedGroupIndex = -1;   // -1 = All
+    private JButton[] groupSidebarButtons;  // sidebar nav buttons
     // FileEntryConnection: a connection from a file-panel entry to a block input (no line drawn)
     static class FileEntryConnection {
         String entryName;     // param name from file
@@ -71,7 +75,6 @@ public class gui4 extends JFrame {
     String pendingEntryValue    = null;
     int    pendingEntryPosition = 0;   // 1-based position in the data file
     private static Map<String, String[]> BLOCK_DESCRIPTIONS = new HashMap<>();
-    private static final Map<String, String[]> BLOCK_SCRIPT_COMMENTS = new HashMap<>();
     private boolean embeddedMode = false;
     private Runnable onExecuteCallback;
     static {
@@ -129,52 +132,6 @@ public class gui4 extends JFrame {
             "Aggregates multiple inputs (float, string, file, graph) and produces consolidated outputs. Final processing block for workflows.",
             "Output/Aggregation"
         });
-        BLOCK_SCRIPT_COMMENTS.put("let",    new String[]{"Variable assignment"});
-        BLOCK_SCRIPT_COMMENTS.put("exec",   new String[]{"Shell command execution"});
-        BLOCK_SCRIPT_COMMENTS.put("cudf",   new String[]{"create up-reg and down-reg files from fold change file and thresholds"});
-        BLOCK_SCRIPT_COMMENTS.put("start",  new String[]{"Read the following global files before starting execution of the pipeline"});
-        BLOCK_SCRIPT_COMMENTS.put("mff",    new String[]{"Merging KEGG pathways to obtain merged master network", "Fifth argument is n: if these files were not previously written by the tool, otherwise 'y'"});
-        BLOCK_SCRIPT_COMMENTS.put("wgx",    new String[]{"Writing merged graph into xml file, end with string for pathway.", "Currently using 'KEGG'."});
-        BLOCK_SCRIPT_COMMENTS.put("size",   new String[]{"Get size of current graph"});
-        BLOCK_SCRIPT_COMMENTS.put("rgx",    new String[]{"Read file written in xml format"});
-        BLOCK_SCRIPT_COMMENTS.put("fb_rch", new String[]{"Reachability (forward and backward) based pruning of paths", "Retain only those nodes that appear in some path of length <=", "$REACH_PATH_BOUND from $SRC_NODE to $TGT_NODE"});
-        BLOCK_SCRIPT_COMMENTS.put("pathz3", new String[]{"Find PO points", "$PO_SEARCH_MODE 0 means that PO points must be explicitly computed.", "$PO_SEARCH_MODE 1 means that we simply want to check if there are", "solutions at any point of a (previously computed) PO curve."});
-        BLOCK_SCRIPT_COMMENTS.put("result", new String[]{"Final result / output aggregation"});
-    }
-    // Maps Data_Coming_From_Frontend.txt entry names -> exact script variable names
-    private static final Map<String, String> ENTRY_VAR = new HashMap<>();
-    static {
-        ENTRY_VAR.put("log_fold_changes",                "LOG_FOLD_CHANGE_FILE");
-        ENTRY_VAR.put("microarray_data",                 "MICROARRAY_DATA_FILE");
-        ENTRY_VAR.put("kegg_xml",                        "KEGG_XML_FILE");
-        ENTRY_VAR.put("merged_kegg_pathways_xml_file",   "MERGED_KEGG_PATHWAYS_XML_FILE");
-        ENTRY_VAR.put("list_of_merged_kegg_xml_file",    "LIST_OF_MERGED_KEGG_XML_FILE");
-        ENTRY_VAR.put("exception_to_node_merge_file",    "EXCEPTION_TO_NODE_MERGE_FILE");
-        ENTRY_VAR.put("additional_edges",                "ADDITIONAL_EDGES_FILE");
-        ENTRY_VAR.put("essential_edges",                 "ESSENTIAL_EDGES_FILE");
-        ENTRY_VAR.put("avoid_edges",                     "AVOID_EDGES_FILE");
-        ENTRY_VAR.put("relaxed_edges",                   "RELAXED_EDGES_FILE");
-        ENTRY_VAR.put("non_relaxed_edges",               "NONRELAXED_EDGES_FILE");
-        ENTRY_VAR.put("inactive_nodes_file",             "INACTIVE_NODES_FILE");
-        ENTRY_VAR.put("confirmed_up_reg_file",           "CONFIRMED_UP_REG_FILE");
-        ENTRY_VAR.put("confirmed_down_reg_file",         "CONFIRMED_DOWN_REG_FILE");
-        ENTRY_VAR.put("relaxed_nodes_file",              "RELAXED_NODES_FILE");
-        ENTRY_VAR.put("hsa_to_gene_map",                 "HSA_TO_GENE_SYMBOL_MAP_FILE");
-        ENTRY_VAR.put("hsa_path_map",                    "HSA_PATH_TO_PATH_NAME_MAP_FILE");
-        ENTRY_VAR.put("cross_db_map",                    "INTER_DB_MAP_FILE");
-        ENTRY_VAR.put("hsa_not_merged",                  "HSA_IDS_NOT_TO_BE_MERGED_FILE");
-        ENTRY_VAR.put("signalling_path_length",          "REACH_PATH_BOUND");
-        ENTRY_VAR.put("node_relax_lower",                "NODE_RELAX_LB");
-        ENTRY_VAR.put("node_relax_upper",                "NODE_RELAX_UB");
-        ENTRY_VAR.put("edge_relax_lower",                "EDGE_RELAX_LB");
-        ENTRY_VAR.put("edge_relax_upper",                "EDGE_RELAX_UB");
-        ENTRY_VAR.put("node_split_threshold",            "NODE_SPLIT_THRESHOLD");
-        ENTRY_VAR.put("inc_solver_timeout",              "CONSTR_SOLVER_TIMEOUT1");
-        ENTRY_VAR.put("over_solver_timeout",             "CONSTR_SOLVER_TIMEOUT2");
-        ENTRY_VAR.put("solution_count",                  "NUM_SOLNS_TO_COUNT");
-        ENTRY_VAR.put("solution_explore",                "NUM_SOLNS_TO_EXPLORE");
-        ENTRY_VAR.put("up_threshold",                    "UP_REG_THRESH");
-        ENTRY_VAR.put("down_threshold",                  "DOWN_REG_THRESH");
     }
     private static String getDefaultValue(String type) {
         if (type == null) return "default";
@@ -270,6 +227,7 @@ public class gui4 extends JFrame {
         }
         try (PrintWriter w = new PrintWriter(new FileWriter(file))) {
             writePipelineTo(w);
+            lastSavedPipelineFile = file;
             JOptionPane.showMessageDialog(this,
                 "Pipeline saved successfully!\n" + file.getAbsolutePath()
                 + "\n\nBlocks: " + functionBlocks.size()
@@ -280,6 +238,255 @@ public class gui4 extends JFrame {
                 "Error saving pipeline:\n" + ex.getMessage(),
                 "Save Error", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    /** Creates the standard 7-block FuSION template pipeline and saves it as new_pipeline_2.pipeline. */
+    private void loadTemplatePipeline() {
+        if (!functionBlocks.isEmpty()) {
+            int res = JOptionPane.showConfirmDialog(this,
+                "This will replace the current pipeline. Continue?",
+                "Load Template Pipeline", JOptionPane.YES_NO_OPTION);
+            if (res != JOptionPane.YES_OPTION) return;
+        }
+        applyTemplatePipeline(true);
+    }
+
+    private void applyTemplatePipeline(boolean showDialogs) {
+        // Clear existing pipeline
+        for (FunctionBlock fb : functionBlocks) drawingPanel.remove(fb);
+        functionBlocks.clear();
+        connections.clear();
+        fileEntryConnections.clear();
+        dragSource = null; dragSourceOutputIndex = -1; selectedConnection = null;
+        for (String key : instanceCounter.keySet()) instanceCounter.put(key, 0);
+        functionCounter = 1;
+
+        int y0 = 50, gap = 250;
+        FunctionBlock cudfB     = makeTemplateBlock("cudf",   50,  y0);
+        FunctionBlock startB    = makeTemplateBlock("start",  50,  y0 + gap);
+        FunctionBlock mffB      = makeTemplateBlock("mff",    50,  y0 + gap * 2);
+        FunctionBlock wgxB      = makeTemplateBlock("wgx",    50,  y0 + gap * 3);
+        FunctionBlock rgxB      = makeTemplateBlock("rgx",    50,  y0 + gap * 4);
+        FunctionBlock fb_rchB   = makeTemplateBlock("fb_rch", 50,  y0 + gap * 5);
+        FunctionBlock pathz3WB  = makeTemplateBlock("pathz3", 380, y0 + gap);
+        FunctionBlock pathz3WoB = makeTemplateBlock("pathz3", 680, y0 - 50);
+
+        if (cudfB == null || startB == null || mffB == null || wgxB == null
+                || rgxB == null || fb_rchB == null || pathz3WB == null || pathz3WoB == null) {
+            if (showDialogs) JOptionPane.showMessageDialog(this,
+                "Could not create template — one or more block types missing from library.",
+                "Template Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Wire input-panel entries to block inputs (FENTRY connections only, no block-to-block)
+        {
+            // Pre-populate with known param types so connections exist even before a data file is loaded.
+            // Values are overridden below if the data file already exists.
+            String[][] knownParams = {
+                {"LOG_FOLD_CHANGE_FILE","file"}, {"LIST_OF_MERGED_KEGG_XML_FILE","file"},
+                {"MERGED_KEGG_PATHWAYS_XML_FILE","file"}, {"ADDITIONAL_EDGES_FILE","file"},
+                {"ESSENTIAL_EDGES_FILE","file"}, {"AVOID_EDGES_FILE","file"},
+                {"INACTIVE_NODES_FILE","file"}, {"CONFIRMED_UP_REG_FILE","file"},
+                {"CONFIRMED_DOWN_REG_FILE","file"}, {"RELAXED_NODES_FILE","file"},
+                {"RELAXED_EDGES_FILE","file"}, {"NONRELAXED_EDGES_FILE","file"},
+                {"COEXPRESSION_CSV","file"}, {"HSA_TO_GENE_SYMBOL_MAP_FILE","file"},
+                {"HSA_PATH_TO_PATH_NAME_MAP_FILE","file"}, {"INTER_DB_MAP_FILE","file"},
+                {"HSA_IDS_NOT_TO_BE_MERGED_FILE","file"}, {"WORK_DIR","string"},
+                {"SRC_NODE","string"}, {"TGT_NODE","string"},
+                {"NODE_TO_TEST_FOR_SIGNIFICANCE","string"},
+                {"REACH_PATH_BOUND","integer"}, {"EDGE_RELAX_LB","integer"},
+                {"EDGE_RELAX_UB","integer"}, {"NODE_RELAX_LB","integer"},
+                {"NODE_RELAX_UB","integer"}, {"NODE_SPLIT_THRESHOLD","integer"},
+                {"CONSTR_SOLVER_TIMEOUT1","integer"}, {"CONSTR_SOLVER_TIMEOUT2","integer"},
+                {"NUM_SOLNS_TO_COUNT","integer"}, {"NUM_SOLNS_TO_EXPLORE","integer"},
+                {"UP_REG_THRESH","float"}, {"DOWN_REG_THRESH","float"},
+                {"COEXP_THRESH","float"}, {"FROZEN_THRESH","float"},
+                {"EDGES_TO_TARGET","integer"},
+            };
+            java.util.Map<String, String[]> ent = new java.util.LinkedHashMap<>();
+            for (int i = 0; i < knownParams.length; i++) {
+                ent.put(knownParams[i][0], new String[]{knownParams[i][1], "", String.valueOf(i + 1)});
+            }
+            // Override with real values from data file if it already exists
+            File df = new File(currentInputFilePath);
+            if (!df.isAbsolute() || !df.exists()) {
+                String dir = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+                File alt = new File(new File(dir).getParent(), currentInputFilePath);
+                if (alt.exists()) df = alt;
+            }
+            if (df.exists()) {
+                try (BufferedReader br = new BufferedReader(new java.io.FileReader(df))) {
+                    String ln; int pos = 0;
+                    while ((ln = br.readLine()) != null) {
+                        ln = ln.trim();
+                        if (ln.isEmpty() || ln.startsWith("#")) continue;
+                        pos++;
+                        String[] p = ln.split(",", 3);
+                        if (p.length >= 2) {
+                            String nm = p[0].trim(), tp = p[1].trim();
+                            String val = p.length >= 3 ? p[2].trim() : "";
+                            ent.put(nm.toUpperCase(), new String[]{tp, val, String.valueOf(pos)});
+                        }
+                    }
+                } catch (Exception ignored) {}
+            }
+            // cudf: log fold change file + thresholds
+            linkEntry(ent, "LOG_FOLD_CHANGE_FILE", cudfB, 0);
+            linkEntry(ent, "UP_REG_THRESH",        cudfB, 1);
+            linkEntry(ent, "DOWN_REG_THRESH",      cudfB, 2);
+            // start: reference map files ([1] is derived exception file, skip)
+            linkEntry(ent, "INTER_DB_MAP_FILE",               startB, 0);
+            linkEntry(ent, "HSA_TO_GENE_SYMBOL_MAP_FILE",     startB, 2);
+            linkEntry(ent, "HSA_PATH_TO_PATH_NAME_MAP_FILE",  startB, 3);
+            // mff: user provides either a list-of-XMLs file or a pre-merged XML — connect both to [0]
+            linkEntry(ent, "LIST_OF_MERGED_KEGG_XML_FILE",    mffB, 0);
+            linkEntry(ent, "MERGED_KEGG_PATHWAYS_XML_FILE",   mffB, 0);
+            linkEntry(ent, "NODE_SPLIT_THRESHOLD",            mffB, 1);
+            linkEntry(ent, "INTER_DB_MAP_FILE",               mffB, 2);
+            // rgx: [0] is derived; node split threshold → [1]
+            linkEntry(ent, "NODE_SPLIT_THRESHOLD", rgxB, 1);
+            // fb_rch: src/tgt node IDs, path bound, edge direction
+            linkEntry(ent, "SRC_NODE",         fb_rchB, 0);
+            linkEntry(ent, "TGT_NODE",         fb_rchB, 1);
+            linkEntry(ent, "REACH_PATH_BOUND", fb_rchB, 2);
+            linkEntry(ent, "EDGES_TO_TARGET",  fb_rchB, 3);
+            // pathz3 (with FSC) — all frontend-provided slots
+            linkEntry(ent, "EDGE_RELAX_LB",           pathz3WB,  3);
+            linkEntry(ent, "NODE_RELAX_LB",           pathz3WB,  4);
+            linkEntry(ent, "EDGE_RELAX_UB",           pathz3WB,  5);
+            linkEntry(ent, "NODE_RELAX_UB",           pathz3WB,  6);
+            linkEntry(ent, "REACH_PATH_BOUND",        pathz3WB,  7);
+            linkEntry(ent, "ESSENTIAL_EDGES_FILE",    pathz3WB, 13);
+            linkEntry(ent, "AVOID_EDGES_FILE",        pathz3WB, 14);
+            linkEntry(ent, "INACTIVE_NODES_FILE",     pathz3WB, 16);
+            linkEntry(ent, "CONFIRMED_UP_REG_FILE",   pathz3WB, 17);
+            linkEntry(ent, "CONFIRMED_DOWN_REG_FILE", pathz3WB, 18);
+            linkEntry(ent, "RELAXED_NODES_FILE",      pathz3WB, 19);
+            linkEntry(ent, "RELAXED_EDGES_FILE",      pathz3WB, 21);
+            linkEntry(ent, "NONRELAXED_EDGES_FILE",   pathz3WB, 22);
+            linkEntry(ent, "LOG_FOLD_CHANGE_FILE",    pathz3WB, 23);
+            linkEntry(ent, "NUM_SOLNS_TO_COUNT",      pathz3WB, 24);
+            linkEntry(ent, "NUM_SOLNS_TO_EXPLORE",    pathz3WB, 25);
+            linkEntry(ent, "CONSTR_SOLVER_TIMEOUT1",  pathz3WB, 26);
+            linkEntry(ent, "CONSTR_SOLVER_TIMEOUT2",  pathz3WB, 27);
+            // pathz3 (without FSC) — same frontend slots
+            linkEntry(ent, "EDGE_RELAX_LB",           pathz3WoB,  3);
+            linkEntry(ent, "NODE_RELAX_LB",           pathz3WoB,  4);
+            linkEntry(ent, "EDGE_RELAX_UB",           pathz3WoB,  5);
+            linkEntry(ent, "NODE_RELAX_UB",           pathz3WoB,  6);
+            linkEntry(ent, "REACH_PATH_BOUND",        pathz3WoB,  7);
+            linkEntry(ent, "ESSENTIAL_EDGES_FILE",    pathz3WoB, 13);
+            linkEntry(ent, "AVOID_EDGES_FILE",        pathz3WoB, 14);
+            linkEntry(ent, "INACTIVE_NODES_FILE",     pathz3WoB, 16);
+            linkEntry(ent, "CONFIRMED_UP_REG_FILE",   pathz3WoB, 17);
+            linkEntry(ent, "CONFIRMED_DOWN_REG_FILE", pathz3WoB, 18);
+            linkEntry(ent, "RELAXED_NODES_FILE",      pathz3WoB, 19);
+            linkEntry(ent, "RELAXED_EDGES_FILE",      pathz3WoB, 21);
+            linkEntry(ent, "NONRELAXED_EDGES_FILE",   pathz3WoB, 22);
+            linkEntry(ent, "LOG_FOLD_CHANGE_FILE",    pathz3WoB, 23);
+            linkEntry(ent, "NUM_SOLNS_TO_COUNT",      pathz3WoB, 24);
+            linkEntry(ent, "NUM_SOLNS_TO_EXPLORE",    pathz3WoB, 25);
+            linkEntry(ent, "CONSTR_SOLVER_TIMEOUT1",  pathz3WoB, 26);
+            linkEntry(ent, "CONSTR_SOLVER_TIMEOUT2",  pathz3WoB, 27);
+        }
+
+        for (FunctionBlock fb : functionBlocks) fb.refreshInputBadges();
+        updateCanvasSize();
+        drawingPanel.repaint();
+
+        // Save as my_pipeline2.pipeline in the pipeline/ sibling folder
+        File saveDir;
+        String classDir = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+        File pipelineFolder = new File(new File(classDir).getParentFile().getParentFile(), "pipeline");
+        if (pipelineFolder.exists() && pipelineFolder.isDirectory()) {
+            saveDir = pipelineFolder;
+        } else if (lastSavedPipelineFile != null && lastSavedPipelineFile.getParentFile() != null) {
+            saveDir = lastSavedPipelineFile.getParentFile();
+        } else {
+            saveDir = new File(System.getProperty("user.dir"));
+        }
+        File pipeFile = new File(saveDir, "my_pipeline2.pipeline");
+        try (PrintWriter pw = new PrintWriter(new java.io.FileWriter(pipeFile))) {
+            writePipelineTo(pw);
+            lastSavedPipelineFile = pipeFile;
+            if (showDialogs) JOptionPane.showMessageDialog(this,
+                "Template pipeline created and saved:\n" + pipeFile.getAbsolutePath()
+                + "\n\nBlocks: " + functionBlocks.size()
+                + "  |  Connections: " + (connections.size() + fileEntryConnections.size()),
+                "Template Pipeline Ready", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception ex) {
+            if (showDialogs) JOptionPane.showMessageDialog(this,
+                "Template pipeline created.\nCould not auto-save: " + ex.getMessage(),
+                "Template Pipeline", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+
+    /** Creates a single FunctionBlock of the given type, adds it to the canvas, returns it. */
+    private FunctionBlock makeTemplateBlock(String type, int x, int y) {
+        BlockTemplate template = blockLibrary.get(type);
+        if (template == null) return null;
+        int count = instanceCounter.getOrDefault(type, 0) + 1;
+        instanceCounter.put(type, count);
+        FunctionBlock fb = new FunctionBlock(type + "_" + count, template);
+        fb.originalName = type;
+        fb.setBounds(x, y, fb.getPreferredSize().width, fb.getPreferredSize().height);
+        functionBlocks.add(fb);
+        drawingPanel.add(fb);
+        functionCounter++;
+        return fb;
+    }
+
+    /** Returns the current data-file entries as UPPERCASE_NAME → [type, value, positionStr]. */
+    private java.util.Map<String, String[]> getDataFileEntriesMap() {
+        java.util.Map<String, String[]> map = new java.util.LinkedHashMap<>();
+        File f = new File(currentInputFilePath);
+        if (!f.isAbsolute() || !f.exists()) {
+            String dir = getClass().getProtectionDomain().getCodeSource().getLocation().getPath();
+            File alt = new File(new File(dir).getParent(), currentInputFilePath);
+            if (alt.exists()) f = alt;
+        }
+        if (!f.exists()) return map;
+        try (BufferedReader br = new BufferedReader(new FileReader(f))) {
+            String line; int pos = 0;
+            while ((line = br.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty() || line.startsWith("#")) continue;
+                pos++;
+                String[] parts = line.split(",", 3);
+                String name  = parts[0].trim().toUpperCase();
+                String type  = parts.length >= 2 ? parts[1].trim() : "string";
+                String value = parts.length >= 3 ? parts[2].trim() : "";
+                map.put(name, new String[]{type, value, String.valueOf(pos)});
+            }
+        } catch (Exception ignored) {}
+        return map;
+    }
+
+    /** Creates a FileEntryConnection from the data-file entry named paramName to the given block input.
+        Also sets the block's inputValues[inputIdx] to the entry value. */
+    private void linkEntry(java.util.Map<String, String[]> entries, String paramName,
+                           FunctionBlock toBlock, int inputIdx) {
+        String[] e = entries.get(paramName.toUpperCase());
+        if (e == null) return;
+        toBlock.inputValues[inputIdx] = e[1];
+        FileEntryConnection fec = new FileEntryConnection(
+                paramName, e[0], e[1], Integer.parseInt(e[2]), toBlock, inputIdx);
+        fileEntryConnections.add(fec);
+    }
+
+    /** Returns the value for a key from the data-file entries map, or "" if absent. */
+    private String entVal(java.util.Map<String, String[]> ent, String key) {
+        String[] v = ent.get(key.toUpperCase());
+        if (v != null && v.length >= 2 && !v[1].isEmpty()) return v[1];
+        java.util.Map<String, String> aliases = getParamAliases();
+        for (java.util.Map.Entry<String, String> ae : aliases.entrySet()) {
+            if (ae.getValue().equalsIgnoreCase(key)) {
+                v = ent.get(ae.getKey().toUpperCase());
+                if (v != null && v.length >= 2 && !v[1].isEmpty()) return v[1];
+            }
+        }
+        return "";
     }
 
     /** Serializes the current pipeline state to any PrintWriter (file or string). */
@@ -683,23 +890,23 @@ public class gui4 extends JFrame {
     private JPanel createLegendPanel() {
         JPanel legendPanel = new JPanel();
         legendPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 10, 5));
-        legendPanel.setBackground(new Color(245, 245, 250, 230));
+        legendPanel.setBackground(Theme.SURFACE);
         legendPanel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(100, 100, 150), 1),
+            BorderFactory.createMatteBorder(0, 0, 1, 0, Theme.BORDER),
             BorderFactory.createEmptyBorder(5, 10, 5, 10)
         ));
-        JLabel legendLabel = new JLabel("Legend: ");
-        legendLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
-        legendLabel.setForeground(new Color(50, 50, 100));
+        JLabel legendLabel = new JLabel("Types: ");
+        legendLabel.setFont(new Font("SansSerif", Font.BOLD, 11));
+        legendLabel.setForeground(Theme.TEXT_MED);
         legendPanel.add(legendLabel);
         Object[][] typeColors = {
-            {"float", new Color(139, 0, 0)},
-            {"integer", new Color(0, 0, 139)},
-            {"string", new Color(255, 140, 0)},
-            {"file", new Color(199, 21, 133)},
-            {"graph", new Color(0, 139, 139)},
-            {"Status", new Color(0, 100, 0)},
-            {"char", new Color(184, 134, 11)}
+            {"float",   Theme.T_FLOAT},
+            {"integer", Theme.T_INT},
+            {"string",  Theme.T_STRING},
+            {"file",    Theme.T_FILE},
+            {"graph",   Theme.T_GRAPH},
+            {"status",  Theme.SUCCESS},
+            {"char",    Theme.WARNING}
         };
         for (Object[] typeColor : typeColors) {
             String typeName = (String) typeColor[0];
@@ -713,16 +920,16 @@ public class gui4 extends JFrame {
                     g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                     g2.setColor(color);
                     g2.fillRoundRect(0, 0, getWidth(), getHeight(), 4, 4);
-                    g2.setColor(Color.DARK_GRAY);
+                    g2.setColor(color.darker());
                     g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 4, 4);
                 }
             };
-            colorBox.setPreferredSize(new Dimension(14, 14));
+            colorBox.setPreferredSize(new Dimension(12, 12));
             colorBox.setOpaque(false);
-            
+
             JLabel label = new JLabel(typeName);
-            label.setFont(new Font("SansSerif", Font.BOLD, 11));
-            label.setForeground(color.darker());
+            label.setFont(new Font("SansSerif", Font.PLAIN, 11));
+            label.setForeground(color);
             
             legendPanel.add(colorBox);
             legendPanel.add(label);
@@ -741,11 +948,19 @@ public class gui4 extends JFrame {
         setSize(screen.width, screen.height);
         JPanel topPanel = new JPanel();
         topPanel.setLayout((LayoutManager) new BoxLayout(topPanel, BoxLayout.Y_AXIS));
-        JPanel controlsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 3));
+        topPanel.setBackground(Theme.TOOLBAR_BG);
+        JPanel controlsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 4));
+        controlsPanel.setBackground(Theme.TOOLBAR_BG);
+        controlsPanel.setOpaque(true);
         hamburgerButton = new JButton("\u2630");
-        hamburgerButton.setFont(new Font("SansSerif", Font.BOLD, 18));
+        hamburgerButton.setFont(new Font("SansSerif", Font.BOLD, 16));
         hamburgerButton.setToolTipText("Menu Options");
         hamburgerButton.setMargin(new Insets(2, 8, 2, 8));
+        hamburgerButton.setBackground(Theme.SURFACE);
+        hamburgerButton.setForeground(Theme.TEXT_DARK);
+        hamburgerButton.setOpaque(true);
+        hamburgerButton.setBorderPainted(false);
+        hamburgerButton.setFocusPainted(false);
         hamburgerButton.addActionListener(e -> {
             JPopupMenu menu = new JPopupMenu();
             
@@ -772,7 +987,11 @@ public class gui4 extends JFrame {
             JMenuItem loadPipelineItem = new JMenuItem("\uD83D\uDCC2 Load Pipeline (Ctrl+O)");
             loadPipelineItem.addActionListener(ev -> loadPipeline());
             menu.add(loadPipelineItem);
-            
+
+            JMenuItem templatePipelineItem = new JMenuItem("\u2728 Load Template Pipeline");
+            templatePipelineItem.addActionListener(ev -> loadTemplatePipeline());
+            menu.add(templatePipelineItem);
+
             menu.show(hamburgerButton, 0, hamburgerButton.getHeight());
         });
         controlsPanel.add(hamburgerButton);
@@ -780,20 +999,41 @@ public class gui4 extends JFrame {
         blockSelector.setRenderer(new BlockSelectorRenderer());
         blockSelector.setPreferredSize(new Dimension(120, 24));
         blockSelector.setMaximumSize(new Dimension(120, 24));
-        controlsPanel.add(new JLabel("Block:"));
+        JLabel blockLbl = new JLabel("Block:");
+        blockLbl.setForeground(Theme.TEXT_MED);
+        controlsPanel.add(blockLbl);
         controlsPanel.add(blockSelector);
         JButton addBlockBtn = new JButton("Add");
+        addBlockBtn.setBackground(Theme.SURFACE);
+        addBlockBtn.setForeground(Theme.TEXT_DARK);
+        addBlockBtn.setOpaque(true);
+        addBlockBtn.setBorderPainted(false);
+        addBlockBtn.setFocusPainted(false);
         addBlockBtn.setToolTipText("Add selected block to canvas");
         addBlockBtn.addActionListener(e -> addSelectedBlockInstance());
         controlsPanel.add(addBlockBtn);
         JButton addTemplateBtn = new JButton("+Tmpl");
-        addTemplateBtn.setBackground(new Color(138, 43, 226));
+        addTemplateBtn.setBackground(new Color(80, 50, 180));
         addTemplateBtn.setForeground(Color.WHITE);
+        addTemplateBtn.setOpaque(true);
+        addTemplateBtn.setBorderPainted(false);
+        addTemplateBtn.setFocusPainted(false);
         addTemplateBtn.setToolTipText("New Block Template");
         addTemplateBtn.addActionListener(e -> showNewBlockTemplateDialog());
         controlsPanel.add(addTemplateBtn);
         JTextField searchField = new JTextField(8);
+        searchField.setBackground(Theme.SURFACE);
+        searchField.setForeground(Theme.TEXT_DARK);
+        searchField.setCaretColor(Theme.TEXT_DARK);
+        searchField.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Theme.BORDER, 1),
+            BorderFactory.createEmptyBorder(2, 4, 2, 4)));
         JButton searchButton = new JButton("Search");
+        searchButton.setBackground(Theme.SURFACE);
+        searchButton.setForeground(Theme.TEXT_DARK);
+        searchButton.setOpaque(true);
+        searchButton.setBorderPainted(false);
+        searchButton.setFocusPainted(false);
         searchButton.addActionListener(e -> searchFunctionBlock(searchField.getText().toLowerCase()));
         searchField.addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent e) {
@@ -802,59 +1042,100 @@ public class gui4 extends JFrame {
                 }
             }
         });
-        controlsPanel.add(new JLabel("Search:"));
+        JLabel searchLbl = new JLabel("Search:");
+        searchLbl.setForeground(Theme.TEXT_MED);
+        controlsPanel.add(searchLbl);
         controlsPanel.add(searchField);
         controlsPanel.add(searchButton);
-        JButton zoomInButton = new JButton("\uD83D\uDD0D+");
+        JButton zoomInButton = new JButton("\ud83d\uDD0D+");
+        zoomInButton.setBackground(Theme.SURFACE);
+        zoomInButton.setForeground(Theme.TEXT_DARK);
+        zoomInButton.setOpaque(true);
+        zoomInButton.setBorderPainted(false);
+        zoomInButton.setFocusPainted(false);
         zoomInButton.addActionListener(e -> drawingPanel.zoom(1.2));
-        JButton zoomOutButton = new JButton("\uD83D\uDD0D\u2212");
+        JButton zoomOutButton = new JButton("\ud83d\uDD0D\u2212");
+        zoomOutButton.setBackground(Theme.SURFACE);
+        zoomOutButton.setForeground(Theme.TEXT_DARK);
+        zoomOutButton.setOpaque(true);
+        zoomOutButton.setBorderPainted(false);
+        zoomOutButton.setFocusPainted(false);
         zoomOutButton.addActionListener(e -> drawingPanel.zoom(0.8));
         controlsPanel.add(zoomInButton);
         controlsPanel.add(zoomOutButton);
         JButton executeBtn = new JButton("\u25B6 Execute");
-        executeBtn.setBackground(new Color(34, 139, 34));
+        executeBtn.setBackground(Theme.SUCCESS_DK);
         executeBtn.setForeground(Color.WHITE);
+        executeBtn.setOpaque(true);
+        executeBtn.setBorderPainted(false);
+        executeBtn.setFocusPainted(false);
         executeBtn.addActionListener(e -> executeGraph());
         controlsPanel.add(executeBtn);
 
-        JButton genScriptBtn = new JButton("\uD83D\uDCC4 Gen Script");
-        genScriptBtn.setBackground(new Color(100, 60, 160));
+        JButton genScriptBtn = new JButton("\ud83d\udcc4 Gen Script");
+        genScriptBtn.setBackground(new Color(80, 50, 180));
         genScriptBtn.setForeground(Color.WHITE);
+        genScriptBtn.setOpaque(true);
+        genScriptBtn.setBorderPainted(false);
+        genScriptBtn.setFocusPainted(false);
         genScriptBtn.setToolTipText("Generate advtempscript from current pipeline");
         genScriptBtn.addActionListener(e -> generateScriptFromPipeline());
         controlsPanel.add(genScriptBtn);
 
-        JButton saveBtn = new JButton("\uD83D\uDCBE Save");
-        saveBtn.setBackground(new Color(0, 120, 215));
+        JButton saveBtn = new JButton("\ud83d\uDCBE Save");
+        saveBtn.setBackground(Theme.PRIMARY_DK);
         saveBtn.setForeground(Color.WHITE);
+        saveBtn.setOpaque(true);
+        saveBtn.setBorderPainted(false);
+        saveBtn.setFocusPainted(false);
         saveBtn.setToolTipText("Save Pipeline (Ctrl+S)");
         saveBtn.addActionListener(e -> savePipeline());
         controlsPanel.add(saveBtn);
 
-        JButton loadBtn = new JButton("\uD83D\uDCC2 Load");
-        loadBtn.setBackground(new Color(200, 120, 0));
+        JButton loadBtn = new JButton("\ud83d\uDCC2 Load");
+        loadBtn.setBackground(Theme.WARNING_DK);
         loadBtn.setForeground(Color.WHITE);
+        loadBtn.setOpaque(true);
+        loadBtn.setBorderPainted(false);
+        loadBtn.setFocusPainted(false);
         loadBtn.setToolTipText("Load Pipeline (Ctrl+O)");
         loadBtn.addActionListener(e -> loadPipeline());
         controlsPanel.add(loadBtn);
 
-        // Fix preferred size so FlowLayout never wraps inside the scroll pane
-        controlsPanel.setPreferredSize(new Dimension(1280, 36));
-        JScrollPane ctrlScroll = new JScrollPane(controlsPanel,
-            JScrollPane.VERTICAL_SCROLLBAR_NEVER,
-            JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        ctrlScroll.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new java.awt.Color(200, 205, 220)));
-        ctrlScroll.setMaximumSize(new Dimension(Integer.MAX_VALUE, 44));
-        ctrlScroll.setMinimumSize(new Dimension(0, 36));
-        topPanel.add(ctrlScroll);
+        JButton newPageBtn = new JButton("\ud83d\udcc4 New");
+        newPageBtn.setBackground(Theme.DANGER);
+        newPageBtn.setForeground(Color.WHITE);
+        newPageBtn.setOpaque(true);
+        newPageBtn.setBorderPainted(false);
+        newPageBtn.setFocusPainted(false);
+        newPageBtn.setToolTipText("Clear everything and start a fresh pipeline");
+        newPageBtn.addActionListener(e -> newPipeline());
+        controlsPanel.add(newPageBtn);
+
+        JButton templateBtn = new JButton("\u2728 Template");
+        templateBtn.setBackground(new Color(120, 40, 160));
+        templateBtn.setForeground(Color.WHITE);
+        templateBtn.setOpaque(true);
+        templateBtn.setBorderPainted(false);
+        templateBtn.setFocusPainted(false);
+        templateBtn.setToolTipText("Create template pipeline with all 7 blocks pre-connected");
+        templateBtn.addActionListener(e -> loadTemplatePipeline());
+        controlsPanel.add(templateBtn);
+
+        controlsPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Theme.BORDER));
+        topPanel.add(controlsPanel);
         
         blockListPanel = new JPanel();
         blockListPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        blockListPanel.setBackground(Theme.TOOLBAR_BG);
         JScrollPane blockScrollPane = new JScrollPane(blockListPanel);
-        blockScrollPane.setPreferredSize(new Dimension(1280, 80));
-        blockScrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
+        blockScrollPane.setPreferredSize(new Dimension(1280, 76));
+        blockScrollPane.setMaximumSize(new Dimension(Integer.MAX_VALUE, 76));
         blockScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         blockScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        blockScrollPane.setBackground(Theme.TOOLBAR_BG);
+        blockScrollPane.getViewport().setBackground(Theme.TOOLBAR_BG);
+        blockScrollPane.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Theme.BORDER));
         topPanel.add(blockScrollPane);
         populateBlockLibrary();
         add(topPanel, BorderLayout.NORTH);
@@ -863,35 +1144,23 @@ public class gui4 extends JFrame {
         JPanel editorPanel = new JPanel(new BorderLayout());
         
         JPanel legendContainer = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-        legendContainer.setBackground(new Color(248, 248, 252));
+        legendContainer.setBackground(Theme.SURFACE);
         legendContainer.add(createLegendPanel());
         editorPanel.add(legendContainer, BorderLayout.NORTH);
         
-        // === FILE PANEL (left side, 1/6 width) ===
+        // === FILE PANEL (left side, resizable via JSplitPane) ===
         JPanel filePanel = createFilePanel();
-        
+
         JScrollPane canvasScroll = new JScrollPane(drawingPanel);
         canvasScroll.getVerticalScrollBar().setUnitIncrement(16);
-        
-        // Split pane: file panel on left, canvas on right
-        JSplitPane editorSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, filePanel, canvasScroll);
-        editorSplit.setOneTouchExpandable(true);
-        editorSplit.setContinuousLayout(true);
-        editorSplit.setBorder(null);
-        editorSplit.setDividerSize(6);
-        // Proportional divider: left panel gets ~18%, canvas gets the rest
-        editorSplit.setResizeWeight(0.18);
-        editorSplit.addComponentListener(new java.awt.event.ComponentAdapter() {
-            private boolean initialized = false;
-            @Override
-            public void componentResized(java.awt.event.ComponentEvent e) {
-                if (!initialized && editorSplit.getWidth() > 0) {
-                    editorSplit.setDividerLocation(0.18);
-                    initialized = true;
-                }
-            }
-        });
-        editorPanel.add(editorSplit, BorderLayout.CENTER);
+
+        JSplitPane centerSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, filePanel, canvasScroll);
+        centerSplit.setDividerLocation(310);
+        centerSplit.setDividerSize(5);
+        centerSplit.setResizeWeight(0.0);   // canvas gets all extra space on window resize
+        centerSplit.setContinuousLayout(true);
+        centerSplit.setBorder(null);
+        editorPanel.add(centerSplit, BorderLayout.CENTER);
         // === END FILE PANEL ===
         
         tabbedPane.addTab("Graph Editor", editorPanel);
@@ -907,6 +1176,8 @@ public class gui4 extends JFrame {
         add(tabbedPane, BorderLayout.CENTER);
         setupKeyboardShortcuts();
         if (!embeddedMode) setVisible(true);
+        // Auto-load template pipeline on every fresh session (no saved pipeline yet)
+        SwingUtilities.invokeLater(() -> applyTemplatePipeline(false));
     }
     // =====================================================
     // FILE PANEL METHODS  (reads Data_Coming_From_Frontend.txt)
@@ -914,30 +1185,85 @@ public class gui4 extends JFrame {
     // =====================================================
     /** Returns the accent color for a given type string (mirrors graph editor colours). */
     private Color getFilePanelTypeColor(String type) {
-        if (type == null) return new Color(100, 100, 100);
+        if (type == null) return Theme.T_OTHER;
         switch (type.trim().toLowerCase()) {
-            case "float":   return new Color(139, 0, 0);
-            case "integer": case "int": return new Color(0, 0, 139);
-            case "string":  return new Color(200, 100, 0);
-            case "file":    return new Color(199, 21, 133);
-            case "graph":   return new Color(0, 139, 139);
-            case "status":  return new Color(0, 100, 0);
-            case "boolean": return new Color(80, 140, 40);
-            case "char": case "character": return new Color(184, 134, 11);
-            default:        return new Color(80, 80, 80);
+            case "float":                   return Theme.T_FLOAT;
+            case "integer": case "int":     return Theme.T_INT;
+            case "string":                  return Theme.T_STRING;
+            case "file":                    return Theme.T_FILE;
+            case "graph":                   return Theme.T_GRAPH;
+            case "status":                  return Theme.SUCCESS;
+            case "boolean":                 return Theme.SUCCESS_DK;
+            case "char": case "character":  return Theme.WARNING;
+            default:                        return Theme.T_OTHER;
         }
     }
+    // ---- Group definitions for the input panel sidebar ----
+    private static final String[][] GROUP_DEFS = {
+        { "\uD83E\uDDEC", "Genes",      "Target genes and the node under study" },
+        { "\uD83D\uDCCA", "Expression", "Fold-change data and regulation thresholds" },
+        { "\uD83C\uDF10", "Pathway",    "KEGG XML files and additional edges" },
+        { "\uD83D\uDD0D", "Path Search","Reachability bound and edge direction rules" },
+        { "\u2696",       "Relaxation", "Node / edge relaxation bounds and override files" },
+        { "\uD83D\uDDC2", "Ref Maps",   "ID-mapping and pathway-name reference files" },
+        { "\u2699",       "Advanced",   "Solver timeouts, solution counts, split thresholds" },
+    };
+    // Returns 0-6 group index for a canonical param name, or -1 if unknown.
+    private int getEntryGroup(String name) {
+        if (name == null) return -1;
+        switch (name.toUpperCase()) {
+            // Group 0 \u2014 Genes
+            case "SRC_NODE": case "TGT_NODE": case "NODE_TO_TEST_FOR_SIGNIFICANCE":
+                return 0;
+            // Group 1 \u2014 Expression
+            case "LOG_FOLD_CHANGE_FILE": case "LOGFOLDCHANGES":
+            case "UP_REG_THRESH": case "DOWN_REG_THRESH":
+            case "COEXPRESSION_CSV": case "COEXP_THRESH": case "FROZEN_THRESH":
+                return 1;
+            // Group 2 \u2014 Pathway
+            case "LIST_OF_MERGED_KEGG_XML_FILE": case "MERGED_KEGG_PATHWAYS_XML_FILE":
+            case "ADDITIONAL_EDGES_FILE": case "ADDITIONALEDGES":
+            case "HSA_IDS_NOT_TO_BE_MERGED_FILE":
+                return 2;
+            // Group 3 \u2014 Path Search
+            case "REACH_PATH_BOUND": case "EDGES_TO_TARGET":
+            case "ESSENTIAL_EDGES_FILE": case "AVOID_EDGES_FILE":
+                return 3;
+            // Group 4 \u2014 Relaxation
+            case "EDGE_RELAX_LB": case "EDGE_RELAX_UB":
+            case "NODE_RELAX_LB": case "NODE_RELAX_UB":
+            case "RELAXED_EDGES_FILE": case "NONRELAXED_EDGES_FILE":
+            case "RELAXED_NODES_FILE": case "NONRELAXED_NODES_FILE":
+            case "INACTIVE_NODES_FILE":
+            case "CONFIRMED_UP_REG_FILE": case "CONFIRMED_DOWN_REG_FILE":
+                return 4;
+            // Group 5 \u2014 Ref Maps
+            case "HSA_TO_GENE_SYMBOL_MAP_FILE": case "HSA_PATH_TO_PATH_NAME_MAP_FILE":
+            case "INTER_DB_MAP_FILE": case "WORK_DIR":
+                return 5;
+            // Group 6 \u2014 Advanced
+            case "NODE_SPLIT_THRESHOLD":
+            case "CONSTR_SOLVER_TIMEOUT1": case "CONSTR_SOLVER_TIMEOUT2":
+            case "NUM_SOLNS_TO_COUNT": case "NUM_SOLNS_TO_EXPLORE":
+                return 6;
+            default:
+                return -1;
+        }
+    }
+
     private JPanel createFilePanel() {
         JPanel panel = new JPanel(new BorderLayout(0, 0));
-        panel.setBackground(new Color(240, 242, 248));
-        panel.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, new Color(180, 190, 210)));
+        panel.setBackground(Theme.BG);
+        panel.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, Theme.BORDER));
         panel.setMinimumSize(new Dimension(130, 0));
-        panel.setPreferredSize(new Dimension(230, 0));
+        panel.setPreferredSize(new Dimension(310, 0));
 
         // ---- Header ----
         JPanel header = new JPanel(new BorderLayout(4, 4));
-        header.setBackground(new Color(45, 65, 120));
-        header.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 6));
+        header.setBackground(Theme.SURFACE);
+        header.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 1, 0, Theme.BORDER),
+            BorderFactory.createEmptyBorder(8, 10, 8, 6)));
 
         JLabel title = new JLabel("\uD83D\uDCC2  Input Data");
         title.setFont(new Font("SansSerif", Font.BOLD, 13));
@@ -952,9 +1278,10 @@ public class gui4 extends JFrame {
         reloadBtn.setToolTipText("Reload from file");
         reloadBtn.setMargin(new Insets(1, 6, 1, 6));
         reloadBtn.setFocusPainted(false);
-        reloadBtn.setBackground(new Color(70, 100, 170));
-        reloadBtn.setForeground(Color.WHITE);
+        reloadBtn.setBackground(Theme.BORDER_HI);
+        reloadBtn.setForeground(Theme.TEXT_DARK);
         reloadBtn.setBorderPainted(false);
+        reloadBtn.setOpaque(true);
         reloadBtn.addActionListener(e -> loadAndDisplayInputFile());
         headerBtns.add(reloadBtn);
 
@@ -963,24 +1290,37 @@ public class gui4 extends JFrame {
         browseBtn.setToolTipText("Browse for a different file");
         browseBtn.setMargin(new Insets(1, 6, 1, 6));
         browseBtn.setFocusPainted(false);
-        browseBtn.setBackground(new Color(70, 100, 170));
-        browseBtn.setForeground(Color.WHITE);
+        browseBtn.setBackground(Theme.BORDER_HI);
+        browseBtn.setForeground(Theme.TEXT_DARK);
         browseBtn.setBorderPainted(false);
+        browseBtn.setOpaque(true);
         browseBtn.addActionListener(e -> browseInputFile());
         headerBtns.add(browseBtn);
+
+        JButton genDataBtn = new JButton("\u26A1");
+        genDataBtn.setFont(new Font("SansSerif", Font.BOLD, 13));
+        genDataBtn.setToolTipText("Generate Data_Coming_From_Frontend file from current session");
+        genDataBtn.setMargin(new Insets(1, 6, 1, 6));
+        genDataBtn.setFocusPainted(false);
+        genDataBtn.setBackground(Theme.SUCCESS_DK);
+        genDataBtn.setForeground(Color.WHITE);
+        genDataBtn.setBorderPainted(false);
+        genDataBtn.setOpaque(true);
+        genDataBtn.addActionListener(e -> generateDataComingFromFileInteractive());
+        headerBtns.add(genDataBtn);
 
         header.add(headerBtns, BorderLayout.EAST);
         panel.add(header, BorderLayout.NORTH);
 
         // ---- Source label (bottom) ----
         filePanelSourceLabel = new JLabel(" " + DEFAULT_INPUT_FILE);
-        filePanelSourceLabel.setFont(new Font("SansSerif", Font.ITALIC, 10));
-        filePanelSourceLabel.setForeground(new Color(90, 100, 130));
+        filePanelSourceLabel.setFont(Theme.mono(9));
+        filePanelSourceLabel.setForeground(Theme.TEXT_LIGHT);
         filePanelSourceLabel.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(200, 205, 220)),
+            BorderFactory.createMatteBorder(1, 0, 0, 0, Theme.BORDER),
             BorderFactory.createEmptyBorder(3, 8, 3, 4)
         ));
-        filePanelSourceLabel.setBackground(new Color(232, 235, 245));
+        filePanelSourceLabel.setBackground(Theme.SURFACE);
         filePanelSourceLabel.setOpaque(true);
         filePanelSourceLabel.setToolTipText(currentInputFilePath);
         panel.add(filePanelSourceLabel, BorderLayout.SOUTH);
@@ -988,15 +1328,93 @@ public class gui4 extends JFrame {
         // ---- Entries container (scrollable) ----
         fileEntriesPanel = new JPanel();
         fileEntriesPanel.setLayout(new BoxLayout(fileEntriesPanel, BoxLayout.Y_AXIS));
-        fileEntriesPanel.setBackground(new Color(240, 242, 248));
-        fileEntriesPanel.setBorder(BorderFactory.createEmptyBorder(6, 0, 6, 0));
+        fileEntriesPanel.setBackground(Theme.BG);
+        fileEntriesPanel.setBorder(BorderFactory.createEmptyBorder(6, 0, 8, 0));
 
         JScrollPane scroll = new JScrollPane(fileEntriesPanel);
         scroll.setBorder(null);
         scroll.getVerticalScrollBar().setUnitIncrement(14);
         scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        panel.add(scroll, BorderLayout.CENTER);
+
+        // ---- Sidebar: group filter buttons ----
+        JPanel sidebar = new JPanel();
+        sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
+        sidebar.setBackground(Theme.TOOLBAR_BG);
+        sidebar.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 0, 1, Theme.BORDER),
+            BorderFactory.createEmptyBorder(6, 3, 6, 3)));
+        sidebar.setPreferredSize(new Dimension(82, 0));
+        sidebar.setMinimumSize(new Dimension(82, 0));
+        sidebar.setMaximumSize(new Dimension(82, Integer.MAX_VALUE));
+
+        // "All" button + 7 group buttons
+        int totalButtons = 1 + GROUP_DEFS.length;
+        groupSidebarButtons = new JButton[totalButtons];
+
+        Color sidebarBtnNormal   = Theme.SURFACE;
+        Color sidebarBtnSelected = Theme.PRIMARY;
+        Color sidebarBtnHover    = Theme.BORDER_HI;
+        Color sidebarText        = Theme.TEXT_DARK;
+
+        Runnable[] selectActions = new Runnable[totalButtons];
+
+        for (int bi = 0; bi < totalButtons; bi++) {
+            final int groupIdx = bi - 1; // -1 = All, 0..6 = groups
+            String icon, label, tip;
+            if (bi == 0) {
+                icon = "\uD83D\uDDC3"; label = "All"; tip = "Show all inputs";
+            } else {
+                icon  = GROUP_DEFS[bi - 1][0];
+                label = GROUP_DEFS[bi - 1][1];
+                tip   = GROUP_DEFS[bi - 1][2];
+            }
+            JButton btn = new JButton("<html><center>" + icon + "<br>"
+                    + "<span style='font-size:9px'>" + label + "</span></center></html>");
+            btn.setFont(new Font("SansSerif", Font.PLAIN, 12));
+            btn.setForeground(sidebarText);
+            btn.setBackground(bi == 0 ? sidebarBtnSelected : sidebarBtnNormal);
+            btn.setOpaque(true);
+            btn.setBorderPainted(false);
+            btn.setFocusPainted(false);
+            btn.setToolTipText(tip);
+            btn.setMaximumSize(new Dimension(84, 56));
+            btn.setPreferredSize(new Dimension(84, 56));
+            btn.setAlignmentX(Component.CENTER_ALIGNMENT);
+            btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+            groupSidebarButtons[bi] = btn;
+
+            final int biFinal = bi;
+            selectActions[bi] = () -> {
+                selectedGroupIndex = groupIdx;
+                for (int k = 0; k < groupSidebarButtons.length; k++)
+                    groupSidebarButtons[k].setBackground(k == biFinal ? sidebarBtnSelected : sidebarBtnNormal);
+                loadAndDisplayInputFile();
+            };
+
+            btn.addActionListener(e -> selectActions[biFinal].run());
+            btn.addMouseListener(new java.awt.event.MouseAdapter() {
+                public void mouseEntered(java.awt.event.MouseEvent e) {
+                    if (btn.getBackground() != sidebarBtnSelected)
+                        btn.setBackground(sidebarBtnHover);
+                }
+                public void mouseExited(java.awt.event.MouseEvent e) {
+                    if (btn.getBackground() != sidebarBtnSelected)
+                        btn.setBackground(sidebarBtnNormal);
+                }
+            });
+
+            sidebar.add(btn);
+            if (bi < totalButtons - 1)
+                sidebar.add(Box.createRigidArea(new Dimension(0, 4)));
+        }
+
+        // ---- Center: sidebar + scroll ----
+        JPanel centerSplit = new JPanel(new BorderLayout(0, 0));
+        centerSplit.add(sidebar, BorderLayout.WEST);
+        centerSplit.add(scroll,  BorderLayout.CENTER);
+        panel.add(centerSplit, BorderLayout.CENTER);
 
         loadAndDisplayInputFile();
         return panel;
@@ -1011,6 +1429,224 @@ public class gui4 extends JFrame {
             filePanelSourceLabel.setToolTipText(currentInputFilePath);
             loadAndDisplayInputFile();
         }
+    }
+
+    /**
+     * Maps alternate/legacy names (UPPERCASE) → canonical param name (UPPERCASE).
+     * Allows values from the original Data_Coming_From_Frontend.txt (which uses
+     * short alias names like "log_fold_changes") to resolve into the canonical
+     * names used by the generated data file and the pipeline FENTRYs.
+     */
+    private static java.util.Map<String, String> getParamAliases() {
+        java.util.Map<String, String> m = new java.util.HashMap<>();
+        m.put("LOG_FOLD_CHANGES",               "LOG_FOLD_CHANGE_FILE");
+        m.put("LOG_FOLD_CHANGES_FILE",          "LOG_FOLD_CHANGE_FILE");
+        m.put("UP_THRESHOLD",                   "UP_REG_THRESH");
+        m.put("UP_REGULATORY_THRESHOLD",        "UP_REG_THRESH");
+        m.put("DOWN_THRESHOLD",                 "DOWN_REG_THRESH");
+        m.put("DOWN_REGULATORY_THRESHOLD",      "DOWN_REG_THRESH");
+        m.put("CROSS_DB_MAP",                   "INTER_DB_MAP_FILE");
+        m.put("CROSS_DATABASE_MAP",             "INTER_DB_MAP_FILE");
+        m.put("HSA_TO_GENE_MAP",                "HSA_TO_GENE_SYMBOL_MAP_FILE");
+        m.put("HSA_TO_GENE_SYMBOL_MAP",         "HSA_TO_GENE_SYMBOL_MAP_FILE");
+        m.put("HSA_PATH_MAP",                   "HSA_PATH_TO_PATH_NAME_MAP_FILE");
+        m.put("HSA_PATH_TO_PATH_NAME_MAP",      "HSA_PATH_TO_PATH_NAME_MAP_FILE");
+        m.put("SIGNALLING_PATH_LENGTH",         "REACH_PATH_BOUND");
+        m.put("NODE_RELAX_LOWER",               "NODE_RELAX_LB");
+        m.put("NODE_RELAXATION_LOWER_BOUND",    "NODE_RELAX_LB");
+        m.put("NODE_RELAX_UPPER",               "NODE_RELAX_UB");
+        m.put("NODE_RELAXATION_UPPER_BOUND",    "NODE_RELAX_UB");
+        m.put("EDGE_RELAX_LOWER",               "EDGE_RELAX_LB");
+        m.put("EDGE_RELAXATION_LOWER_BOUND",    "EDGE_RELAX_LB");
+        m.put("EDGE_RELAX_UPPER",               "EDGE_RELAX_UB");
+        m.put("EDGE_RELAXATION_UPPER_BOUND",    "EDGE_RELAX_UB");
+        m.put("INC_SOLVER_TIMEOUT",             "CONSTR_SOLVER_TIMEOUT1");
+        m.put("INCREMENT_SOLVER_TIMEOUT",       "CONSTR_SOLVER_TIMEOUT1");
+        m.put("OVER_SOLVER_TIMEOUT",            "CONSTR_SOLVER_TIMEOUT2");
+        m.put("OVERALL_SOLVER_TIMEOUT",         "CONSTR_SOLVER_TIMEOUT2");
+        m.put("SOLUTION_COUNT",                 "NUM_SOLNS_TO_COUNT");
+        m.put("SOLUTIONS_TO_COUNT",             "NUM_SOLNS_TO_COUNT");
+        m.put("SOLUTION_EXPLORE",               "NUM_SOLNS_TO_EXPLORE");
+        m.put("SOLUTIONS_TO_EXPLORE",           "NUM_SOLNS_TO_EXPLORE");
+        m.put("ESSENTIAL_EDGES",                "ESSENTIAL_EDGES_FILE");
+        m.put("ESSENTIAL_EDGE_FILE",            "ESSENTIAL_EDGES_FILE");
+        m.put("AVOID_EDGES",                    "AVOID_EDGES_FILE");
+        m.put("AVOID_EDGE_FILE",                "AVOID_EDGES_FILE");
+        m.put("INACTIVE_NODES",                 "INACTIVE_NODES_FILE");
+        m.put("INACTIVE_NODE_FILE",             "INACTIVE_NODES_FILE");
+        m.put("CONFIRMED_UP_REG",               "CONFIRMED_UP_REG_FILE");
+        m.put("CONFIRMED_DOWN_REG",             "CONFIRMED_DOWN_REG_FILE");
+        m.put("RELAXED_NODES",                  "RELAXED_NODES_FILE");
+        m.put("RELAXED_EDGES",                  "RELAXED_EDGES_FILE");
+        m.put("NON_RELAXED_EDGES",              "NONRELAXED_EDGES_FILE");
+        m.put("NON_RELAXED_EDGES_FILE",         "NONRELAXED_EDGES_FILE");
+        m.put("WORKING_DIRECTORY",              "WORK_DIR");
+        m.put("WORK_DIRECTORY",                 "WORK_DIR");
+        m.put("KEGG_XML",                       "MERGED_KEGG_PATHWAYS_XML_FILE");
+        m.put("MERGED_KEGG_XML_OUTPUT",         "MERGED_KEGG_PATHWAYS_XML_FILE");
+        m.put("MICROARRAY_DATA",                "LIST_OF_MERGED_KEGG_XML_FILE");
+        m.put("KEGG_XML_INPUT_LIST",            "LIST_OF_MERGED_KEGG_XML_FILE");
+        m.put("HSA_IDS_NOT_TO_BE_MERGED",       "HSA_IDS_NOT_TO_BE_MERGED_FILE");
+        m.put("EXCEPTION_TO_NODE_MERGE",        "EXCEPTION_TO_NODE_MERGE_FILE");
+        m.put("ADDITIONAL_EDGES",               "ADDITIONAL_EDGES_FILE");
+        m.put("COEXPRESSION",                   "COEXPRESSION_CSV");
+        m.put("COEXP_CSV",                      "COEXPRESSION_CSV");
+        return m;
+    }
+
+    /** Looks up a canonical param name in existingMap, falling back to aliases. */
+    private static String[] lookupInExisting(String canonicalKey,
+            java.util.Map<String, String[]> existingMap,
+            java.util.Map<String, String> aliases) {
+        String[] ex = existingMap.get(canonicalKey);
+        if (ex != null && !ex[1].isEmpty()) return ex;
+        // try each alias whose canonical matches
+        for (java.util.Map.Entry<String, String> ae : aliases.entrySet()) {
+            if (ae.getValue().equals(canonicalKey)) {
+                String[] alt = existingMap.get(ae.getKey());
+                if (alt != null && !alt[1].isEmpty()) return alt;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Generates a Data_Coming_From_Frontend file for the current session.
+     * Contains all let-variable inputs defined before the cudf block in advtempscript.
+     * Uses values already loaded in the file panel; fills defaults for missing ones.
+     * Saves to: {pipeline_folder}/data_coming_from/{sessionName}_{yyyyMMdd_HHmmss}.txt
+     */
+    private void generateDataComingFromFile() {
+        // --- Read currently loaded values (name -> value, case-insensitive lookup) ---
+        java.util.Map<String, String[]> existing = new java.util.LinkedHashMap<>(); // key=uppercase name, val=[type,value]
+        File curFile = new File(currentInputFilePath);
+        if (curFile.exists()) {
+            try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(curFile))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    line = line.trim();
+                    if (line.isEmpty() || line.startsWith("#")) continue;
+                    String[] parts = line.split(",", 3);
+                    if (parts.length >= 3) {
+                        existing.put(parts[0].trim().toUpperCase(), new String[]{parts[1].trim(), parts[2].trim()});
+                    } else if (parts.length == 2) {
+                        existing.put(parts[0].trim().toUpperCase(), new String[]{parts[1].trim(), ""});
+                    }
+                }
+            } catch (Exception ignored) {}
+        }
+
+        // --- Frontend-provided inputs only (no constants, no derived paths) ---
+        // Format: { canonicalName, type, defaultValue }
+        String[][] params = {
+            // Files — default empty_file when user provides nothing
+            {"LOG_FOLD_CHANGE_FILE",            "file",    "empty_file"},
+            {"LIST_OF_MERGED_KEGG_XML_FILE",    "file",    "empty_file"},
+            {"MERGED_KEGG_PATHWAYS_XML_FILE",   "file",    "empty_file"},
+            {"ADDITIONAL_EDGES_FILE",           "file",    "empty_file"},
+            {"ESSENTIAL_EDGES_FILE",            "file",    "empty_file"},
+            {"AVOID_EDGES_FILE",                "file",    "empty_file"},
+            {"INACTIVE_NODES_FILE",             "file",    "empty_file"},
+            {"CONFIRMED_UP_REG_FILE",           "file",    "empty_file"},
+            {"CONFIRMED_DOWN_REG_FILE",         "file",    "empty_file"},
+            {"RELAXED_NODES_FILE",              "file",    "empty_file"},
+            {"RELAXED_EDGES_FILE",              "file",    "empty_file"},
+            {"NONRELAXED_EDGES_FILE",           "file",    "empty_file"},
+            {"COEXPRESSION_CSV",                "file",    "empty_file"},
+            {"HSA_TO_GENE_SYMBOL_MAP_FILE",     "file",    "empty_file"},
+            {"HSA_PATH_TO_PATH_NAME_MAP_FILE",  "file",    "empty_file"},
+            {"INTER_DB_MAP_FILE",               "file",    "empty_file"},
+            {"HSA_IDS_NOT_TO_BE_MERGED_FILE",   "file",    "empty_file"},
+            // Node IDs / working directory
+            {"WORK_DIR",                        "string",  "/example/workdir"},
+            {"SRC_NODE",                        "string",  "hsa0"},
+            {"TGT_NODE",                        "string",  "hsa0"},
+            {"NODE_TO_TEST_FOR_SIGNIFICANCE",   "string",  "hsa0"},
+            // Numeric parameters
+            {"REACH_PATH_BOUND",                "integer", "5"},
+            {"EDGE_RELAX_LB",                   "integer", "0"},
+            {"EDGE_RELAX_UB",                   "integer", "5"},
+            {"NODE_RELAX_LB",                   "integer", "0"},
+            {"NODE_RELAX_UB",                   "integer", "5"},
+            {"NODE_SPLIT_THRESHOLD",            "integer", "50"},
+            {"CONSTR_SOLVER_TIMEOUT1",          "integer", "60"},
+            {"CONSTR_SOLVER_TIMEOUT2",          "integer", "300"},
+            {"NUM_SOLNS_TO_COUNT",              "integer", "3"},
+            {"NUM_SOLNS_TO_EXPLORE",            "integer", "10"},
+            {"UP_REG_THRESH",                   "float",   "1.5"},
+            {"DOWN_REG_THRESH",                 "float",   "-1.5"},
+            {"COEXP_THRESH",                    "float",   "0.5"},
+            {"FROZEN_THRESH",                   "float",   "0.5"},
+            {"EDGES_TO_TARGET",                 "integer", "0"},
+        };
+
+        // --- Resolve values (existing wins over default; fall back to aliases) ---
+        java.util.Map<String, String> resolved = new java.util.LinkedHashMap<>();
+        java.util.Map<String, String> aliases = getParamAliases();
+        for (String[] p : params) {
+            String key = p[0].toUpperCase();
+            String[] ex = lookupInExisting(key, existing, aliases);
+            resolved.put(p[0], (ex != null && !ex[1].isEmpty()) ? ex[1] : p[2]);
+        }
+
+        // --- Determine output folder: {pipeline_dir}/data_coming_from/ ---
+        File pipelineDir;
+        if (lastSavedPipelineFile != null && lastSavedPipelineFile.getParentFile() != null) {
+            pipelineDir = lastSavedPipelineFile.getParentFile();
+        } else {
+            pipelineDir = new File(System.getProperty("user.dir"));
+        }
+        File dataDir = new File(pipelineDir, "data_coming_from");
+        dataDir.mkdirs();
+
+        // --- Session name + timestamp ---
+        String sessionName = (lastSavedPipelineFile != null)
+                ? lastSavedPipelineFile.getName().replaceFirst("\\.[^.]+$", "")
+                : "session";
+        String timestamp = new java.text.SimpleDateFormat("yyyyMMdd_HHmmss").format(new java.util.Date());
+        File outFile = new File(dataDir, sessionName + "_" + timestamp + ".txt");
+
+        // --- Write the file (frontend-provided entries only, no derived paths) ---
+        try (PrintWriter w = new PrintWriter(outFile, "UTF-8")) {
+            w.println("# Data_Coming_From_Frontend — frontend-provided inputs only");
+            w.println("# Session: " + sessionName + "  Generated: " + new java.util.Date());
+            w.println("# Format: name,type,value");
+            for (String[] p : params) {
+                String val = resolved.get(p[0]);
+                if (val == null) val = p[2];
+                // Only one of the two KEGG XML inputs is selected in Card 3.
+                // Skip the one that has no real value so it never appears in the file panel.
+                if (("LIST_OF_MERGED_KEGG_XML_FILE".equals(p[0]) || "MERGED_KEGG_PATHWAYS_XML_FILE".equals(p[0]))
+                        && "empty_file".equals(val)) continue;
+                w.println(p[0] + "," + p[1] + "," + val);
+            }
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(getDialogParent(),
+                "Error writing data file:\n" + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // --- Load the generated file into the file panel ---
+        currentInputFilePath = outFile.getAbsolutePath();
+        filePanelSourceLabel.setToolTipText(currentInputFilePath);
+        loadAndDisplayInputFile();
+    }
+
+    /**
+     * Called by Gui4Panel (embedded mode) to auto-generate the full parameter list
+     * from the frontend data file and populate the file panel silently.
+     */
+    public void autoGenerateFullDataFile() {
+        SwingUtilities.invokeLater(this::generateDataComingFromFile);
+    }
+
+    private void generateDataComingFromFileInteractive() {
+        generateDataComingFromFile();
+        JOptionPane.showMessageDialog(getDialogParent(),
+            "<html>Data file generated and loaded:<br><b>"
+            + new File(currentInputFilePath).getName() + "</b><br><br>"
+            + "Location:<br>" + currentInputFilePath + "</html>",
+            "Data File Generated", JOptionPane.INFORMATION_MESSAGE);
     }
     /**
      * Parses lines of the form:  name,type,value
@@ -1062,13 +1698,109 @@ public class gui4 extends JFrame {
             empty.setBorder(BorderFactory.createEmptyBorder(20, 8, 8, 8));
             fileEntriesPanel.add(empty);
         } else {
+            // Show group header label when a specific group is selected
+            if (selectedGroupIndex >= 0 && selectedGroupIndex < GROUP_DEFS.length) {
+                String grpIcon = GROUP_DEFS[selectedGroupIndex][0];
+                String grpName = GROUP_DEFS[selectedGroupIndex][1];
+                String grpDesc = GROUP_DEFS[selectedGroupIndex][2];
+
+                JPanel grpHdr = new JPanel(new BorderLayout(0, 0));
+                grpHdr.setOpaque(true);
+                grpHdr.setBackground(new Color(232, 236, 248));
+                grpHdr.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(190, 200, 225)),
+                    BorderFactory.createEmptyBorder(7, 10, 7, 10)
+                ));
+                grpHdr.setMaximumSize(new Dimension(Integer.MAX_VALUE, 46));
+                grpHdr.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+                JLabel grpTitle = new JLabel(grpIcon + "  " + grpName);
+                grpTitle.setFont(new Font("SansSerif", Font.BOLD, 12));
+                grpTitle.setForeground(new Color(20, 45, 110));
+                JLabel grpSubtitle = new JLabel(grpDesc);
+                grpSubtitle.setFont(new Font("SansSerif", Font.PLAIN, 10));
+                grpSubtitle.setForeground(new Color(90, 105, 150));
+
+                JPanel grpText = new JPanel();
+                grpText.setLayout(new BoxLayout(grpText, BoxLayout.Y_AXIS));
+                grpText.setOpaque(false);
+                grpText.add(grpTitle);
+                grpText.add(Box.createVerticalStrut(1));
+                grpText.add(grpSubtitle);
+                grpHdr.add(grpText, BorderLayout.CENTER);
+
+                fileEntriesPanel.add(grpHdr);
+                // 6px breathing room between header and first card
+                JPanel spacer = new JPanel();
+                spacer.setOpaque(false);
+                spacer.setPreferredSize(new Dimension(0, 6));
+                spacer.setMaximumSize(new Dimension(Integer.MAX_VALUE, 6));
+                fileEntriesPanel.add(spacer);
+            }
+
+            int shownCount = 0;
             for (int ei = 0; ei < entries.size(); ei++) {
                 String[] e = entries.get(ei);
+                // Filter: skip entries that don't belong to the selected group.
+                // Position number (ei+1) is always the file position so
+                // FileEntryConnection badge numbers stay stable.
+                if (selectedGroupIndex != -1) {
+                    int grp = getEntryGroup(e[0]);
+                    if (grp != selectedGroupIndex) continue;
+                }
                 fileEntriesPanel.add(createFrontendEntryCard(e[0], e[1], e[2], ei + 1));
+                shownCount++;
+            }
+            if (shownCount == 0 && selectedGroupIndex != -1) {
+                JLabel none = new JLabel("<html><center><font color='#8090B0'>"
+                        + "No inputs in this group.</font></center></html>", SwingConstants.CENTER);
+                none.setBorder(BorderFactory.createEmptyBorder(20, 8, 8, 8));
+                fileEntriesPanel.add(none);
             }
         }
         filePanelSourceLabel.setText(" " + file.getName() + "  (" + entries.size() + " entries)");
         filePanelSourceLabel.setToolTipText(file.getAbsolutePath());
+        // Sync all FileEntryConnections: update entryValue + block inputValues from current data file
+        java.util.Set<FunctionBlock> needsBadgeRefresh = new java.util.HashSet<>();
+        java.util.Map<String, String> syncAliases = getParamAliases();
+        // Build flat name→value lookup from the file entries for fast access
+        java.util.Map<String, String> fileEntryValues = new java.util.HashMap<>();
+        for (String[] e : entries) fileEntryValues.put(e[0].toUpperCase(), e[2]);
+
+        for (FileEntryConnection fec : fileEntryConnections) {
+            String matchName = fec.entryName.toUpperCase();
+            String newVal = null;
+
+            // 1. Exact name match
+            if (fileEntryValues.containsKey(matchName)) {
+                newVal = fileEntryValues.get(matchName);
+            }
+            // 2. matchName might itself be an alias → look up its canonical, then find that in file
+            if (newVal == null) {
+                String canonical = syncAliases.get(matchName);
+                if (canonical != null && fileEntryValues.containsKey(canonical)) {
+                    newVal = fileEntryValues.get(canonical);
+                }
+            }
+            // 3. matchName is canonical → try all aliases of it in the file
+            if (newVal == null) {
+                for (java.util.Map.Entry<String, String> ae : syncAliases.entrySet()) {
+                    if (ae.getValue().equals(matchName) && fileEntryValues.containsKey(ae.getKey())) {
+                        newVal = fileEntryValues.get(ae.getKey());
+                        break;
+                    }
+                }
+            }
+
+            if (newVal != null) {
+                fec.entryValue = newVal;
+                if (fec.toBlock != null) {
+                    fec.toBlock.inputValues[fec.toInputIndex] = newVal;
+                    needsBadgeRefresh.add(fec.toBlock);
+                }
+            }
+        }
+        for (FunctionBlock fb : needsBadgeRefresh) fb.refreshInputBadges();
         fileEntriesPanel.revalidate();
         fileEntriesPanel.repaint();
     }
@@ -1088,170 +1820,226 @@ public class gui4 extends JFrame {
         ph.add(msg, BorderLayout.CENTER);
         fileEntriesPanel.add(ph);
     }
+    /** Maps canonical parameter names to full biologist-readable display names. */
+    private static String getDisplayName(String name) {
+        return name;
+    }
+
     /**
-     * Creates a styled card for one entry: position number / name / type-badge / value + Connect button.
+     * Creates a styled card for one entry: position circle / full display name / type-badge / value + Connect button.
      * position = 1-based index in the file (shown as the connection number on blocks)
      */
     private JPanel createFrontendEntryCard(String name, String type, String value, int position) {
-        Color typeColor = getFilePanelTypeColor(type);
-        Color accentColor = typeColor;
-        String displayValue = (value == null || value.isEmpty()) ? "(empty)" :
-            ("file".equalsIgnoreCase(type) ? new java.io.File(value).getName() : value);
+        Color accentColor = getFilePanelTypeColor(type);
+        boolean hasValue  = value != null && !value.isEmpty() && !"empty_file".equals(value);
+        String displayValue = hasValue
+            ? ("file".equalsIgnoreCase(type) ? new java.io.File(value).getName() : value)
+            : "(not set)";
+        String fullName = getDisplayName(name);
 
-        // Outer wrapper
+        // ── Outer wrapper: consistent 4px gap below every card ──
         JPanel outer = new JPanel();
         outer.setLayout(new BoxLayout(outer, BoxLayout.Y_AXIS));
         outer.setOpaque(false);
-        outer.setBorder(BorderFactory.createEmptyBorder(0, 6, 0, 6));
+        outer.setBorder(BorderFactory.createEmptyBorder(0, 6, 4, 6));
         outer.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // === Main card ===
-        JPanel card = new JPanel(new BorderLayout(4, 0));
-        card.setBackground(Color.WHITE);
+        // ── Card ──
+        JPanel card = new JPanel(new BorderLayout(0, 0));
+        card.setBackground(Theme.BG_CARD);
         card.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 4, 0, 0, accentColor),
+            BorderFactory.createMatteBorder(0, 3, 0, 0, accentColor),
             BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(215, 220, 235), 1),
+                BorderFactory.createLineBorder(Theme.BORDER, 1),
                 BorderFactory.createEmptyBorder(5, 7, 5, 5)
             )
         ));
         card.setAlignmentX(Component.LEFT_ALIGNMENT);
-        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 62));
 
-        // Far left: position number circle
+        // ── WEST: position circle ──
         JLabel posLabel = new JLabel(String.valueOf(position)) {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setColor(accentColor);
-                int d = Math.min(getWidth(), getHeight());
-                g2.fillOval((getWidth()-d)/2, (getHeight()-d)/2, d, d);
+                g2.fillOval(0, 0, getWidth(), getHeight());
                 g2.dispose();
                 super.paintComponent(g);
             }
         };
-        posLabel.setFont(new Font("SansSerif", Font.BOLD, 10));
+        posLabel.setFont(new Font("SansSerif", Font.BOLD, 9));
         posLabel.setForeground(Color.WHITE);
         posLabel.setOpaque(false);
-        posLabel.setPreferredSize(new Dimension(22, 22));
+        posLabel.setPreferredSize(new Dimension(18, 18));
+        posLabel.setMinimumSize(new Dimension(18, 18));
+        posLabel.setMaximumSize(new Dimension(18, 18));
         posLabel.setHorizontalAlignment(SwingConstants.CENTER);
         posLabel.setVerticalAlignment(SwingConstants.CENTER);
-        posLabel.setToolTipText("Entry #" + position + " in file — this number appears on the block when connected");
-        JPanel posWrapper = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        posLabel.setToolTipText("File entry #" + position);
+        JPanel posWrapper = new JPanel(new GridBagLayout()); // GridBagLayout centres circle vertically
         posWrapper.setOpaque(false);
-        posWrapper.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 4));
+        posWrapper.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 7));
         posWrapper.add(posLabel);
         card.add(posWrapper, BorderLayout.WEST);
 
-        // Center: name + value
-        JLabel nameLabel = new JLabel(name);
-        nameLabel.setFont(new Font("SansSerif", Font.BOLD, 11));
-        nameLabel.setForeground(new Color(30, 50, 110));
-        JLabel valueLabel = new JLabel(displayValue);
-        valueLabel.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
-        valueLabel.setForeground(value == null || value.isEmpty() ? new Color(170, 170, 170) : new Color(50, 60, 80));
-        JPanel textPanel = new JPanel();
-        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
-        textPanel.setOpaque(false);
-        textPanel.add(nameLabel);
-        textPanel.add(Box.createVerticalStrut(2));
-        textPanel.add(valueLabel);
-        card.add(textPanel, BorderLayout.CENTER);
+        // ── CENTER: two rows — name+badge row, then value+connect row ──
+        JPanel center = new JPanel();
+        center.setLayout(new BoxLayout(center, BoxLayout.Y_AXIS));
+        center.setOpaque(false);
 
-        // Right: type badge + Connect button stacked
+        // Row 1: display name  |  type badge (right-aligned)
+        JPanel nameRow = new JPanel(new BorderLayout(4, 0));
+        nameRow.setOpaque(false);
+
+        JLabel nameLabel = new JLabel(fullName);
+        nameLabel.setFont(Theme.monoBold(10));
+        nameLabel.setForeground(Theme.TEXT_DARK);
+        nameLabel.setToolTipText("<html><b>" + fullName + "</b><br><font color='#6A96C8'>" + name + "</font></html>");
+        nameRow.add(nameLabel, BorderLayout.CENTER);
+
         JLabel typeBadge = new JLabel(type.toLowerCase()) {
             @Override protected void paintComponent(Graphics g) {
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(accentColor); g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
-                g2.dispose(); super.paintComponent(g);
+                g2.setColor(accentColor);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 8, 8);
+                g2.dispose();
+                super.paintComponent(g);
             }
         };
-        typeBadge.setFont(new Font("SansSerif", Font.BOLD, 9));
-        typeBadge.setForeground(Color.WHITE); typeBadge.setOpaque(false);
+        typeBadge.setFont(new Font("SansSerif", Font.BOLD, 8));
+        typeBadge.setForeground(Color.WHITE);
+        typeBadge.setOpaque(false);
         typeBadge.setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
         typeBadge.setToolTipText("Type: " + type);
+        JPanel badgeWrap = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        badgeWrap.setOpaque(false);
+        badgeWrap.add(typeBadge);
+        nameRow.add(badgeWrap, BorderLayout.EAST);
 
-        // Connect button — small, in right panel
-        JButton connectBtn = new JButton("\u2192 Connect");
-        connectBtn.setFont(new Font("SansSerif", Font.PLAIN, 9));
-        connectBtn.setMargin(new Insets(1, 4, 1, 4));
-        connectBtn.setFocusPainted(false);
-        connectBtn.setBackground(accentColor);
-        connectBtn.setForeground(Color.WHITE);
-        connectBtn.setBorderPainted(false);
-        connectBtn.setToolTipText("Click then click a block input to connect");
-        connectBtn.addActionListener(ev -> {
-            // Enter file-entry connection mode
-            pendingEntryName     = name;
-            pendingEntryType     = type;
-            pendingEntryValue    = value;
-            pendingEntryPosition = position;
-            drawingPanel.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
-            connectBtn.setText("\u23F3 [" + position + "] ...");
-            connectBtn.setBackground(new Color(200, 100, 0));
-            // Reset after 10 s if no connection made
-            new javax.swing.Timer(10000, e2 -> {
-                if (pendingEntryName != null) {
-                    pendingEntryName = pendingEntryType = pendingEntryValue = null;
-                    pendingEntryPosition = 0;
-                    drawingPanel.setCursor(Cursor.getDefaultCursor());
-                    connectBtn.setText("\u2192 Connect");
-                    connectBtn.setBackground(accentColor);
-                }
-            }) {{ setRepeats(false); }}.start();
-        });
+        center.add(nameRow);
+        center.add(Box.createVerticalStrut(3));
 
-        JPanel rightPanel = new JPanel();
-        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-        rightPanel.setOpaque(false);
-        rightPanel.add(typeBadge);
-        rightPanel.add(Box.createVerticalStrut(3));
-        rightPanel.add(connectBtn);
-        card.add(rightPanel, BorderLayout.EAST);
+        // Row 2: value label (full width)
+        JLabel valueLabel = new JLabel(displayValue);
+        valueLabel.setFont(Theme.mono(9));
+        valueLabel.setForeground(hasValue ? Theme.TEXT_MED : Theme.TEXT_LIGHT);
+        valueLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        center.add(valueLabel);
+        card.add(center, BorderLayout.CENTER);
 
-        // Hover + click-to-copy on text area
+        // ── Borders & colours used for state transitions ──
+        javax.swing.border.Border normalBorder = BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 3, 0, 0, accentColor),
+            BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Theme.BORDER, 1),
+                BorderFactory.createEmptyBorder(5, 7, 5, 5)
+            )
+        );
+        javax.swing.border.Border pendingBorder = BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 3, 0, 0, Theme.WARNING),
+            BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Theme.WARNING_DK, 1),
+                BorderFactory.createEmptyBorder(5, 7, 5, 5)
+            )
+        );
+        Color normalBg    = Theme.BG_CARD;
+        Color hoverBg     = Theme.CARD_HI;
+        Color pendingBg   = new Color(35, 25, 10);
+        Color normalNameFg  = Theme.TEXT_DARK;
+        Color pendingNameFg = Theme.WARNING;
+        final boolean[] isPending = {false};
+
+        card.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        String normalTip = "<html><b>" + fullName + "</b>"
+            + "<br><font color='#8090B0'>" + name + "</font>"
+            + "<br>Type: " + type
+            + "<br>Value: " + (hasValue ? value : "(not set)")
+            + "<br><i>Click to connect &nbsp;|&nbsp; Right-click to copy</i></html>";
+        card.setToolTipText(normalTip);
+
+        // ── Click = connect; right-click = copy value ──
         final String copyVal = value;
-        MouseAdapter hover = new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) { card.setBackground(new Color(238, 243, 255)); }
-            public void mouseExited(MouseEvent e)  { card.setBackground(Color.WHITE); }
-            public void mouseClicked(MouseEvent e) {
-                java.awt.datatransfer.StringSelection sel = new java.awt.datatransfer.StringSelection(copyVal);
-                java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(sel, null);
-                card.setBackground(new Color(210, 228, 255));
-                new javax.swing.Timer(350, ev -> card.setBackground(Color.WHITE)).start();
+        MouseAdapter cardHandler = new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) {
+                if (!isPending[0]) card.setBackground(hoverBg);
+            }
+            public void mouseExited(MouseEvent e) {
+                if (!isPending[0]) card.setBackground(normalBg);
+            }
+            public void mousePressed(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    // right-click: copy value to clipboard
+                    if (copyVal != null && !copyVal.isEmpty()) {
+                        java.awt.datatransfer.StringSelection sel =
+                            new java.awt.datatransfer.StringSelection(copyVal);
+                        java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(sel, null);
+                        card.setBackground(new Color(20, 40, 80));
+                        new javax.swing.Timer(300, ev -> {
+                            if (!isPending[0]) card.setBackground(normalBg);
+                        }) {{ setRepeats(false); }}.start();
+                    }
+                    return;
+                }
+                if (isPending[0]) return; // already waiting
+                // left-click: activate connect mode
+                isPending[0] = true;
+                pendingEntryName     = name;
+                pendingEntryType     = type;
+                pendingEntryValue    = value;
+                pendingEntryPosition = position;
+                drawingPanel.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+                card.setBorder(pendingBorder);
+                card.setBackground(pendingBg);
+                nameLabel.setForeground(pendingNameFg);
+                valueLabel.setText("Click a block input to connect…");
+                valueLabel.setForeground(Theme.WARNING);
+                card.setToolTipText("<html><b>Waiting for connection</b>"
+                    + "<br>Click any block input to wire <i>" + fullName + "</i>"
+                    + "<br><font color='#FBBF24'>Times out in 10 seconds</font></html>");
+                new javax.swing.Timer(10000, ev -> {
+                    if (pendingEntryName != null) {
+                        isPending[0] = false;
+                        pendingEntryName = pendingEntryType = pendingEntryValue = null;
+                        pendingEntryPosition = 0;
+                        drawingPanel.setCursor(Cursor.getDefaultCursor());
+                        card.setBorder(normalBorder);
+                        card.setBackground(normalBg);
+                        nameLabel.setForeground(normalNameFg);
+                        valueLabel.setText(displayValue);
+                        valueLabel.setForeground(hasValue ? Theme.TEXT_MED : Theme.TEXT_LIGHT);
+                        card.setToolTipText(normalTip);
+                    }
+                }) {{ setRepeats(false); }}.start();
             }
         };
-        card.addMouseListener(hover);
-        textPanel.addMouseListener(hover);
-        nameLabel.addMouseListener(hover);
-        valueLabel.addMouseListener(hover);
-
-        String tooltipValue = (value == null || value.isEmpty()) ? "(empty)" : value;
-        card.setToolTipText("<html><b>" + name + "</b><br>Type: <font color='" +
-            String.format("#%02x%02x%02x", accentColor.getRed(), accentColor.getGreen(), accentColor.getBlue()) +
-            "'>" + type + "</font><br>Value: " + tooltipValue + "<br><i>Click to copy | Use → Connect to wire to a block</i></html>");
+        card.addMouseListener(cardHandler);
+        center.addMouseListener(cardHandler);
+        nameRow.addMouseListener(cardHandler);
+        nameLabel.addMouseListener(cardHandler);
+        valueLabel.addMouseListener(cardHandler);
+        posWrapper.addMouseListener(cardHandler);
 
         outer.add(card);
 
-        // === Connection tags (one per FileEntryConnection for this entry) ===
+        // ── Connection tags ──
         for (FileEntryConnection fec : fileEntryConnections) {
             if (fec.entryName.equals(name)) {
-                outer.add(Box.createVerticalStrut(2));
+                outer.add(Box.createVerticalStrut(1));
                 outer.add(buildConnectionTag(fec, accentColor));
             }
         }
-        outer.add(Box.createVerticalStrut(3));
         return outer;
     }
     /** Small tag below a file-entry card showing which block input it is wired to. */
     private JPanel buildConnectionTag(FileEntryConnection fec, Color accentColor) {
         JPanel tag = new JPanel(new BorderLayout(4, 0));
-        tag.setBackground(new Color(245, 248, 255));
+        tag.setBackground(Theme.CARD_HI);
         tag.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 4, 0, 0, accentColor.brighter()),
+            BorderFactory.createMatteBorder(0, 4, 0, 0, accentColor),
             BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(200, 210, 235), 1),
+                BorderFactory.createLineBorder(Theme.BORDER_HI, 1),
                 BorderFactory.createEmptyBorder(3, 7, 3, 5)
             )
         ));
@@ -1259,14 +2047,14 @@ public class gui4 extends JFrame {
         tag.setAlignmentX(Component.LEFT_ALIGNMENT);
         // Number badge — shows entry's file position
         JLabel numBadge = new JLabel("[" + fec.entryPosition + "]");
-        numBadge.setFont(new Font("SansSerif", Font.BOLD, 10));
-        numBadge.setForeground(accentColor.darker());
+        numBadge.setFont(Theme.monoBold(9));
+        numBadge.setForeground(accentColor);
         // Description
-        String label = "\u2192 " + fec.toBlock.name + "  input" + (fec.toInputIndex + 1);
+        String label = "\u2192 " + fec.toBlock.name + "  in" + (fec.toInputIndex + 1);
         if (fec.fileName != null && !fec.fileName.isEmpty()) label += "  \u2014 " + fec.fileName;
         JLabel connLabel = new JLabel(label);
-        connLabel.setFont(new Font("SansSerif", Font.PLAIN, 10));
-        connLabel.setForeground(new Color(50, 70, 120));
+        connLabel.setFont(Theme.mono(9));
+        connLabel.setForeground(Theme.TEXT_MED);
         JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 3, 0));
         left.setOpaque(false);
         left.add(numBadge); left.add(connLabel);
@@ -1274,7 +2062,7 @@ public class gui4 extends JFrame {
         // Delete button
         JLabel delBtn = new JLabel("\u2715");
         delBtn.setFont(new Font("SansSerif", Font.BOLD, 10));
-        delBtn.setForeground(new Color(180, 50, 50));
+        delBtn.setForeground(Theme.DANGER);
         delBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         delBtn.setToolTipText("Delete this connection");
         delBtn.addMouseListener(new MouseAdapter() {
@@ -1574,24 +2362,40 @@ public class gui4 extends JFrame {
         java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 
     private void toggleFullScreen() {
-        if (!isFullScreen && fullScreenDevice.isFullScreenSupported()) {
-            setVisible(false);
-            dispose();
-            setUndecorated(true);
-            fullScreenDevice.setFullScreenWindow(this);
-            setVisible(true);
-            isFullScreen = true;
+        // In embedded mode the gui4 JFrame is hidden — find the real visible ancestor window.
+        java.awt.Window w = SwingUtilities.getWindowAncestor(drawingPanel);
+        JFrame frame;
+        if (w instanceof JFrame) {
+            frame = (JFrame) w;
+        } else if (!embeddedMode) {
+            frame = this;
         } else {
-            fullScreenDevice.setFullScreenWindow(null);
-            setVisible(false);
-            dispose();
-            setUndecorated(false);
-            Dimension screen = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
-            setSize(screen.width, screen.height);
-            setExtendedState(JFrame.MAXIMIZED_BOTH);
-            setVisible(true);
-            isFullScreen = false;
+            return;
         }
+        if (isFullScreen) {
+            fullScreenDevice.setFullScreenWindow(null);
+            frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            isFullScreen = false;
+        } else {
+            if (fullScreenDevice.isFullScreenSupported()) {
+                fullScreenDevice.setFullScreenWindow(frame);
+                isFullScreen = true;
+            } else {
+                frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+            }
+        }
+    }
+
+    private Component getDialogParent() {
+        if (embeddedMode) {
+            Container p = getContentPane().getParent();
+            while (p != null) {
+                if (p instanceof java.awt.Window && ((java.awt.Window) p).isVisible()) return p;
+                p = p.getParent();
+            }
+            return drawingPanel;
+        }
+        return this;
     }
 
     private void setupKeyboardShortcuts() {
@@ -1699,6 +2503,27 @@ public class gui4 extends JFrame {
             updateCanvasSize();
             drawingPanel.repaint();
         }
+    }
+    private void newPipeline() {
+        int confirm = JOptionPane.showConfirmDialog(this,
+            "Start a fresh pipeline?\nAll blocks, connections and file-entry links will be cleared.",
+            "New Pipeline", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+        if (confirm != JOptionPane.YES_OPTION) return;
+        // Remove all block panels from canvas
+        for (FunctionBlock fb : functionBlocks) drawingPanel.remove(fb);
+        // Reset all state
+        functionBlocks.clear();
+        connections.clear();
+        fileEntryConnections.clear();
+        dragSource = null;
+        dragSourceOutputIndex = -1;
+        selectedConnection = null;
+        clipboardBlock = null;
+        lastSavedPipelineFile = null;
+        functionCounter = 1;
+        for (String key : instanceCounter.keySet()) instanceCounter.put(key, 0);
+        updateCanvasSize();
+        drawingPanel.repaint();
     }
     private void showEditBlockDescriptionDialog(String blockName) {
         String baseName = blockName.replaceAll("_\\d+$", "");
@@ -2162,18 +2987,19 @@ public class gui4 extends JFrame {
         }).start();
     }
     private void populateBlockLibrary() {
-        addTemplateInternal(new BlockTemplate("let", 2, 1, new String[]{"integer","integer"}, new String[]{"file"}));
-        addTemplateInternal(new BlockTemplate("cudf", 3, 2, new String[]{"file", "float","float"}, new String[]{"file","file"}));
-        addTemplateInternal(new BlockTemplate("exec", 2, 1, new String[]{"integer","integer"}, new String[]{"file"}));
-        addTemplateInternal(new BlockTemplate("start", 4, 1, new String[]{"file", "file","file","file"}, new String[]{"Status"}));
-        addTemplateInternal(new BlockTemplate("mff", 6, 0,
-            new String[]{"file","string","integer","string","file","integer"}, new String[]{}));
-        addTemplateInternal(new BlockTemplate("wgx", 3, 0,
-            new String[]{"integer","file","string"}, new String[]{}));
-        addTemplateInternal(new BlockTemplate("rgx", 3, 0,
-            new String[]{"file","string","integer"}, new String[]{}));
-        addTemplateInternal(new BlockTemplate("fb_rch", 8, 0,
-            new String[]{"integer","string","integer","string","integer","integer","integer","integer"}, new String[]{}));
+        addTemplateInternal(new BlockTemplate("let",  2, 1, new String[]{"string","string"},   new String[]{"var"}));
+        addTemplateInternal(new BlockTemplate("exec", 1, 0, new String[]{"string"},             new String[]{}));
+        addTemplateInternal(new BlockTemplate("size", 1, 0, new String[]{"integer"},            new String[]{}));
+        addTemplateInternal(new BlockTemplate("cudf", 3, 2, new String[]{"file","float","float"}, new String[]{"file","file"}));
+        addTemplateInternal(new BlockTemplate("start", 4, 0, new String[]{"file","file","file","file"}, new String[]{}));
+        addTemplateInternal(new BlockTemplate("mff", 3, 0,
+            new String[]{"file","integer","file"}, new String[]{}));
+        addTemplateInternal(new BlockTemplate("wgx", 1, 0,
+            new String[]{"file"}, new String[]{}));
+        addTemplateInternal(new BlockTemplate("rgx", 2, 0,
+            new String[]{"file","integer"}, new String[]{}));
+        addTemplateInternal(new BlockTemplate("fb_rch", 4, 0,
+            new String[]{"string","string","integer","integer"}, new String[]{}));
         addTemplateInternal(new BlockTemplate("pathz3", 28, 0,
             new String[]{"integer","integer","file","integer","integer","integer","integer","integer",
                          "file","file","file","file","file","file","file","file","file","file","file",
@@ -2232,15 +3058,23 @@ public class gui4 extends JFrame {
             BlockTemplate template = blockLibrary.get(templateName);
             String[] desc = getBlockDescription(templateName);
             
-            JButton blockBtn = new JButton("<html><center><b>" + template.name + "</b><br><font size='2'>" + 
-                desc[0] + "</font></center></html>");
+            JButton blockBtn = new JButton("<html><center>"
+                + "<b style='color:#D6E8FF;font-family:Consolas;'>" + template.name + "</b>"
+                + "<br><font size='2' color='#6A96C8'>" + desc[0] + "</font>"
+                + "</center></html>");
             blockBtn.setAlignmentX(Component.LEFT_ALIGNMENT);
-            blockBtn.setPreferredSize(new Dimension(150, 50));
-            blockBtn.setMinimumSize(new Dimension(150, 50));
-            blockBtn.setMaximumSize(new Dimension(150, 50));
-            blockBtn.setToolTipText("<html><b>" + desc[0] + "</b><br>" + desc[1] + "</html>");
+            blockBtn.setPreferredSize(new Dimension(150, 52));
+            blockBtn.setMinimumSize(new Dimension(150, 52));
+            blockBtn.setMaximumSize(new Dimension(150, 52));
+            blockBtn.setBackground(Theme.SURFACE);
+            blockBtn.setForeground(Theme.TEXT_DARK);
+            blockBtn.setOpaque(true);
+            blockBtn.setBorderPainted(true);
+            blockBtn.setBorder(BorderFactory.createLineBorder(Theme.BORDER, 1));
+            blockBtn.setFocusPainted(false);
+            blockBtn.setToolTipText("<html><b style='color:#D6E8FF;'>" + desc[0] + "</b><br><font color='#6A96C8'>" + desc[1] + "</font></html>");
             blockBtn.addActionListener(e -> addBlockInstance(template.name));
-            
+
             blockListPanel.add(blockBtn);
         }
         
@@ -2406,6 +3240,15 @@ public class gui4 extends JFrame {
     private void executeGraph() {
         List<FunctionBlock> order = getTopologicalOrder();
         if (order == null) return;
+        List<String> unfilled = getUnfilledInputs(order);
+        if (!unfilled.isEmpty()) {
+            StringBuilder msg = new StringBuilder("The following inputs have no data:\n\n");
+            for (String s : unfilled) msg.append("  • ").append(s).append("\n");
+            msg.append("\nRun pipeline anyway?");
+            int choice = JOptionPane.showConfirmDialog(getDialogParent(), msg.toString(),
+                    "Unfilled Inputs", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (choice != JOptionPane.YES_OPTION) return;
+        }
         String executionContent = saveExecutionPlan(order);
         
         addToExecutionHistory(executionContent);
@@ -2550,15 +3393,27 @@ public class gui4 extends JFrame {
                             p.add(new JSeparator(), g);
                             g.gridy = 3; g.gridwidth = 1;
                             p.add(new JLabel("Variable name:"), g);
-                            g.gridx = 1;
+                            g.gridx = 1; g.weightx = 1.0; g.fill = GridBagConstraints.HORIZONTAL;
                             JTextField field = new JTextField(cur, 22);
-                            field.setToolTipText("Appears as $NAME in generated script — Ctrl+V to paste");
+                            field.setToolTipText("Appears as $NAME in generated script");
                             field.addHierarchyListener(he -> {
                                 if ((he.getChangeFlags() & java.awt.event.HierarchyEvent.SHOWING_CHANGED) != 0 && field.isShowing())
                                     SwingUtilities.invokeLater(field::requestFocusInWindow);
                             });
                             p.add(field, g);
-                            g.gridx = 0; g.gridy = 4; g.gridwidth = 2;
+                            g.gridx = 0; g.gridy = 4; g.gridwidth = 1; g.weightx = 0; g.fill = GridBagConstraints.NONE;
+                            JButton connPasteBtn = new JButton("Paste");
+                            connPasteBtn.setMargin(new Insets(2, 8, 2, 8));
+                            connPasteBtn.addActionListener(pev -> {
+                                try {
+                                    java.awt.datatransfer.Clipboard cb = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
+                                    String clip = (String) cb.getData(java.awt.datatransfer.DataFlavor.stringFlavor);
+                                    if (clip != null) field.setText(clip.trim());
+                                } catch (Exception ex) { /* clipboard empty or not text */ }
+                                field.requestFocusInWindow();
+                            });
+                            p.add(connPasteBtn, g);
+                            g.gridx = 0; g.gridy = 5; g.gridwidth = 2;
                             p.add(new JLabel("<html><font color='gray'><i>e.g. UP_REG_FILE, MERGED_GRAPH, MY_OUTPUT</i></font></html>"), g);
                             int res = JOptionPane.showConfirmDialog(gui4.this, p,
                                     "Name output of " + theConn.from.name,
@@ -2566,12 +3421,17 @@ public class gui4 extends JFrame {
                             if (res == JOptionPane.OK_OPTION) {
                                 String v = field.getText().trim().toUpperCase().replace(" ", "_").replace("-", "_");
                                 theConn.fileName = v.isEmpty() ? null : v;
+                                // Sync to source block's outputVarNames so script generator picks it up
+                                if (theConn.fromIdx >= 0 && theConn.from.outputVarNames != null
+                                        && theConn.fromIdx < theConn.from.outputVarNames.length) {
+                                    theConn.from.outputVarNames[theConn.fromIdx] = v.isEmpty() ? null : v;
+                                }
                                 repaint();
                             }
                         });
                         contextMenu.add(setVarItem);
                         if (selectedConnection.fileName != null && !selectedConnection.fileName.trim().isEmpty()) {
-                            JMenuItem curItem = new JMenuItem("  \u2192  $" + selectedConnection.fileName);
+                            JMenuItem curItem = new JMenuItem("  \u2192  " + selectedConnection.fileName);
                             curItem.setEnabled(false);
                             curItem.setFont(curItem.getFont().deriveFont(Font.BOLD));
                             contextMenu.add(curItem);
@@ -2632,19 +3492,17 @@ public class gui4 extends JFrame {
             });
         }
         private Color getConnectionColor(String type) {
-            if (type == null) return Color.DARK_GRAY;
+            if (type == null) return Theme.T_OTHER;
             String normalizedType = type.trim().toLowerCase();
             switch (normalizedType) {
-                case "float": return new Color(139, 0, 0);
-                case "integer": return new Color(0, 0, 139);
-                case "int": return new Color(0, 0, 139);
-                case "string": return new Color(255, 140, 0);
-                case "file": return new Color(199, 21, 133);
-                case "graph": return new Color(0, 139, 139);
-                case "status": return new Color(0, 100, 0);
-                case "character": return new Color(184, 134, 11);
-                case "char": return new Color(184, 134, 11);
-                default: return Color.DARK_GRAY;
+                case "float":                   return Theme.T_FLOAT;
+                case "integer": case "int":     return Theme.T_INT;
+                case "string":                  return Theme.T_STRING;
+                case "file":                    return Theme.T_FILE;
+                case "graph":                   return Theme.T_GRAPH;
+                case "status":                  return Theme.SUCCESS;
+                case "character": case "char":  return Theme.WARNING;
+                default:                        return Theme.T_OTHER;
             }
         }
         public void zoom(double factor, Point focusPoint) {
@@ -2717,7 +3575,14 @@ public class gui4 extends JFrame {
             for (Connection conn : connections) {
                 Point from = getOutputPoint(conn.from, conn.fromIdx);
                 Point to = getInputPoint(conn.to, conn.toIdx);
-                drawSmartConnection(g2, from, to, conn.from, conn.to, conn.type, conn == selectedConnection, conn.fileName);
+                // Resolve display name: outputVarNames wins, then conn.fileName, then null
+                String displayName = (conn.from.outputVarNames != null
+                        && conn.fromIdx < conn.from.outputVarNames.length
+                        && conn.from.outputVarNames[conn.fromIdx] != null
+                        && !conn.from.outputVarNames[conn.fromIdx].trim().isEmpty())
+                        ? conn.from.outputVarNames[conn.fromIdx].trim()
+                        : (conn.fileName != null && !conn.fileName.trim().isEmpty() ? conn.fileName.trim() : null);
+                drawSmartConnection(g2, from, to, conn.from, conn.to, conn.type, conn == selectedConnection, displayName);
             }
             g2.dispose();
             
@@ -2776,259 +3641,181 @@ public class gui4 extends JFrame {
             }
             return false;
         }
-        private void drawSmartConnection(Graphics2D g2, Point from, Point to, FunctionBlock fromBlock, FunctionBlock toBlock, String type, boolean isSelected, String fileName) {
-            Color connColor = getConnectionColor(type);
-            g2.setColor(isSelected ? Color.RED : connColor);
-            g2.setStroke(new BasicStroke(2));
-            boolean needsDetour = (from.x > to.x - 30) || needsRouting(from, to, fromBlock, toBlock);
-            if (needsDetour) {
-                drawOrthogonalConnection(g2, from, to, fromBlock, toBlock, type, isSelected, fileName);
+        // ── Connection drawing ────────────────────────────────────────────────
+        private void drawSmartConnection(Graphics2D g2, Point from, Point to,
+                FunctionBlock fromBlock, FunctionBlock toBlock,
+                String type, boolean isSelected, String fileName) {
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
+            Color base  = getConnectionColor(type);
+            Color line  = isSelected ? new Color(210, 40, 40) : base;
+            boolean forward = to.x >= from.x + 24;
+            if (forward && !needsRouting(from, to, fromBlock, toBlock)) {
+                drawCubicConnection(g2, from, to, line, isSelected, fileName);
             } else {
-                drawCurvedArrow(g2, from, to, type, isSelected, fileName);
+                drawRoutedConnection(g2, from, to, fromBlock, toBlock, line, isSelected, fileName);
             }
         }
-        private void drawOrthogonalConnection(Graphics2D g2, Point from, Point to, FunctionBlock fromBlock, FunctionBlock toBlock, String type, boolean isSelected, String fileName) {
-            Color connColor = getConnectionColor(type);
-            g2.setColor(isSelected ? Color.RED : connColor);
-            g2.setStroke(new BasicStroke(2));
-            Rectangle fromBounds = fromBlock.getBounds();
-            Rectangle toBounds = toBlock.getBounds();
-            
-            int fromTop = (int)(fromBounds.y / zoomFactor);
-            int fromBottom = (int)((fromBounds.y + fromBounds.height) / zoomFactor);
-            int toTop = (int)(toBounds.y / zoomFactor);
-            int toBottom = (int)((toBounds.y + toBounds.height) / zoomFactor);
-            int offsetX = 40;
-            int offsetY = 30;
-            
-            List<Point> points = new ArrayList<>();
-            points.add(from);
-            boolean routeAbove = (from.y < to.y) || (fromTop < toTop);
-            
-            if (from.x > to.x - 30) {
-                int midX1 = from.x + offsetX;
-                int midX2 = to.x - offsetX;
-                
-                int minTop = Math.min(fromTop, toTop) - offsetY;
-                int maxBottom = Math.max(fromBottom, toBottom) + offsetY;
-                
-                int midY = routeAbove ? minTop : maxBottom;
-                
-                for (FunctionBlock block : functionBlocks) {
-                    if (block != fromBlock && block != toBlock) {
-                        Rectangle bounds = block.getBounds();
-                        int bTop = (int)(bounds.y / zoomFactor) - 15;
-                        int bBottom = (int)((bounds.y + bounds.height) / zoomFactor) + 15;
-                        int bLeft = (int)(bounds.x / zoomFactor) - 15;
-                        int bRight = (int)((bounds.x + bounds.width) / zoomFactor) + 15;
-                        
-                        if (midY >= bTop && midY <= bBottom) {
-                            if (routeAbove) {
-                                midY = Math.min(midY, bTop - 20);
-                            } else {
-                                midY = Math.max(midY, bBottom + 20);
-                            }
-                        }
+
+        /** Smooth cubic Bezier for forward (left-to-right) connections. */
+        private void drawCubicConnection(Graphics2D g2, Point from, Point to,
+                Color color, boolean isSelected, String label) {
+            int dx = Math.abs(to.x - from.x);
+            int ctrl = Math.max(70, dx / 2);
+            int cx1 = from.x + ctrl, cy1 = from.y;
+            int cx2 = to.x  - ctrl, cy2 = to.y;
+            CubicCurve2D curve = new CubicCurve2D.Double(
+                    from.x, from.y, cx1, cy1, cx2, cy2, to.x, to.y);
+            // Selection glow
+            if (isSelected) {
+                g2.setColor(new Color(255, 80, 80, 45));
+                g2.setStroke(new BasicStroke(8, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                g2.draw(curve);
+            }
+            g2.setColor(color);
+            g2.setStroke(new BasicStroke(2.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            g2.draw(curve);
+            drawEndDot(g2, from.x, from.y, color);
+            drawArrowDot(g2, cx2, cy2, to.x, to.y, color);
+            // Label at curve midpoint
+            double midX = (from.x + 3.0*cx1 + 3.0*cx2 + to.x) / 8.0;
+            double midY = (from.y + 3.0*cy1 + 3.0*cy2 + to.y) / 8.0;
+            drawConnLabel(g2, label, (int)midX, (int)midY, color);
+        }
+
+        /** Orthogonal (right-angle) routing for back-connections or blocked paths. */
+        private void drawRoutedConnection(Graphics2D g2, Point from, Point to,
+                FunctionBlock fromBlock, FunctionBlock toBlock,
+                Color color, boolean isSelected, String label) {
+            Rectangle fB = fromBlock.getBounds();
+            Rectangle tB = toBlock.getBounds();
+            int fTop    = (int)(fB.y / zoomFactor);
+            int fBottom = (int)((fB.y + fB.height) / zoomFactor);
+            int tTop    = (int)(tB.y / zoomFactor);
+            int tBottom = (int)((tB.y + tB.height) / zoomFactor);
+            int ox = 44, oy = 32, r = 14; // r = corner-rounding radius
+
+            boolean routeAbove = from.y <= to.y;
+            int exitX   = from.x + ox;
+            int enterX  = to.x  - ox;
+            int midY;
+            if (from.x > to.x - 24) {
+                midY = routeAbove
+                        ? Math.min(fTop, tTop)   - oy
+                        : Math.max(fBottom, tBottom) + oy;
+                // Push midY further if it collides with any block
+                for (FunctionBlock blk : functionBlocks) {
+                    if (blk == fromBlock || blk == toBlock) continue;
+                    Rectangle b = blk.getBounds();
+                    int bTop = (int)(b.y / zoomFactor) - 12;
+                    int bBot = (int)((b.y + b.height) / zoomFactor) + 12;
+                    if (midY >= bTop && midY <= bBot) {
+                        midY = routeAbove ? bTop - 16 : bBot + 16;
                     }
                 }
-                
-                points.add(new Point(midX1, from.y));
-                points.add(new Point(midX1, midY));
-                points.add(new Point(midX2, midY));
-                points.add(new Point(midX2, to.y));
             } else {
-                int midX = (from.x + to.x) / 2;
-                int minTop = Math.min(fromTop, toTop) - offsetY;
-                int maxBottom = Math.max(fromBottom, toBottom) + offsetY;
-                
-                int midY = routeAbove ? minTop : maxBottom;
-                
-                points.add(new Point(midX, from.y));
-                points.add(new Point(midX, midY));
-                points.add(new Point(midX, to.y));
+                midY = routeAbove
+                        ? Math.min(fTop, tTop)   - oy
+                        : Math.max(fBottom, tBottom) + oy;
             }
-            
-            points.add(to);
+
+            // Build rounded-corner path
             Path2D path = new Path2D.Double();
-            path.moveTo(points.get(0).x, points.get(0).y);
-            for (int i = 1; i < points.size(); i++) {
-                path.lineTo(points.get(i).x, points.get(i).y);
+            path.moveTo(from.x, from.y);
+            // Segment 1: from → exit-X bend
+            addRoundedTurn(path, from.x, from.y, exitX, from.y, exitX, midY, r);
+            // Segment 2: exit-X → enter-X along midY
+            addRoundedTurn(path, exitX, from.y, exitX, midY, enterX, midY, r);
+            // Segment 3: enter-X bend → destination
+            addRoundedTurn(path, exitX, midY, enterX, midY, enterX, to.y, r);
+            addRoundedTurn(path, enterX, midY, enterX, to.y, to.x, to.y, r);
+            path.lineTo(to.x, to.y);
+
+            if (isSelected) {
+                g2.setColor(new Color(255, 80, 80, 45));
+                g2.setStroke(new BasicStroke(8, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                g2.draw(path);
             }
+            g2.setColor(color);
+            g2.setStroke(new BasicStroke(2.2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             g2.draw(path);
-            for (int i = 0; i < points.size() - 1; i++) {
-                Point p1 = points.get(i);
-                Point p2 = points.get(i + 1);
-                drawDirectionMarkers(g2, p1, p2, isSelected ? Color.RED : connColor);
-            }
-            Point lastPoint = points.get(points.size() - 1);
-            Point secondLast = points.get(points.size() - 2);
-            drawArrowHead(g2, secondLast.x, secondLast.y, lastPoint.x, lastPoint.y, isSelected ? Color.RED : connColor);
-            int midIdx = points.size() / 2;
-            Point midP1 = points.get(midIdx - 1);
-            Point midP2 = points.get(midIdx);
-            int labelX = (midP1.x + midP2.x) / 2;
-            int labelY = (midP1.y + midP2.y) / 2;
-            
-            Font baseFont = new Font("SansSerif", Font.PLAIN, 11);
-            g2.setFont(baseFont);
-            
-            // Build label: show type, and fileName if available for file connections
-            String label = type != null ? type : "unknown";
-            if (fileName != null && !fileName.trim().isEmpty()) {
-                label = label + ": " + fileName;
-            }
-            
-            FontMetrics fm = g2.getFontMetrics();
-            int labelWidth = fm.stringWidth(label);
-            int labelHeight = fm.getHeight();
-            g2.setColor(new Color(255, 255, 255, 200));
-            g2.fillRect(labelX - labelWidth/2 - 2, labelY - labelHeight/2 - 2, labelWidth + 4, labelHeight + 4);
-            g2.setColor(isSelected ? Color.RED : connColor);
-            g2.drawString(label, labelX - labelWidth/2, labelY + labelHeight/4);
-            
-            // Draw file icon indicator if fileName is set
-            if (fileName != null && !fileName.trim().isEmpty()) {
-                drawFileIcon(g2, labelX - labelWidth/2 - 16, labelY - 6, isSelected ? Color.RED : connColor);
-            }
+
+            drawEndDot(g2, from.x, from.y, color);
+            // Arrowhead enters horizontally from the left
+            drawArrowDot(g2, enterX, to.y, to.x, to.y, color);
+
+            // Label at midY between exitX and enterX
+            int lx = (exitX + enterX) / 2, ly = midY;
+            drawConnLabel(g2, label, lx, ly, color);
         }
-        private void drawDirectionMarkers(Graphics2D g2, Point from, Point to, Color color) {
-            double dx = to.x - from.x;
-            double dy = to.y - from.y;
-            double length = Math.sqrt(dx * dx + dy * dy);
-            
-            if (length < 30) return;
-            
-            double angle = Math.atan2(dy, dx);
-            
-            int numMarkers = Math.max(1, (int)(length / 50));
-            
+
+        /** Adds a rounded 90° turn to a Path2D. The corner is at (bx,by);
+         *  the path comes from direction (ax,ay)→(bx,by) and leaves toward (cx,cy). */
+        private void addRoundedTurn(Path2D p, double ax, double ay,
+                double bx, double by, double cx, double cy, int r) {
+            // Clamp r so it doesn't exceed segment lengths
+            double d1 = Math.sqrt((bx-ax)*(bx-ax)+(by-ay)*(by-ay));
+            double d2 = Math.sqrt((cx-bx)*(cx-bx)+(cy-by)*(cy-by));
+            int rc = (int)Math.min(r, Math.min(d1, d2) * 0.45);
+            if (rc < 2) { p.lineTo(bx, by); return; }
+            // Point on incoming segment, r before corner
+            double t1 = 1 - rc / d1;
+            double ix = ax + (bx-ax)*t1, iy = ay + (by-ay)*t1;
+            // Point on outgoing segment, r after corner
+            double t2 = rc / d2;
+            double ox = bx + (cx-bx)*t2, oy2 = by + (cy-by)*t2;
+            p.lineTo(ix, iy);
+            p.curveTo(bx, by, bx, by, ox, oy2); // quadratic through corner
+        }
+
+        /** Filled source dot at connection start. */
+        private void drawEndDot(Graphics2D g2, int x, int y, Color color) {
+            int r = 5;
             g2.setColor(color);
-            g2.setStroke(new BasicStroke(2));
-            
-            for (int i = 1; i <= numMarkers; i++) {
-                double t = i / (double)(numMarkers + 1);
-                double mx = from.x + dx * t;
-                double my = from.y + dy * t;
-                
-                int chevronSize = 6;
-                double chevronAngle = Math.PI / 6;
-                
-                int x1 = (int)(mx - chevronSize * Math.cos(angle - chevronAngle));
-                int y1 = (int)(my - chevronSize * Math.sin(angle - chevronAngle));
-                int x2 = (int)(mx - chevronSize * Math.cos(angle + chevronAngle));
-                int y2 = (int)(my - chevronSize * Math.sin(angle + chevronAngle));
-                
-                g2.drawLine(x1, y1, (int)mx, (int)my);
-                g2.drawLine(x2, y2, (int)mx, (int)my);
-            }
-        }
-        private void drawCurvedArrow(Graphics2D g2, Point from, Point to, String type, boolean isSelected, String fileName) {
-            int dx = to.x - from.x;
-            int dy = to.y - from.y;
-            int ctrlX = (from.x + to.x) / 2 + Math.min(50, Math.abs(dx) / 4);
-            int ctrlY = (from.y + to.y) / 2 - Math.min(50, Math.abs(dy) / 4);
-            QuadCurve2D q = new QuadCurve2D.Float();
-            q.setCurve(from.x, from.y, ctrlX, ctrlY, to.x, to.y);
-            Color connColor = getConnectionColor(type);
-            g2.setColor(isSelected ? Color.RED : connColor);
-            g2.setStroke(new BasicStroke(2));
-            g2.draw(q);
-            drawCurveDirectionMarkers(g2, from, to, ctrlX, ctrlY, isSelected ? Color.RED : connColor);
-            double t = 0.5;
-            double oneMinusT = 1 - t;
-            double midX = oneMinusT * oneMinusT * from.x + 2 * oneMinusT * t * ctrlX + t * t * to.x;
-            double midY = oneMinusT * oneMinusT * from.y + 2 * oneMinusT * t * ctrlY + t * t * to.y;
-            double dxTangent = 2 * (1 - t) * (ctrlX - from.x) + 2 * t * (to.x - ctrlX);
-            double dyTangent = 2 * (1 - t) * (ctrlY - from.y) + 2 * t * (to.y - ctrlY);
-            double angle = Math.atan2(dyTangent, dxTangent);
-            Font baseFont = new Font("SansSerif", Font.PLAIN, 11);
-            g2.setFont(baseFont);
-            AffineTransform old = g2.getTransform();
-            g2.translate(midX, midY);
-            g2.rotate(angle);
-            
-            // Build label: show type, and fileName if available for file connections
-            String label = type != null ? type : "unknown";
-            if (fileName != null && !fileName.trim().isEmpty()) {
-                label = label + ": " + fileName;
-            }
-            
-            FontMetrics fm = g2.getFontMetrics();
-            int labelWidth = fm.stringWidth(label);
-            g2.setColor(new Color(255, 255, 255, 200));
-            g2.fillRect(-labelWidth/2 - 2, -fm.getHeight() + 2, labelWidth + 4, fm.getHeight() + 2);
-            g2.setColor(isSelected ? Color.RED : connColor);
-            g2.drawString(label, -labelWidth/2, -3);
-            
-            // Draw file icon indicator if fileName is set
-            if (fileName != null && !fileName.trim().isEmpty()) {
-                drawFileIcon(g2, -labelWidth/2 - 16, -10, isSelected ? Color.RED : connColor);
-            }
-            
-            g2.setTransform(old);
-            
-            drawArrowHead(g2, ctrlX, ctrlY, to.x, to.y, isSelected ? Color.RED : connColor);
-        }
-        
-        // Draw a small file icon to visually indicate a named file connection
-        private void drawFileIcon(Graphics2D g2, int x, int y, Color color) {
-            g2.setColor(color);
+            g2.fillOval(x - r, y - r, r*2, r*2);
+            g2.setColor(new Color(255, 255, 255, 180));
             g2.setStroke(new BasicStroke(1.2f));
-            // Draw file shape
-            int w = 10, h = 12;
-            int fold = 3;
-            int[] xPoints = {x, x + w - fold, x + w, x + w, x};
-            int[] yPoints = {y, y, y + fold, y + h, y + h};
-            g2.drawPolygon(xPoints, yPoints, 5);
-            // Draw fold corner
-            g2.drawLine(x + w - fold, y, x + w - fold, y + fold);
-            g2.drawLine(x + w - fold, y + fold, x + w, y + fold);
-            // Draw lines on file
-            g2.drawLine(x + 2, y + 5, x + w - 2, y + 5);
-            g2.drawLine(x + 2, y + 8, x + w - 2, y + 8);
+            g2.drawOval(x - r, y - r, r*2, r*2);
         }
-        
-        private void drawCurveDirectionMarkers(Graphics2D g2, Point from, Point to, int ctrlX, int ctrlY, Color color) {
-            g2.setColor(color);
-            g2.setStroke(new BasicStroke(2));
-            
-            double[] positions = {0.2, 0.4, 0.6, 0.8};
-            
-            for (double t : positions) {
-                double oneMinusT = 1 - t;
-                
-                double mx = oneMinusT * oneMinusT * from.x + 2 * oneMinusT * t * ctrlX + t * t * to.x;
-                double my = oneMinusT * oneMinusT * from.y + 2 * oneMinusT * t * ctrlY + t * t * to.y;
-                
-                double dxTangent = 2 * (1 - t) * (ctrlX - from.x) + 2 * t * (to.x - ctrlX);
-                double dyTangent = 2 * (1 - t) * (ctrlY - from.y) + 2 * t * (to.y - ctrlY);
-                double angle = Math.atan2(dyTangent, dxTangent);
-                
-                int chevronSize = 6;
-                double chevronAngle = Math.PI / 6;
-                
-                int x1 = (int)(mx - chevronSize * Math.cos(angle - chevronAngle));
-                int y1 = (int)(my - chevronSize * Math.sin(angle - chevronAngle));
-                int x2 = (int)(mx - chevronSize * Math.cos(angle + chevronAngle));
-                int y2 = (int)(my - chevronSize * Math.sin(angle + chevronAngle));
-                
-                g2.drawLine(x1, y1, (int)mx, (int)my);
-                g2.drawLine(x2, y2, (int)mx, (int)my);
-            }
-        }
-        private void drawArrowHead(Graphics2D g2, int x1, int y1, int x2, int y2, Color color) {
+
+        /** Filled arrowhead plus destination dot. */
+        private void drawArrowDot(Graphics2D g2, int x1, int y1, int x2, int y2, Color color) {
             double angle = Math.atan2(y2 - y1, x2 - x1);
-            int arrowLength = 12;
-            int x = x2;
-            int y = y2;
-            int xA = (int)(x - arrowLength * Math.cos(angle - Math.PI / 6));
-            int yA = (int)(y - arrowLength * Math.sin(angle - Math.PI / 6));
-            int xB = (int)(x - arrowLength * Math.cos(angle + Math.PI / 6));
-            int yB = (int)(y - arrowLength * Math.sin(angle + Math.PI / 6));
-            int[] xPoints = {x, xA, xB};
-            int[] yPoints = {y, yA, yB};
+            int aLen = 11;
+            int xA = (int)(x2 - aLen * Math.cos(angle - Math.PI/6));
+            int yA = (int)(y2 - aLen * Math.sin(angle - Math.PI/6));
+            int xB = (int)(x2 - aLen * Math.cos(angle + Math.PI/6));
+            int yB = (int)(y2 - aLen * Math.sin(angle + Math.PI/6));
             g2.setColor(color);
-            g2.fillPolygon(xPoints, yPoints, 3);
+            g2.fillPolygon(new int[]{x2,xA,xB}, new int[]{y2,yA,yB}, 3);
+            // Small dot at destination
+            int r = 4;
+            g2.fillOval(x2 - r, y2 - r, r*2, r*2);
+        }
+
+        /** Pill-shaped label centred at (lx, ly). */
+        private void drawConnLabel(Graphics2D g2, String fileName, int lx, int ly, Color color) {
+            if (fileName == null || fileName.trim().isEmpty()) return;
+            String text = fileName.trim();
+            Font f = new Font("SansSerif", Font.BOLD, 10);
+            g2.setFont(f);
+            FontMetrics fm = g2.getFontMetrics();
+            int tw = fm.stringWidth(text), th = fm.getAscent();
+            int pad = 5;
+            int rx = lx - tw/2 - pad, ry = ly - th/2 - pad;
+            int rw = tw + pad*2,       rh = th + pad*2;
+            g2.setColor(new Color(255, 255, 255, 230));
+            g2.fillRoundRect(rx, ry, rw, rh, 10, 10);
+            g2.setColor(color);
+            g2.setStroke(new BasicStroke(1f));
+            g2.drawRoundRect(rx, ry, rw, rh, 10, 10);
+            g2.setColor(new Color(30, 30, 50));
+            g2.drawString(text, lx - tw/2, ly + th/2 - 1);
+        }
+
+        // legacy stub kept so callers compile
+        private void drawArrowHead(Graphics2D g2, int x1, int y1, int x2, int y2, Color color) {
+            drawArrowDot(g2, x1, y1, x2, y2, color);
         }
     }
     Point getOutputPoint(FunctionBlock fb, int outputIndex) {
@@ -3188,6 +3975,9 @@ public class gui4 extends JFrame {
         boolean isSelected = false;
         // Store reference to inputPanel for reliable badge refresh
         private JPanel inputPanel;
+        // Header panel components (persisted across rebuildUI calls)
+        private JPanel headerPanel;
+        private JLabel headerNameLabel;
         private String getDefaultValue(String type) {
             if (type == null) return "default";
             String normalizedType = type.trim().toLowerCase();
@@ -3205,11 +3995,15 @@ public class gui4 extends JFrame {
             }
         }
         void updateBorder() {
-            String[] desc = getBlockDescription(name);
-            setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(isSelected ? Color.BLUE : Color.GRAY, isSelected ? 2 : 1),
-                "<html><b>" + name + "</b><br><font size='2' color='gray'>" + desc[0] + "</font></html>"
+            setBorder(BorderFactory.createLineBorder(
+                isSelected ? Theme.PRIMARY : Theme.BORDER,
+                isSelected ? 2 : 1
             ));
+            if (headerNameLabel != null) headerNameLabel.setText(name);
+            // Re-attach header panel if it was removed by rebuildUI → removeAll()
+            if (headerPanel != null && headerPanel.getParent() != this) {
+                add(headerPanel, BorderLayout.NORTH);
+            }
         }
         /** Public wrapper so FileEntryConnection code can call it. */
         public String getDefaultValuePublic(String type) { return getDefaultValue(type); }
@@ -3224,15 +4018,50 @@ public class gui4 extends JFrame {
                 final int idx = i;
                 JPanel inSlot = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
                 inSlot.setOpaque(false);
+                // Check for block-to-block CONN connection on this input
+                Connection connIn = null;
+                for (Connection c : connections) {
+                    if (c.to == FunctionBlock.this && c.toIdx == idx) { connIn = c; break; }
+                }
                 // Check for file-entry connection on this input
                 FileEntryConnection fec = null;
                 for (FileEntryConnection f : fileEntryConnections) {
                     if (f.toBlock == this && f.toInputIndex == idx) { fec = f; break; }
                 }
-                if (fec != null) {
-                    // Show badge: [entryFilePosition] — the sequential number from the data file
+                if (connIn != null) {
+                    // Resolve variable name: user-set wins, then outputVarNames, then auto-name
+                    String fromBase = connIn.from.originalName.replaceAll("_\\d+$", "");
+                    String connName;
+                    if (connIn.fileName != null && !connIn.fileName.trim().isEmpty()) {
+                        connName = connIn.fileName.trim();
+                    } else if (connIn.from.outputVarNames != null
+                            && connIn.fromIdx < connIn.from.outputVarNames.length
+                            && connIn.from.outputVarNames[connIn.fromIdx] != null
+                            && !connIn.from.outputVarNames[connIn.fromIdx].trim().isEmpty()) {
+                        connName = connIn.from.outputVarNames[connIn.fromIdx].trim();
+                    } else {
+                        connName = fromBase + "_output" + (connIn.fromIdx + 1);
+                    }
+                    String outType = (connIn.from.template != null
+                            && connIn.from.template.outputTypes != null
+                            && connIn.fromIdx < connIn.from.template.outputTypes.length)
+                            ? connIn.from.template.outputTypes[connIn.fromIdx] : "var";
+                    Color badgeColor = getFilePanelTypeColor(outType);
+                    JLabel badge = new JLabel(connName);
+                    badge.setFont(new Font("SansSerif", Font.BOLD, 10));
+                    badge.setForeground(Color.WHITE);
+                    badge.setOpaque(true);
+                    badge.setBackground(badgeColor);
+                    badge.setBorder(BorderFactory.createEmptyBorder(2, 6, 2, 6));
+                    badge.setToolTipText("<html><b>" + connIn.from.name
+                            + " → output " + (connIn.fromIdx + 1) + "</b><br>$" + connName + "</html>");
+                    JLabel inArrow = inputArrows[idx];
+                    if (inArrow != null) inSlot.add(inArrow);
+                    inSlot.add(badge);
+                } else if (fec != null) {
                     Color badgeColor = getFilePanelTypeColor(fec.entryType);
-                    JLabel badge = new JLabel("[" + fec.entryPosition + "]");
+                    String badgeText = "[" + fec.entryPosition + "]";
+                    JLabel badge = new JLabel(badgeText);
                     badge.setFont(new Font("SansSerif", Font.BOLD, 11));
                     badge.setForeground(Color.WHITE);
                     badge.setOpaque(true);
@@ -3255,6 +4084,10 @@ public class gui4 extends JFrame {
                         loadAndDisplayInputFile();
                     });
                     bMenu.add(bDel);
+                    bMenu.addSeparator();
+                    JMenuItem bDelInput = new JMenuItem("\u2702 Delete This Input");
+                    bDelInput.addActionListener(e -> deleteInput(idx));
+                    bMenu.add(bDelInput);
                     JMenuItem bEdit = new JMenuItem("\u270F Edit File Name");
                     bEdit.addActionListener(e -> {
                         String cur = fecFinal.fileName != null ? fecFinal.fileName : "";
@@ -3269,16 +4102,205 @@ public class gui4 extends JFrame {
                     });
                     bMenu.add(bEdit);
                     badge.setComponentPopupMenu(bMenu);
+                    // Keep the original dot visible alongside the badge
+                    JLabel inArrow = inputArrows[idx];
+                    if (inArrow != null) inSlot.add(inArrow);
                     inSlot.add(badge);
                 } else {
                     JLabel inArrow = inputArrows[idx];
                     if (inArrow != null) inSlot.add(inArrow);
+                    // Show an orange badge if a direct value has been entered
+                    String directVal = inputValues[idx];
+                    String defaultVal = getDefaultValue(template.inputTypes[idx]);
+                    boolean hasDirectValue = directVal != null && !directVal.isEmpty()
+                            && !directVal.equals(defaultVal);
+                    if (hasDirectValue) {
+                        String display = directVal.length() > 14
+                                ? directVal.substring(0, 12) + "…" : directVal;
+                        JLabel valBadge = new JLabel(display);
+                        valBadge.setFont(new Font("SansSerif", Font.BOLD, 11));
+                        valBadge.setForeground(Color.WHITE);
+                        valBadge.setOpaque(true);
+                        valBadge.setBackground(Theme.WARNING_DK);
+                        valBadge.setBorder(BorderFactory.createEmptyBorder(2, 6, 2, 6));
+                        valBadge.setToolTipText("<html><b>Direct value</b><br>"
+                                + "Type: " + template.inputTypes[idx]
+                                + "<br>Value: " + directVal
+                                + "<br><font color='#FBBF24'>Right-click to edit or clear</font></html>");
+                        inSlot.add(valBadge);
+                    }
+                    // Right-click handler shared by both the slot panel and the arrow label
+                    // so the menu fires whether the user clicks the dot or the surrounding area.
+                    MouseAdapter slotHandler = new MouseAdapter() {
+                        public void mouseReleased(MouseEvent e) {
+                            if (!SwingUtilities.isRightMouseButton(e)) return;
+                            JPopupMenu pm = new JPopupMenu();
+                            String type = template.inputTypes[idx].trim().toLowerCase();
+                            // ── Set Value ──────────────────────────────────
+                            JMenuItem setItem = new JMenuItem(
+                                    "✏ Set Value  [" + template.inputTypes[idx] + "]");
+                            setItem.addActionListener(ev -> {
+                                String newVal = null;
+                                if (type.equals("file")) {
+                                    JFileChooser chooser = new JFileChooser();
+                                    String cur = inputValues[idx];
+                                    if (cur != null && !cur.isEmpty()) {
+                                        java.io.File f = new java.io.File(cur);
+                                        if (f.getParentFile() != null) chooser.setCurrentDirectory(f.getParentFile());
+                                    }
+                                    if (chooser.showOpenDialog(FunctionBlock.this) == JFileChooser.APPROVE_OPTION) {
+                                        newVal = chooser.getSelectedFile().getAbsolutePath();
+                                    }
+                                } else if (type.equals("integer") || type.equals("int")) {
+                                    String raw = JOptionPane.showInputDialog(gui4.this,
+                                            "Enter integer value for input " + (idx + 1) + ":",
+                                            inputValues[idx]);
+                                    if (raw != null) {
+                                        try { Integer.parseInt(raw.trim()); newVal = raw.trim(); }
+                                        catch (NumberFormatException ex2) {
+                                            JOptionPane.showMessageDialog(gui4.this,
+                                                    "\"" + raw + "\" is not a valid integer.",
+                                                    "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                                        }
+                                    }
+                                } else if (type.equals("float") || type.equals("double")) {
+                                    String raw = JOptionPane.showInputDialog(gui4.this,
+                                            "Enter float value for input " + (idx + 1) + ":",
+                                            inputValues[idx]);
+                                    if (raw != null) {
+                                        try { Double.parseDouble(raw.trim()); newVal = raw.trim(); }
+                                        catch (NumberFormatException ex2) {
+                                            JOptionPane.showMessageDialog(gui4.this,
+                                                    "\"" + raw + "\" is not a valid number.",
+                                                    "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                                        }
+                                    }
+                                } else {
+                                    String raw = JOptionPane.showInputDialog(gui4.this,
+                                            "Enter " + template.inputTypes[idx]
+                                            + " value for input " + (idx + 1) + ":",
+                                            inputValues[idx]);
+                                    if (raw != null) newVal = raw.trim();
+                                }
+                                if (newVal != null && !newVal.isEmpty()) {
+                                    inputValues[idx] = newVal;
+                                    refreshInputBadges();
+                                }
+                            });
+                            pm.add(setItem);
+                            // ── Clear Value (only when a direct value exists) ──
+                            String curVal = inputValues[idx];
+                            String defVal = getDefaultValue(template.inputTypes[idx]);
+                            if (curVal != null && !curVal.isEmpty() && !curVal.equals(defVal)) {
+                                JMenuItem clearItem = new JMenuItem("✖ Clear Value");
+                                clearItem.addActionListener(ev -> {
+                                    inputValues[idx] = defVal;
+                                    refreshInputBadges();
+                                });
+                                pm.add(clearItem);
+                            }
+                            pm.addSeparator();
+                            // ── Delete Input ───────────────────────────────
+                            JMenuItem delItem = new JMenuItem("✂ Delete Input " + (idx + 1)
+                                    + "  [" + template.inputTypes[idx] + "]");
+                            delItem.addActionListener(ev -> deleteInput(idx));
+                            pm.add(delItem);
+                            // show at the actual clicked component so coords are correct
+                            pm.show(e.getComponent(), e.getX(), e.getY());
+                        }
+                    };
+                    inSlot.addMouseListener(slotHandler);
+                    if (inArrow != null) inArrow.addMouseListener(slotHandler);
                 }
                 inputPanel.add(inSlot);
             }
             inputPanel.revalidate();
             inputPanel.repaint();
             recomputeSize();
+        }
+        /** Removes the input at position idx, shifts remaining inputs and connections down. */
+        void deleteInput(int idx) {
+            if (template.inputCount <= 1) {
+                JOptionPane.showMessageDialog(gui4.this,
+                    "Cannot delete — block must have at least 1 input.",
+                    "Cannot Delete", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            // Remove block-to-block connections targeting this input; shift others
+            connections.removeIf(c -> c.to == FunctionBlock.this && c.toIdx == idx);
+            for (Connection c : connections) {
+                if (c.to == FunctionBlock.this && c.toIdx > idx) c.toIdx--;
+            }
+            // Remove file-entry connections targeting this input; shift others
+            fileEntryConnections.removeIf(f -> f.toBlock == FunctionBlock.this && f.toInputIndex == idx);
+            for (FileEntryConnection f : fileEntryConnections) {
+                if (f.toBlock == FunctionBlock.this && f.toInputIndex > idx) f.toInputIndex--;
+            }
+            // Build compacted arrays (skip index idx)
+            int n = template.inputCount - 1;
+            String[] newTypes  = new String[n];
+            String[] newVals   = new String[n];
+            JLabel[] newArrows = new JLabel[n];
+            for (int i = 0, j = 0; i < template.inputCount; i++) {
+                if (i == idx) continue;
+                newTypes[j]  = template.inputTypes[i];
+                newVals[j]   = inputValues[i];
+                newArrows[j] = inputArrows[i];
+                j++;
+            }
+            // Replace template (keep same name/outputs, one fewer input)
+            template = new BlockTemplate(template.name, n, template.outputCount, newTypes, template.outputTypes);
+            inputValues = newVals;
+            inputArrows = newArrows;
+            // Rebuild input panel with updated slot count
+            inputPanel.setLayout(new GridLayout(n, 1, 0, 8));
+            refreshInputBadges();
+            recomputeSize();
+            if (drawingPanel != null) drawingPanel.repaint();
+        }
+        /** Deletes all inputs that have no block-to-block wire and no file-entry connection. */
+        void deleteUnconnectedInputs() {
+            // Collect which inputs ARE connected
+            java.util.Set<Integer> connected = new java.util.HashSet<>();
+            for (Connection c : connections) {
+                if (c.to == FunctionBlock.this) connected.add(c.toIdx);
+            }
+            for (FileEntryConnection f : fileEntryConnections) {
+                if (f.toBlock == FunctionBlock.this) connected.add(f.toInputIndex);
+            }
+            // Count unconnected inputs to delete
+            int unconnectedCount = 0;
+            for (int i = 0; i < template.inputCount; i++) {
+                if (!connected.contains(i)) unconnectedCount++;
+            }
+            if (unconnectedCount == 0) {
+                JOptionPane.showMessageDialog(gui4.this,
+                    "All inputs are connected — nothing to delete.",
+                    "No Unconnected Inputs", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            if (template.inputCount - unconnectedCount < 1) {
+                JOptionPane.showMessageDialog(gui4.this,
+                    "Cannot delete — block must keep at least 1 input.",
+                    "Cannot Delete", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            int confirm = JOptionPane.showConfirmDialog(gui4.this,
+                "Delete " + unconnectedCount + " unconnected input(s) from '" + name + "'?",
+                "Delete Unconnected Inputs", JOptionPane.YES_NO_OPTION);
+            if (confirm != JOptionPane.YES_OPTION) return;
+            // Delete from highest index to lowest so indices stay valid
+            for (int i = template.inputCount - 1; i >= 0; i--) {
+                if (!connected.contains(i)) deleteInput(i);
+                // Rebuild connected set after each deletion (indices shift)
+                connected.clear();
+                for (Connection c : connections) {
+                    if (c.to == FunctionBlock.this) connected.add(c.toIdx);
+                }
+                for (FileEntryConnection f : fileEntryConnections) {
+                    if (f.toBlock == FunctionBlock.this) connected.add(f.toInputIndex);
+                }
+            }
         }
         FunctionBlock(String name, BlockTemplate template) {
             super();
@@ -3287,16 +4309,72 @@ public class gui4 extends JFrame {
             this.nameHistory = new ArrayList<>();
             this.nameHistory.add(name);
             this.template = template;
-            setLayout(new BorderLayout(10, 10));
-            
-            String[] desc = getBlockDescription(name);
-            setBorder(BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(Color.GRAY, 1),
-                "<html><b>" + name + "</b><br><font size='2' color='gray'>" + desc[0] + "</font></html>"
-            ));
-            
-            setBackground(new Color(230, 230, 250));
+            setLayout(new BorderLayout(8, 0));
+            setBorder(BorderFactory.createLineBorder(Theme.BORDER, 1));
+            setBackground(Theme.BG_CARD);
             setOpaque(true);
+
+            // ── Header panel ──────────────────────────────────────────────────
+            String[] desc = getBlockDescription(name);
+            headerNameLabel = new JLabel(name);
+            headerNameLabel.setFont(Theme.monoBold(11));
+            headerNameLabel.setForeground(Theme.TEXT_DARK);
+
+            JLabel dotLabel = new JLabel("◈ ");
+            dotLabel.setForeground(Theme.PRIMARY);
+            dotLabel.setFont(new Font("SansSerif", Font.BOLD, 9));
+
+            JLabel ioLabel = new JLabel(" " + template.inputCount + "↓ " + template.outputCount + "↑ ");
+            ioLabel.setFont(new Font("SansSerif", Font.PLAIN, 9));
+            ioLabel.setForeground(Theme.TEXT_LIGHT);
+
+            JLabel descLabel = new JLabel("<html><i>" + desc[0] + "</i></html>");
+            descLabel.setFont(new Font("SansSerif", Font.PLAIN, 9));
+            descLabel.setForeground(Theme.TEXT_MED);
+
+            JPanel nameRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
+            nameRow.setOpaque(false);
+            nameRow.add(dotLabel);
+            nameRow.add(headerNameLabel);
+
+            JPanel headerTop = new JPanel(new BorderLayout(2, 0));
+            headerTop.setOpaque(false);
+            headerTop.add(nameRow, BorderLayout.CENTER);
+            headerTop.add(ioLabel, BorderLayout.EAST);
+
+            headerPanel = new JPanel();
+            headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.Y_AXIS));
+            headerPanel.setBackground(Theme.CARD_HI);
+            headerPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, Theme.BORDER),
+                BorderFactory.createEmptyBorder(4, 6, 3, 6)
+            ));
+            headerPanel.setOpaque(true);
+            headerPanel.add(headerTop);
+            headerPanel.add(descLabel);
+
+            // Allow dragging and selection via header panel
+            final Point[] hdrOffset = { null };
+            headerPanel.addMouseListener(new MouseAdapter() {
+                public void mousePressed(MouseEvent e) {
+                    hdrOffset[0] = SwingUtilities.convertPoint(headerPanel, e.getPoint(), FunctionBlock.this);
+                    for (FunctionBlock fb : functionBlocks) { fb.isSelected = false; fb.updateBorder(); }
+                    isSelected = true;
+                    updateBorder();
+                }
+            });
+            headerPanel.addMouseMotionListener(new MouseMotionAdapter() {
+                public void mouseDragged(MouseEvent e) {
+                    if (hdrOffset[0] == null) return;
+                    Point parent = SwingUtilities.convertPoint(headerPanel, e.getPoint(), drawingPanel);
+                    int newX = parent.x - hdrOffset[0].x;
+                    int newY = parent.y - hdrOffset[0].y;
+                    FunctionBlock.this.setLocation(newX, newY);
+                    updateCanvasSize();
+                    drawingPanel.repaint();
+                }
+            });
+            add(headerPanel, BorderLayout.NORTH);
             
             setToolTipText("<html><b>" + desc[0] + "</b><br><br>" + 
                 desc[1] + "</i><br><br>" +
@@ -3392,6 +4470,7 @@ public class gui4 extends JFrame {
                             connections.add(new Connection(dragSource, dragSourceOutputIndex, FunctionBlock.this, idx, inType));
                             dragSource = null; dragSourceOutputIndex = -1;
                             drawingPanel.setCursor(Cursor.getDefaultCursor());
+                            refreshInputBadges();
                             drawingPanel.repaint();
                         }
                     }
@@ -3428,13 +4507,25 @@ public class gui4 extends JFrame {
                                     if ((he.getChangeFlags() & java.awt.event.HierarchyEvent.SHOWING_CHANGED) != 0 && tf.isShowing())
                                         SwingUtilities.invokeLater(tf::requestFocusInWindow);
                                 });
+                                JButton pasteBtn = new JButton("Paste");
+                                pasteBtn.setMargin(new Insets(2, 8, 2, 8));
+                                pasteBtn.addActionListener(pev -> {
+                                    try {
+                                        java.awt.datatransfer.Clipboard cb = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
+                                        String clip = (String) cb.getData(java.awt.datatransfer.DataFlavor.stringFlavor);
+                                        if (clip != null) tf.setText(clip.trim());
+                                    } catch (Exception ex) { /* clipboard empty or not text */ }
+                                    tf.requestFocusInWindow();
+                                });
                                 JPanel p = new JPanel(new java.awt.GridBagLayout());
                                 java.awt.GridBagConstraints gbc = new java.awt.GridBagConstraints();
                                 gbc.insets = new Insets(4, 4, 4, 4);
-                                gbc.gridx = 0; gbc.gridy = 0; gbc.anchor = java.awt.GridBagConstraints.WEST;
+                                gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2; gbc.anchor = java.awt.GridBagConstraints.WEST;
                                 p.add(new JLabel("<html>Variable name for Output " + (oidx+1) + ":<br><i>Will appear as $NAME in generated script</i></html>"), gbc);
-                                gbc.gridy = 1; gbc.fill = java.awt.GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
+                                gbc.gridy = 1; gbc.gridwidth = 1; gbc.fill = java.awt.GridBagConstraints.HORIZONTAL; gbc.weightx = 1.0;
                                 p.add(tf, gbc);
+                                gbc.gridx = 1; gbc.weightx = 0; gbc.fill = java.awt.GridBagConstraints.NONE;
+                                p.add(pasteBtn, gbc);
                                 int res = JOptionPane.showConfirmDialog(gui4.this, p,
                                         "Name Output " + (oidx+1) + " of '" + name + "'",
                                         JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
@@ -3760,7 +4851,13 @@ public class gui4 extends JFrame {
             });
             menu.add(editOutputTypes);
             menu.addSeparator();
-            
+
+            JMenuItem delUnconnected = new JMenuItem("\u2702 Delete Unconnected Inputs");
+            delUnconnected.addActionListener(e -> deleteUnconnectedInputs());
+            menu.add(delUnconnected);
+
+            menu.addSeparator();
+
             JMenuItem delete = new JMenuItem("\uD83D\uDDD1\uFE0F Delete");
             delete.addActionListener(e -> {
                 int confirm = JOptionPane.showConfirmDialog(gui4.this, 
@@ -3787,8 +4884,8 @@ public class gui4 extends JFrame {
          */
         public void recomputeSize() {
             int numSlots = Math.max(template.inputCount, template.outputCount);
-            // 32px per slot row + 80px for title border + padding
-            int h = Math.max(120, numSlots * 32 + 80);
+            // 32px per slot row + 90px for header panel + padding
+            int h = Math.max(130, numSlots * 32 + 90);
             // Width: 240 minimum; wider if there are many slots (badge labels need space)
             int w = numSlots > 15 ? 260 : 240;
             setSize(w, h);
@@ -3820,17 +4917,17 @@ public class gui4 extends JFrame {
         }
         
         private Color getTypeColor(String type) {
-            if (type == null) return Color.DARK_GRAY;
+            if (type == null) return Theme.T_OTHER;
             String normalizedType = type.trim().toLowerCase();
             switch (normalizedType) {
-                case "float": return new Color(139, 0, 0);
-                case "integer": case "int": return new Color(0, 0, 139);
-                case "string": return new Color(255, 140, 0);
-                case "file": return new Color(199, 21, 133);
-                case "graph": return new Color(0, 139, 139);
-                case "status": return new Color(0, 100, 0);
-                case "character": case "char": return new Color(184, 134, 11);
-                default: return Color.DARK_GRAY;
+                case "float":                return Theme.T_FLOAT;
+                case "integer": case "int":  return Theme.T_INT;
+                case "string":               return Theme.T_STRING;
+                case "file":                        return Theme.T_FILE;
+                case "graph":                       return Theme.T_GRAPH;
+                case "status":                      return Theme.SUCCESS;
+                case "character": case "char":      return Theme.WARNING;
+                default:                            return Theme.T_OTHER;
             }
         }
         
@@ -3863,9 +4960,9 @@ public class gui4 extends JFrame {
         }
         private void rebuildUI() {
             this.removeAll();
-            this.setLayout(new BorderLayout(10, 10));
+            this.setLayout(new BorderLayout(8, 0));
             updateBorder();
-            this.setBackground(new Color(230, 230, 250));
+            this.setBackground(Theme.BG_CARD);
             String[] oldValues = inputValues != null ? inputValues.clone() : null;
             inputValues = new String[template.inputCount];
             
@@ -3901,6 +4998,7 @@ public class gui4 extends JFrame {
                             dragSource = null;
                             dragSourceOutputIndex = -1;
                             drawingPanel.setCursor(Cursor.getDefaultCursor());
+                            refreshInputBadges();
                             drawingPanel.repaint();
                         }
                     }
@@ -4083,509 +5181,245 @@ public class gui4 extends JFrame {
         }
         return content.toString();
     }
+
+    /** Returns a description line for every block input that has no connection and no typed value. */
+    private List<String> getUnfilledInputs(List<FunctionBlock> order) {
+        List<String> unfilled = new ArrayList<>();
+        for (FunctionBlock fb : order) {
+            if (fb.template == null || fb.template.inputCount == 0) continue;
+            for (int i = 0; i < fb.template.inputCount; i++) {
+                boolean hasConn = false;
+                for (Connection c : connections) {
+                    if (c.to == fb && c.toIdx == i) { hasConn = true; break; }
+                }
+                if (!hasConn) {
+                    for (FileEntryConnection fec : fileEntryConnections) {
+                        if (fec.toBlock == fb && fec.toInputIndex == i) { hasConn = true; break; }
+                    }
+                }
+                if (hasConn) continue;
+                String val = (fb.inputValues != null && i < fb.inputValues.length) ? fb.inputValues[i] : "";
+                if (val != null && !val.isEmpty() && !val.equals("empty_file")) continue;
+                String inputType = (fb.template.inputTypes != null && i < fb.template.inputTypes.length)
+                        ? fb.template.inputTypes[i] : "?";
+                unfilled.add(fb.name + "  ·  input " + (i + 1) + "  (" + inputType + ")");
+            }
+        }
+        return unfilled;
+    }
+
     private void generateScriptFromPipeline() {
         List<FunctionBlock> order = getTopologicalOrder();
-        if (order == null) return;
-        generateAdvtempScript(order);
-    }
-
-    private String guiCmd(java.util.Map<String, java.util.Deque<FunctionBlock>> q, String blockType, String defaultCmd) {
-        java.util.Deque<FunctionBlock> deq = q.get(blockType);
-        if (deq == null || deq.isEmpty()) return defaultCmd;
-        FunctionBlock fb = deq.poll();
-        String[] inputs = resolveInputsForScript(fb);
-        StringBuilder cmd = new StringBuilder(blockType);
-        for (String inp : inputs) cmd.append(" ").append(inp);
-        if (!blockType.equals("start")) {
-            for (String out : resolveOutputsForScript(fb)) cmd.append(" ").append(out);
+        if (order == null || order.isEmpty()) {
+            JOptionPane.showMessageDialog(getDialogParent(),
+                "No blocks in pipeline or a cycle was detected.", "Warning", JOptionPane.WARNING_MESSAGE);
+            return;
         }
-        return cmd.toString();
-    }
-
-    private void generateAdvtempScript(List<FunctionBlock> order) {
+        List<String> unfilled = getUnfilledInputs(order);
+        if (!unfilled.isEmpty()) {
+            StringBuilder msg = new StringBuilder("The following inputs have no data:\n\n");
+            for (String s : unfilled) msg.append("  • ").append(s).append("\n");
+            msg.append("\nGenerate script anyway?");
+            int choice = JOptionPane.showConfirmDialog(getDialogParent(), msg.toString(),
+                    "Unfilled Inputs", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (choice != JOptionPane.YES_OPTION) return;
+        }
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle("Save Generated Script");
         chooser.setSelectedFile(new java.io.File("generated_script.txt"));
-        if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) return;
+        if (chooser.showSaveDialog(getDialogParent()) != JFileChooser.APPROVE_OPTION) return;
         java.io.File outFile = chooser.getSelectedFile();
-        try (PrintWriter w = new PrintWriter(outFile, "UTF-8")) {
-            w.println(";; ");
-            w.println(";; To display SVG file on browser, use \"dre 0 t 0 0 0 0 0 0 graph\"");
-            w.println(";; To display on xdot (searchable), use \"exec xdot t_graph.dot\" after");
-            w.println(";; \"dre 0 t 0 0 0 0 0 0 graph\"");
-            w.println(";;");
-            w.println();
-            w.println(";; **********************************************************************");
-            w.println(";; DO NOT CHANGE THE NEXT FEW LINES.  DO NOT MOVE THEM LATER IN THIS FILE.");
-            w.println(";; **********************************************************************");
-            w.println();
-            w.println("let $ONLY_ACT_EDGES_TO_TARGET 1");
-            w.println("let $ONLY_EXPR_EDGES_TO_TARGET 2");
-            w.println("let $BOTH_ACT_EXPR_EDGES_TO_TARGET 0");
-            w.println();
-            w.println(";; ***********");
-            w.println(";; Basic inputs read from GUI");
-            w.println(";; Potentially changes for every run");
-            w.println(";; ***********");
-            w.println();
-            w.println("let $WORK_DIR %__1__%");
-            w.println("let $SRC_NODE hsa%__2__%");
-            w.println("let $TGT_NODE hsa%__3__%");
-            w.println("let $NODE_TO_TEST_FOR_SIGNIFICANCE hsa%__4__%");
-            w.println("let $REACH_PATH_BOUND %__5__%");
-            w.println("let $EDGE_RELAX_LB %__6__%");
-            w.println("let $EDGE_RELAX_UB %__7__%");
-            w.println("let $NODE_RELAX_LB %__8__%");
-            w.println("let $NODE_RELAX_UB %__9__%");
-            w.println("let $LOGFOLDCHANGES %__10__%");
-            w.println("let $ADDITIONALEDGES %__11__%");
-            w.println("let $UP_REG_THRESH %__12__%");
-            w.println("let $DOWN_REG_THRESH %__13__%");
-            w.println();
-            w.println("let $EDGES_TO_TARGET %__14__%");
-            w.println();
-            w.println("let $LOG_FOLD_CHANGE_FILE %__lf__%");
-            w.println("let $ADDITIONAL_EDGES_FILE %__ef__%");
-            w.println();
-            w.println(";; ************");
-            w.println(";; Advanced inputs read from GUI or from last run");
-            w.println(";; May not change for every run");
-            w.println(";; ************");
-            w.println();
-            w.println("let $NODE_SPLIT_THRESHOLD %__a1__%");
-            w.println("let $CONSTR_SOLVER_TIMEOUT1 %__a2__%");
-            w.println("let $CONSTR_SOLVER_TIMEOUT2 %__a3__%");
-            w.println("let $NUM_SOLNS_TO_COUNT %__a4__%");
-            w.println("let $NUM_SOLNS_TO_EXPLORE %__a5__%");
-            w.println(";; let $COMMON_FILES_DIR %__a6__%");
-            w.println("let $ESSENTIAL_EDGES_FILE %__a7__%");
-            w.println("let $AVOID_EDGES_FILE %__a8__%");
-            w.println("let $INACTIVE_NODES_FILE %__a9__%");
-            w.println("let $CONFIRMED_UP_REG_FILE %__a10__%");
-            w.println("let $CONFIRMED_DOWN_REG_FILE %__a11__%");
-            w.println("let $RELAXED_NODES_FILE %__a12__%");
-            w.println("let $RELAXED_EDGES_FILE %__a13__%");
-            w.println("let $NONRELAXED_EDGES_FILE %__a14__%");
-            w.println("let $INTER_DB_MAP_FILE %__a15__%");
-            w.println("let $HSA_TO_GENE_SYMBOL_MAP_FILE %__a16__%");
-            w.println("let $HSA_PATH_TO_PATH_NAME_MAP_FILE %__a17__%");
-            w.println("%__c__%let $LIST_OF_MERGED_KEGG_XML_FILE %__a18__%");
-            w.println("let $MERGED_KEGG_PATHWAYS_XML_FILE %__a19__%");
-            w.println("let $HSA_IDS_NOT_TO_BE_MERGED_FILE %__a20__%");
-            w.println("let $COEXPRESSION_CSV %__a21__%");
-            w.println("let $COEXP_THRESH %__a22__%");
-            w.println("let $FROZEN_THRESH %__a23__%");
-            w.println();
-            w.println();
-            w.println(";; **********************************************************************");
-            w.println(";; DO NOT CHANGE THE ABOVE FEW LINES.  DO NOT MOVE THEM LATER IN THIS FILE.");
-            w.println(";; **********************************************************************");
-            w.println();
-            w.println();
-            w.println(";; ********************");
-            w.println(";; All template files should have the same part above this point");
-            w.println(";; Template files should only differ in the part below this point");
-            w.println(";; ********************");
-            w.println();
-            w.println();
-            w.println(";; **********************************************************************");
-            w.println(";; Coefficients and exponents for edge weights in min-cut based analysis");
-            w.println(";; Currently not used.");
-            w.println(";; DO NOT CHANGE UNLESS YOU ARE SURE");
-            w.println(";; **********************************************************************");
-            w.println();
-            w.println("let $COEFF1 1.0");
-            w.println("let $EXP1 -1.0");
-            w.println("let $COEFF2 1.0");
-            w.println("let $EXP2 -1.0");
-            w.println("let $COEFF3 1.0");
-            w.println("let $EXP3 -1.0");
-            w.println("let $COEFF4 1.0");
-            w.println("let $EXP4 -1.0");
-            w.println();
-            w.println(";; **************");
-            w.println(";; Main script starts here");
-            w.println(";; **************");
-            w.println();
-            w.println();
-            w.println("let $WRITE_SUBDIR $SRC_NODE_to_$TGT_NODE_fsc_$NODE_TO_TEST_FOR_SIGNIFICANCE_$LOGFOLDCHANGES_b$REACH_PATH_BOUND");
-            w.println("let $WRITE_DIR $WORK_DIR/$WRITE_SUBDIR");
-            w.println();
-            w.println("exec if [ -d $WRITE_DIR ] ; then /bin/rm -rf $WRITE_DIR; fi");
-            w.println("exec mkdir $WRITE_DIR");
-            w.println();
-            w.println("let $NEW_LIST_OF_MERGED_XML_FILE $WRITE_DIR/list_of_xml_files_new.txt");
-            w.println("let $MERGED_PATHWAYS_XML_FILE $WRITE_DIR/merged_master_graph.xml");
-            w.println("let $ADDITIONAL_EDGES_XML_FILE $WRITE_DIR/additional_edges.xml");
-            w.println("let $EXCEPTION_TO_NODE_MERGE_FILE $WRITE_DIR/exception_file.txt");
-            w.println("let $UP_REG_FILE $WRITE_DIR/up_reg");
-            w.println("let $DOWN_REG_FILE $WRITE_DIR/down_reg");
-            w.println("let $ESSENTIAL_NODES_FILE_WITH_FSC $WRITE_DIR/essential_nodes_file_w_$NODE_TO_TEST_FOR_SIGNIFICANCE");
-            w.println("let $ESSENTIAL_NODES_FILE_WITHOUT_FSC $WRITE_DIR/essential_nodes_file_wo_$NODE_TO_TEST_FOR_SIGNIFICANCE");
-            w.println("let $ACTIVE_NODES_FILE_WITH_FSC $WRITE_DIR/active_nodes_file_w_$NODE_TO_TEST_FOR_SIGNIFICANCE");
-            w.println("let $ACTIVE_NODES_FILE_WITHOUT_FSC $WRITE_DIR/active_nodes_file_wo_$NODE_TO_TEST_FOR_SIGNIFICANCE");
-            w.println("let $NONRELAXED_NODES_FILE_WITH_FSC $WRITE_DIR/nonrelaxed_nodes_file_w_$NODE_TO_TEST_FOR_SIGNIFICANCE");
-            w.println("let $NONRELAXED_NODES_FILE_WITHOUT_FSC $WRITE_DIR/nonrelaxed_nodes_file_wo_$NODE_TO_TEST_FOR_SIGNIFICANCE");
-            w.println("let $CONNECT_PAIRS_FILE $WRITE_DIR/connect_pairs");
-            w.println("let $SRC_FILE $WRITE_DIR/src_file");
-            w.println("let $TGT_FILE $WRITE_DIR/tgt_file");
-            w.println();
-            // Build per-type queues from the pipeline order
-            java.util.Set<String> STANDARD_TYPES = new java.util.HashSet<>(java.util.Arrays.asList(
-                    "start", "mff", "wgx", "rgx", "fb_rch", "pathz3", "cudf"));
-            java.util.Map<String, java.util.Deque<FunctionBlock>> guiQ = new java.util.LinkedHashMap<>();
-            java.util.List<FunctionBlock> extraBlocks = new java.util.ArrayList<>();
-            for (FunctionBlock fb : order) {
-                String baseName = fb.originalName.replaceAll("_\\d+$", "");
-                if (STANDARD_TYPES.contains(baseName)) {
-                    guiQ.computeIfAbsent(baseName, k -> new java.util.ArrayDeque<>()).add(fb);
-                } else {
-                    extraBlocks.add(fb);
-                }
-            }
-            w.println(";; **********************************************************************");
-            w.println(";; create up-reg and down-reg files from fold change file and thresholds");
-            w.println(";; **********************************************************************");
-            w.println();
-            // cudf — only if a cudf GUI block is connected
-            { String c = guiCmd(guiQ, "cudf", null);
-              if (c != null) { w.println(c); w.println(); } }
-            w.println(";; **********************************************************************");
-            w.println(";; Now create some necessary files from src_node and tgt_node information");
-            w.println(";; **********************************************************************");
-            w.println();
-            w.println("exec cd $WRITE_DIR; echo $SRC_NODE > $SRC_FILE; echo $TGT_NODE > $TGT_FILE");
-            w.println("exec cd $WRITE_DIR;");
-            w.println("exec echo $SRC_NODE $TGT_NODE > $CONNECT_PAIRS_FILE");
-            w.println("exec cat $UP_REG_FILE $DOWN_REG_FILE $SRC_FILE $TGT_FILE $HSA_IDS_NOT_TO_BE_MERGED_FILE > $EXCEPTION_TO_NODE_MERGE_FILE");
-            w.println("exec touch $WRITE_DIR/empty_file");
-            w.println();
-            w.println(";; **********************************************************************");
-            w.println(";; Read the following global files before starting execution of the pipeline");
-            w.println(";; **********************************************************************");
-            w.println();
-            // start — only if GUI block connected
-            { String c = guiCmd(guiQ, "start", null);
-              if (c != null) { w.println(c); w.println(); } }
-            w.println(";; **********************************************************************");
-            w.println(";; Merging KEGG pathways to obtain merged KEGG (only) master network");
-            w.println(";; If this has already been done, this step can be skipped.");
-            w.println(";;");
-            w.println(";; Fifth argument is n: if these files were not previously written by the tool, otherwise 'y'");
-            w.println(";; **********************************************************************");
-            w.println();
-            // first mff — consume GUI block, print exact template line with %__c__%
-            { java.util.Deque<FunctionBlock> mffQ = guiQ.get("mff");
-              if (mffQ != null && !mffQ.isEmpty()) mffQ.poll();
-              w.println("%__c__%mff $LIST_OF_MERGED_KEGG_XML_FILE xml $NODE_SPLIT_THRESHOLD n $INTER_DB_MAP_FILE -1");
-              w.println(); }
-            w.println(";; **********************************************************************");
-            w.println(";; Writing merged graph into xml file, end with string for pathway.");
-            w.println(";; Currently using 'KEGG'.");
-            w.println(";; This file can be later read in instead of merging KEGG pathways afresh.");
-            w.println(";; **********************************************************************");
-            w.println();
-            // first wgx — consume GUI block, print exact template line with %__c__%
-            { java.util.Deque<FunctionBlock> wgxQ = guiQ.get("wgx");
-              if (wgxQ != null && !wgxQ.isEmpty()) wgxQ.poll();
-              w.println("%__c__%wgx 0 $MERGED_KEGG_PATHWAYS_XML_FILE KEGG");
-              w.println(); }
-            w.println(";; **********************************************************************");
-            w.println(";; Processing information about new edges to be added, if needed.");
-            w.println(";; If no new edges are being added, skip this step");
-            w.println(";; **********************************************************************");
-            w.println();
-            w.println("%__c__%exec add $ADDITIONAL_EDGES_FILE $ADDITIONAL_EDGES_XML_FILE");
-            w.println("exec if [ -f $NEW_LIST_OF_MERGED_XML_FILE ] ; then /bin/rm $NEW_LIST_OF_MERGED_XML_FILE; fi");
-            w.println("exec echo $MERGED_KEGG_PATHWAYS_XML_FILE | cat > $NEW_LIST_OF_MERGED_XML_FILE");
-            w.println("%__c__%exec echo $ADDITIONAL_EDGES_XML_FILE | cat >>  $NEW_LIST_OF_MERGED_XML_FILE");
-            w.println();
-            w.println(";; **********************************************************************");
-            w.println(";; Merging KEGG pathways and user provided additional edges to obtain");
-            w.println(";; master network on which analysis is to be done.");
-            w.println(";; Fifth argument is n: if these files were not previously written by the tool, otherwise 'y'");
-            w.println(";; **********************************************************************");
-            w.println();
-            // second mff — only if GUI block connected
-            { String c = guiCmd(guiQ, "mff", null);
-              if (c != null) { w.println(c); w.println("size 0"); w.println(); } }
-            w.println(";; **********************************************************************");
-            w.println(";; Writing merged graph into xml file, end with string for pathway.");
-            w.println(";; Currently using 'KEGG' as pathway name.");
-            w.println(";; Helps for debugging to have the graph on which the final analysis is done.");
-            w.println(";; **********************************************************************");
-            w.println();
-            // second wgx — only if GUI block connected
-            { String c = guiCmd(guiQ, "wgx", null);
-              if (c != null) { w.println(c); w.println(); } }
-            w.println(";; **********************************************************************");
-            w.println(";; Saving information about the merged edges");
-            w.println(";; May be helpful for debugging purposes");
-            w.println(";; **********************************************************************");
-            w.println();
-            w.println("exec mv edges_merged_filename $WRITE_DIR/merged_edges_file");
-            w.println();
-            w.println(";; **********************************************************************");
-            w.println(";; Starting analysis with $NODE_TO_TEST_FOR_SIGNIFICANCE included");
-            w.println(";; **********************************************************************");
-            w.println();
-            w.println(";; **********************************************************************");
-            w.println(";; Read file written in xml format");
-            w.println(";; **********************************************************************");
-            w.println();
-            // rgx — only if GUI block connected
-            { String c = guiCmd(guiQ, "rgx", null);
-              if (c != null) {
-                  w.println(c); w.println("size 0"); w.println();
-                  w.println(";; **********************************************************************");
-                  w.println(";; Save the graph number");
-                  w.println(";; **********************************************************************");
-                  w.println();
-                  w.println("let $MERGED_GRAPH_NUM #LASTGRAPHNUM"); w.println();
-              } }
-            w.println(";; **********************************************************************");
-            w.println(";; Reachability (forward and backward) based pruning of paths");
-            w.println(";; Retain only those nodes that appear in some path of length <=");
-            w.println(";; $REACH_PATH_BOUND from $SRC_NODE to $TGT_NODE");
-            w.println(";; **********************************************************************");
-            w.println();
-            // first fb_rch — only if GUI block connected
-            { String c = guiCmd(guiQ, "fb_rch", null);
-              if (c != null) { w.println(c); w.println("size 0"); w.println(); } }
-            w.println(";; **********************************************************************");
-            w.println(";; Prepare for finding PO points in the above pruned graph");
-            w.println(";; **********************************************************************");
-            w.println();
-            w.println("exec cat $SRC_FILE $TGT_FILE > $ACTIVE_NODES_FILE_WITH_FSC");
-            w.println("exec echo $NODE_TO_TEST_FOR_SIGNIFICANCE >> $ACTIVE_NODES_FILE_WITH_FSC");
-            w.println();
-            w.println("exec cat $SRC_FILE $TGT_FILE > $NONRELAXED_NODES_FILE_WITH_FSC");
-            w.println("exec echo $NODE_TO_TEST_FOR_SIGNIFICANCE >> $NONRELAXED_NODES_FILE_WITH_FSC");
-            w.println();
-            w.println("exec cat $SRC_FILE $TGT_FILE > $ESSENTIAL_NODES_FILE_WITH_FSC");
-            w.println("exec echo $NODE_TO_TEST_FOR_SIGNIFICANCE >> $ESSENTIAL_NODES_FILE_WITH_FSC");
-            w.println();
-            w.println("let $AVOID_NODES_FILE_WITH_FSC $WRITE_DIR/empty_file");
-            w.println();
-            w.println("let $FILENAME_PREFIX_WITH_FSC $WRITE_DIR/temp_w");
-            w.println();
-            w.println(";; **********************************************************************");
-            w.println(";; Find PO points");
-            w.println(";; $PO_SEARCH_MODE_WITH_FSC 0 means that PO points must be explicitly computed.");
-            w.println(";; $PO_SEARCH_MODE_WITH_FSC 1 means that we simply want to check if there are");
-            w.println(";; solutions at any point of a (previously computed) PO curve.");
-            w.println(";; **********************************************************************");
-            w.println();
-            w.println("let $PO_SEARCH_MODE_WITH_FSC 0");
-            w.println();
-            // pathz3 with FSC — only if GUI block connected
-            { String c = guiCmd(guiQ, "pathz3", null);
-              if (c != null) { w.println(c); w.println(); } }
-            w.println();
-            w.println(";; **********************************************************************");
-            w.println(";; Save PO points to enable plotting of two PO curves (with and without");
-            w.println(";; FSC node) together.  Save limits_timefile.txt for debugging purposes");
-            w.println(";; (shows how the binary search proceeded when finding PO points)");
-            w.println(";; **********************************************************************");
-            w.println();
-            w.println("let $PO_POINTS_WITH_FSC $SRC_NODE_to_$TGT_NODE_w_$NODE_TO_TEST_FOR_SIGNIFICANCE_$LOGFOLDCHANGES_b$REACH_PATH_BOUND");
-            w.println("exec mv limits_timefile.txt $WRITE_DIR/$PO_POINTS_WITH_FSC_limits_timefile.txt");
-            w.println("exec mv PO.dat $WRITE_DIR/$PO_POINTS_WITH_FSC.dat");
-            w.println();
-            w.println(";; **********************************************************************");
-            w.println(";; Starting analysis with $NODE_TO_TEST_FOR_SIGNIFICANCE excluded");
-            w.println(";; **********************************************************************");
-            w.println();
-            w.println(";; **********************************************************************");
-            w.println(";; Reachability (forward and backward) based pruning of paths");
-            w.println(";; Retain only those nodes that appear in some path of length <=");
-            w.println(";; $REACH_PATH_BOUND from $SRC_NODE to $TGT_NODE");
-            w.println(";; Reconstructing the same graph as was done earlier.");
-            w.println(";; **********************************************************************");
-            w.println();
-            // second fb_rch — only if GUI block connected
-            { String c = guiCmd(guiQ, "fb_rch", null);
-              if (c != null) { w.println(c); w.println("size 0"); w.println(); } }
-            w.println(";; **********************************************************************");
-            w.println(";; Saving information about the forward-backward reachability search");
-            w.println(";; May be helpful for debugging purposes");
-            w.println(";; **********************************************************************");
-            w.println();
-            w.println("exec mv fb_rch $WRITE_DIR/fb_rch");
-            w.println("exec mv fb_rch_back $WRITE_DIR/fb_rch_back");
-            w.println();
-            w.println(";; **********************************************************************");
-            w.println(";; Prepare for finding PO points");
-            w.println(";; Find PO points after asserting that $NODE_TO_TEST_FOR_SIGNIFICANCE");
-            w.println(";; is not present (node to be avoided).");
-            w.println(";; **********************************************************************");
-            w.println();
-            w.println("exec cat $SRC_FILE $TGT_FILE > $ACTIVE_NODES_FILE_WITHOUT_FSC");
-            w.println();
-            w.println("exec cat $SRC_FILE $TGT_FILE > $NONRELAXED_NODES_FILE_WITHOUT_FSC");
-            w.println();
-            w.println("exec cat $SRC_FILE $TGT_FILE > $ESSENTIAL_NODES_FILE_WITHOUT_FSC");
-            w.println();
-            w.println("let $AVOID_NODES_FILE_WITHOUT_FSC $WRITE_DIR/avoid_$NODE_TO_TEST_FOR_SIGNIFICANCE_file");
-            w.println("exec if [ -f $AVOID_NODES_FILE_WITHOUT_FSC ] ; then /bin/rm $AVOID_NODES_FILE_WITHOUT_FSC; fi");
-            w.println("exec echo $NODE_TO_TEST_FOR_SIGNIFICANCE > $AVOID_NODES_FILE_WITHOUT_FSC");
-            w.println();
-            w.println("let $FILENAME_PREFIX_WITHOUT_FSC $WRITE_DIR/temp_wo");
-            w.println();
-            w.println(";; **********************************************************************");
-            w.println(";; Find PO points");
-            w.println(";; $PO_SEARCH_MODE_WITHOUT_FSC 0 means that PO points must be explicitly computed.");
-            w.println(";; $PO_SEARCH_MODE_WITHOUT_FSC 1 means that we simply want to check if there are");
-            w.println(";; solutions at any point of a (previously computed) PO curve.");
-            w.println(";; **********************************************************************");
-            w.println();
-            w.println();
-            w.println("let $PO_SEARCH_MODE_WITHOUT_FSC 0");
-            w.println();
-            // pathz3 without FSC — only if GUI block connected
-            { String c = guiCmd(guiQ, "pathz3", null);
-              if (c != null) { w.println(c); w.println(); } }
-            w.println(";; **********************************************************************");
-            w.println(";; Save PO points to enable plotting of two PO curves (with and without");
-            w.println(";; FSC node) together.  Save limits_timefile.txt for debugging purposes");
-            w.println(";; (shows how the binary search proceeded when finding PO points)");
-            w.println(";; **********************************************************************");
-            w.println();
-            w.println("let $PO_POINTS_WITHOUT_FSC $SRC_NODE_to_$TGT_NODE_wo_$NODE_TO_TEST_FOR_SIGNIFICANCE_$LOGFOLDCHANGES_b$REACH_PATH_BOUND");
-            w.println("exec mv limits_timefile.txt $WRITE_DIR/$PO_POINTS_WITHOUT_FSC_limits_timefile.txt");
-            w.println("exec mv PO.dat $WRITE_DIR/$PO_POINTS_WITHOUT_FSC.dat");
-            w.println();
-            w.println(";; **********************************************************************");
-            w.println(";; Now plot the PO points");
-            w.println(";; **********************************************************************");
-            w.println();
-            w.println("exec cd $WRITE_DIR; gnuplot -p -e \"set xlabel 'Node relaxn'; set ylabel 'Edge relaxn'; set xrange [-0.5:$NODE_RELAX_UB+0.5]; set yrange [-0.5:$EDGE_RELAX_UB+0.5]; plot '$PO_POINTS_WITH_FSC.dat' with lp linecolor 'blue', '$PO_POINTS_WITHOUT_FSC.dat' with lp linecolor 'red'; exit\"");
-            w.println();
-            w.println(";; **********************************************************************");
-            w.println(";; Save the plot in a file");
-            w.println(";; **********************************************************************");
-            w.println();
-            w.println("let $PLOT_FILE $WRITE_DIR/$SRC_NODE_to_$TGT_NODE_fsc_$NODE_TO_TEST_FOR_SIGNIFICANCE_$LOGFOLDCHANGES_b$REACH_PATH_BOUND.png");
-            w.println("exec echo \"Saving plot in $PLOT_FILE ...\"");
-            w.println("exec cd $WRITE_DIR; gnuplot -p -e \"set term png; set output '$PLOT_FILE'; set xlabel 'Node relaxn'; set ylabel 'Edge relaxn'; set xrange [-0.5:$NODE_RELAX_UB+0.5]; set yrange [-0.5:$EDGE_RELAX_UB+0.5]; plot '$PO_POINTS_WITH_FSC.dat' with lp linecolor 'blue', '$PO_POINTS_WITHOUT_FSC.dat' with lp linecolor 'red'; exit\"");
-            w.println();
-            w.println(";; **********************************************************************");
-            w.println(";; Saving debug log.");
-            w.println(";; May be helpful for debugging purposes");
-            w.println(";; **********************************************************************");
-            w.println();
-            w.println("exec mv mylog.txt $WRITE_DIR/mylog.txt");
-            w.println();
-            // Extra non-standard GUI blocks and remaining unconsumed standard blocks
-            for (FunctionBlock fb : extraBlocks) {
-                String baseName = fb.originalName.replaceAll("_\\d+$", "");
-                String[] inputs = resolveInputsForScript(fb);
-                StringBuilder cmd = new StringBuilder(baseName);
-                for (String inp : inputs) cmd.append(" ").append(inp);
-                for (String out : resolveOutputsForScript(fb)) cmd.append(" ").append(out);
-                w.println(cmd.toString());
-                w.println();
-            }
-            for (java.util.Deque<FunctionBlock> deq : guiQ.values()) {
-                while (!deq.isEmpty()) {
-                    FunctionBlock fb = deq.poll();
-                    String baseName = fb.originalName.replaceAll("_\\d+$", "");
-                    String[] inputs = resolveInputsForScript(fb);
-                    StringBuilder cmd = new StringBuilder(baseName);
-                    for (String inp : inputs) cmd.append(" ").append(inp);
-                    if (!baseName.equals("start")) {
-                        for (String out : resolveOutputsForScript(fb)) cmd.append(" ").append(out);
-                    }
-                    w.println(cmd.toString());
-                    w.println();
-                }
-            }
-            w.println("exit");
-            w.println();
-            JOptionPane.showMessageDialog(this, "Script saved to:\n" + outFile.getAbsolutePath(),
-                    "Script Generated", JOptionPane.INFORMATION_MESSAGE);
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "Error writing script: " + ex.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
 
-    private String[] resolveInputsForScript(FunctionBlock fb) {
-        int n = (fb.template != null) ? fb.template.inputCount : 0;
-        String[] resolved = new String[n];
-        for (int i = 0; i < n; i++) {
-            resolved[i] = (fb.inputValues != null && i < fb.inputValues.length)
-                    ? fb.inputValues[i] : "";
-            for (Connection c : connections) {
-                if (c.to == fb && c.toIdx == i) {
-                    if (c.fileName != null && !c.fileName.trim().isEmpty()) {
-                        resolved[i] = "$" + c.fileName;
-                    } else {
-                        // Fall back to source block's outputVarNames
-                        String srcVar = (c.from.outputVarNames != null && c.fromIdx < c.from.outputVarNames.length)
-                                ? c.from.outputVarNames[c.fromIdx] : null;
-                        resolved[i] = (srcVar != null && !srcVar.trim().isEmpty())
-                                ? "$" + srcVar : "$" + c.from.originalName + "_out" + (c.fromIdx + 1);
-                    }
-                    break;
-                }
-            }
-            for (FileEntryConnection fec : fileEntryConnections) {
-                if (fec.toBlock == fb && fec.toInputIndex == i) {
-                    String var = ENTRY_VAR.getOrDefault(fec.entryName,
-                            fec.entryName.toUpperCase().replace(" ", "_").replace("-", "_"));
-                    resolved[i] = "$" + var;
-                    break;
-                }
-            }
-        }
-        return resolved;
-    }
-
-    private String[] resolveOutputsForScript(FunctionBlock fb) {
-        if (fb.template == null || fb.template.outputCount == 0) return new String[0];
-        int n = fb.template.outputCount;
-        String[] resolved = new String[n];
-        for (int i = 0; i < n; i++) {
-            // Priority 1: block's own outputVarNames
-            if (fb.outputVarNames != null && i < fb.outputVarNames.length
-                    && fb.outputVarNames[i] != null && !fb.outputVarNames[i].trim().isEmpty()) {
-                resolved[i] = "$" + fb.outputVarNames[i];
+        // --- Build auto-names: {blockname}_output{N}  e.g. cudf_output1, pathz3_output2 ---
+        java.util.Map<FunctionBlock, String[]> autoNames = new java.util.LinkedHashMap<>();
+        for (FunctionBlock fb : order) {
+            if (fb.template == null || fb.template.outputCount == 0) {
+                autoNames.put(fb, new String[0]);
                 continue;
             }
-            // Priority 2: any outgoing connection that has a fileName set
-            String fromConn = null;
-            for (Connection c : connections) {
-                if (c.from == fb && c.fromIdx == i && c.fileName != null && !c.fileName.trim().isEmpty()) {
-                    fromConn = "$" + c.fileName;
-                    break;
+            String base = fb.originalName.replaceAll("_\\d+$", "");
+            String[] names = new String[fb.template.outputCount];
+            for (int i = 0; i < fb.template.outputCount; i++) {
+                names[i] = base + "_output" + (i + 1);
+            }
+            autoNames.put(fb, names);
+        }
+
+        try (PrintWriter w = new PrintWriter(outFile, "UTF-8")) {
+
+            // === PHASE 1: declare {type} {auto_name} ... grouped by type ===
+            // Skip file-type vars — file locations come from the backend
+            java.util.Map<String, List<String>> declareMap = new java.util.LinkedHashMap<>();
+            for (FunctionBlock fb : order) {
+                String[] an = autoNames.get(fb);
+                if (an == null || an.length == 0) continue;
+                for (int i = 0; i < an.length; i++) {
+                    String type = (fb.template != null && fb.template.outputTypes != null
+                            && i < fb.template.outputTypes.length)
+                            ? fb.template.outputTypes[i] : "var";
+                    if ("file".equals(type)) continue;  // file paths come from backend
+                    declareMap.computeIfAbsent(type, k -> new java.util.ArrayList<>()).add(an[i]);
                 }
             }
-            if (fromConn != null) { resolved[i] = fromConn; continue; }
-            // Default: blockname_out<n>
-            resolved[i] = "$" + fb.originalName + "_out" + (i + 1);
+            for (java.util.Map.Entry<String, List<String>> e : declareMap.entrySet()) {
+                w.println("declare " + e.getKey() + " " + String.join(" ", e.getValue()));
+            }
+            if (!declareMap.isEmpty()) w.println();
+
+            // === PHASE 2: let {auto_name} {user_given_name} (for all named outputs) ===
+            boolean anyBinding = false;
+            for (FunctionBlock fb : order) {
+                String base = fb.originalName.replaceAll("_\\d+$", "");
+                if (base.equals("let")) continue;  // let blocks handle themselves in Phase 3
+                String[] an = autoNames.get(fb);
+                if (an == null || an.length == 0) continue;
+                for (int oi = 0; oi < an.length; oi++) {
+                    // Prefer outputVarNames; fall back to conn.fileName on any connection from this output
+                    String user = (fb.outputVarNames != null && oi < fb.outputVarNames.length
+                            && fb.outputVarNames[oi] != null) ? fb.outputVarNames[oi].trim() : "";
+                    if (user.isEmpty()) {
+                        for (Connection c : connections) {
+                            if (c.from == fb && c.fromIdx == oi && c.fileName != null && !c.fileName.trim().isEmpty()) {
+                                user = c.fileName.trim(); break;
+                            }
+                        }
+                    }
+                    if (!user.isEmpty()) {
+                        String outType = (fb.template != null && fb.template.outputTypes != null
+                                && oi < fb.template.outputTypes.length)
+                                ? fb.template.outputTypes[oi] : "var";
+                        if ("file".equals(outType)) {
+                            // File outputs: let USER_NAME <actual_path>  (no temp var)
+                            // Look up actual value from the loaded data file entries
+                            String fileVal = null;
+                            java.util.Map<String, String[]> dataMap = getDataFileEntriesMap();
+                            java.util.Map<String, String> p2aliases = getParamAliases();
+                            String userUp = user.toUpperCase();
+                            String[] dataEntry = dataMap.get(userUp);
+                            if (dataEntry == null) {
+                                // try aliases: canonical→alias or alias→canonical
+                                String canon = p2aliases.get(userUp);
+                                if (canon != null) dataEntry = dataMap.get(canon);
+                                if (dataEntry == null) {
+                                    for (java.util.Map.Entry<String, String> ae : p2aliases.entrySet()) {
+                                        if (ae.getValue().equals(userUp)) { dataEntry = dataMap.get(ae.getKey()); if (dataEntry != null) break; }
+                                    }
+                                }
+                            }
+                            if (dataEntry != null && !dataEntry[1].isEmpty()
+                                    && !dataEntry[1].equals("empty_file")) {
+                                fileVal = dataEntry[1];
+                            }
+                            if (fileVal == null) fileVal = "empty_file";
+                            w.println("let " + user + " " + fileVal);
+                        } else {
+                            // Non-file outputs: let auto_name user_name
+                            w.println("let " + an[oi] + " " + user);
+                        }
+                        anyBinding = true;
+                    }
+                }
+            }
+            if (anyBinding) w.println();
+
+            // === PHASE 3: commands in topological order ===
+            for (FunctionBlock fb : order) {
+                String base = fb.originalName.replaceAll("_\\d+$", "");
+
+                if (base.equals("let")) {
+                    // let: auto_name first, then the value/ref from port 0
+                    String[] an = autoNames.get(fb);
+                    String auto = (an != null && an.length > 0) ? an[0] : "";
+                    String letVal = resolveScriptInput(fb, 0, autoNames);
+                    w.println("let " + auto + " " + letVal);
+                    continue;
+                }
+
+                StringBuilder line = new StringBuilder(base);
+                int inputCount = fb.template != null ? fb.template.inputCount : 0;
+                for (int i = 0; i < inputCount; i++) {
+                    line.append(" ").append(resolveScriptInput(fb, i, autoNames));
+                }
+                // Append output var references
+                String[] an = autoNames.get(fb);
+                if (an != null) {
+                    for (int i = 0; i < an.length; i++) {
+                        String outType = (fb.template.outputTypes != null && i < fb.template.outputTypes.length)
+                                ? fb.template.outputTypes[i] : "var";
+                        String user = (fb.outputVarNames != null && i < fb.outputVarNames.length
+                                && fb.outputVarNames[i] != null) ? fb.outputVarNames[i].trim() : "";
+                        if (user.isEmpty()) {
+                            for (Connection c : connections) {
+                                if (c.from == fb && c.fromIdx == i && c.fileName != null && !c.fileName.trim().isEmpty()) {
+                                    user = c.fileName.trim(); break;
+                                }
+                            }
+                        }
+                        if (!user.isEmpty()) {
+                            line.append(" $").append(user);
+                        } else {
+                            line.append(" $").append(an[i]);          // default name when not connected
+                        }
+                    }
+                }
+                w.println(line.toString());
+            }
+            w.println();
+            w.println("exit");
+
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(getDialogParent(),
+                "Error writing script: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            return;
         }
-        return resolved;
+        JOptionPane.showMessageDialog(getDialogParent(),
+            "Script saved to:\n" + outFile.getAbsolutePath(), "Script Generated", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    private String getVariableForPosition(int position) {
-        switch (position) {
-            case 1:  return "$WORK_DIR";
-            case 2:  return "$SRC_NODE";
-            case 3:  return "$TGT_NODE";
-            case 4:  return "$NODE_TO_TEST_FOR_SIGNIFICANCE";
-            case 5:  return "$REACH_PATH_BOUND";
-            case 6:  return "$EDGE_RELAX_LB";
-            case 7:  return "$EDGE_RELAX_UB";
-            case 8:  return "$NODE_RELAX_LB";
-            case 9:  return "$NODE_RELAX_UB";
-            case 10: return "$LOGFOLDCHANGES";
-            case 11: return "$ADDITIONALEDGES";
-            case 12: return "$UP_REG_THRESH";
-            case 13: return "$DOWN_REG_THRESH";
-            case 14: return "$EDGES_TO_TARGET";
-            default: return "%__" + position + "__%";
+    /** Resolves what goes into input port i of block fb for the generated script. */
+    private String resolveScriptInput(FunctionBlock fb, int i,
+            java.util.Map<FunctionBlock, String[]> autoNames) {
+        // 1. Block-to-block wire connection: carry the source output's effective name
+        for (Connection c : connections) {
+            if (c.to == fb && c.toIdx == i) {
+                FunctionBlock src = c.from;
+                int fi = c.fromIdx;
+                // User name: check outputVarNames first, then conn.fileName as fallback
+                String user = (src.outputVarNames != null && fi < src.outputVarNames.length
+                        && src.outputVarNames[fi] != null) ? src.outputVarNames[fi].trim() : "";
+                if (user.isEmpty() && c.fileName != null && !c.fileName.trim().isEmpty())
+                    user = c.fileName.trim();
+                if (!user.isEmpty()) return "$" + user;
+                // Fall back to auto-name for all output types
+                String[] srcAuto = autoNames.get(src);
+                if (srcAuto != null && fi < srcAuto.length && !srcAuto[fi].isEmpty())
+                    return "$" + srcAuto[fi];
+                return "";
+            }
         }
+        // Determine if this is a let block (it receives raw values, others receive variable names)
+        String fbBase = fb.originalName.replaceAll("_\\d+$", "");
+        boolean isLetBlock = fbBase.equals("let");
+
+        // 2. File-entry connection — let blocks use the actual entry value; other blocks use $VAR_NAME
+        for (FileEntryConnection fec : fileEntryConnections) {
+            if (fec.toBlock == fb && fec.toInputIndex == i) {
+                if (isLetBlock) {
+                    // Return the actual file path stored in the entry
+                    return (fec.entryValue != null && !fec.entryValue.isEmpty())
+                            ? fec.entryValue : "";
+                }
+                String varName = fec.entryName.toUpperCase()
+                        .replace(" ", "_").replace("-", "_").replace(".", "_");
+                return "$" + varName;
+            }
+        }
+        // 3. No connection — return the literal value typed directly into the block
+        String val = (fb.inputValues != null && i < fb.inputValues.length) ? fb.inputValues[i] : "";
+        if (val != null && !val.isEmpty() && !val.equals("empty_file")) {
+            return val;
+        }
+        return "";
     }
 
     public static void main(String[] args) {

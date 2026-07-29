@@ -25,13 +25,13 @@ public class FileSelectionCard extends RoundedPanel {
         body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
         body.setBackground(Theme.BG);
 
-        JLabel jLabel1 = new JLabel("Log Fold Changes File");
+        JLabel jLabel1 = new JLabel("Gene Activity Data File");
         jLabel1.setFont(Theme.title(26));
         jLabel1.setForeground(Theme.TEXT_DARK);
         jLabel1.setAlignmentX(Component.CENTER_ALIGNMENT);
         body.add(jLabel1);
 
-        JLabel jLabel1sub = new JLabel("Select the TSV file containing expression fold-change data");
+        JLabel jLabel1sub = new JLabel("Select the file containing gene expression fold-change values");
         jLabel1sub.setFont(Theme.body(14));
         jLabel1sub.setForeground(Theme.TEXT_MED);
         jLabel1sub.setAlignmentX(Component.CENTER_ALIGNMENT);

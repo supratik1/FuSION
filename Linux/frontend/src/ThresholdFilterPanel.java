@@ -7,6 +7,24 @@ import javax.swing.text.DefaultHighlighter;
 
 public class ThresholdFilterPanel extends RoundedPanel {
 
+    // ── Expression category accent colors ──────────────────────────────────
+    private static final Color C_OVER_ACTIVE  = new Color(210,  55,  55);
+    private static final Color C_UNCHANGED    = new Color(115, 118, 128);
+    private static final Color C_UNDER_ACTIVE = new Color( 50, 100, 205);
+    private static final Color C_ACTIVE       = new Color( 45, 160,  75);
+    private static final Color C_INACTIVE     = new Color( 65,  70,  82);
+    private static final Color C_FLEXIBLE     = new Color(200, 135,  35);
+    private static final Color C_MUST_MATCH   = new Color(120,  45, 175);
+
+    // ── Light tints for text-area backgrounds ──────────────────────────────
+    private static final Color T_OVER_ACTIVE  = new Color(255, 235, 235);
+    private static final Color T_UNCHANGED    = new Color(246, 246, 249);
+    private static final Color T_UNDER_ACTIVE = new Color(232, 240, 255);
+    private static final Color T_ACTIVE       = new Color(232, 252, 238);
+    private static final Color T_INACTIVE     = new Color(238, 238, 243);
+    private static final Color T_FLEXIBLE     = new Color(255, 248, 225);
+    private static final Color T_MUST_MATCH   = new Color(248, 235, 255);
+
     private JTextField upperField;
     private JTextField lowerField;
     private RoundedButton filterButton;
@@ -61,7 +79,7 @@ public class ThresholdFilterPanel extends RoundedPanel {
             BorderFactory.createMatteBorder(0, 0, 1, 0, Theme.BORDER),
             BorderFactory.createEmptyBorder(4, 10, 4, 10)));
 
-        JLabel downLabel = new JLabel("Down Threshold:");
+        JLabel downLabel = new JLabel("Under-Active Gene Cutoff:");
         downLabel.setFont(Theme.body(13));
         downLabel.setForeground(Theme.TEXT_MED);
 
@@ -76,7 +94,7 @@ public class ThresholdFilterPanel extends RoundedPanel {
             BorderFactory.createLineBorder(Theme.BORDER, 1),
             BorderFactory.createEmptyBorder(3, 6, 3, 6)));
 
-        JLabel upLabel = new JLabel("Up Threshold:");
+        JLabel upLabel = new JLabel("Over-Active Gene Cutoff:");
         upLabel.setFont(Theme.body(13));
         upLabel.setForeground(Theme.TEXT_MED);
 
@@ -135,13 +153,13 @@ public class ThresholdFilterPanel extends RoundedPanel {
             activeArea, inactiveArea, relaxedArea, nonrelaxedArea
         };
 
-        resultPanel.add(createStickyPanel("Up Regulatory Threshold:", aboveArea));
-        resultPanel.add(createStickyPanel("Not Differentially Expressed:", betweenArea));
-        resultPanel.add(createStickyPanel("Down Regulatory Thresholds:", belowArea));
-        resultPanel.add(createStickyPanel("Active Node File:", activeArea));
-        resultPanel.add(createStickyPanel("Inactive Node File:", inactiveArea));
-        resultPanel.add(createStickyPanel("Relaxed Node File:", relaxedArea));
-        resultPanel.add(createStickyPanel("Non-Relaxed Node File:", nonrelaxedArea));
+        resultPanel.add(createStickyPanel("Over-Active Genes:",           aboveArea,      C_OVER_ACTIVE,  T_OVER_ACTIVE));
+        resultPanel.add(createStickyPanel("Unchanged Genes:",             betweenArea,    C_UNCHANGED,    T_UNCHANGED));
+        resultPanel.add(createStickyPanel("Under-Active Genes:",          belowArea,      C_UNDER_ACTIVE, T_UNDER_ACTIVE));
+        resultPanel.add(createStickyPanel("Active Genes:",                activeArea,     C_ACTIVE,       T_ACTIVE));
+        resultPanel.add(createStickyPanel("Known Inactive Genes:",        inactiveArea,   C_INACTIVE,     T_INACTIVE));
+        resultPanel.add(createStickyPanel("Genes Allowed to be Flexible:",relaxedArea,    C_FLEXIBLE,     T_FLEXIBLE));
+        resultPanel.add(createStickyPanel("Genes That Must Match:",       nonrelaxedArea, C_MUST_MATCH,   T_MUST_MATCH));
 
         // --- Button panel style updates
         RoundedPanel buttonPanel = new RoundedPanel();
@@ -225,7 +243,11 @@ public class ThresholdFilterPanel extends RoundedPanel {
         this.add(buttonPanel, BorderLayout.SOUTH);
         add(new JPanel(new BorderLayout()) {
             {
-                add(inputPanel, BorderLayout.NORTH);
+                JPanel topBar = new JPanel(new BorderLayout());
+                topBar.setOpaque(false);
+                topBar.add(inputPanel, BorderLayout.NORTH);
+                topBar.add(buildLegend(), BorderLayout.SOUTH);
+                add(topBar, BorderLayout.NORTH);
                 add(resultPanel, BorderLayout.CENTER);
                 setOpaque(false);
             }
@@ -256,15 +278,15 @@ public class ThresholdFilterPanel extends RoundedPanel {
             ButtonGroup sideGroup = new ButtonGroup();
             ButtonGroup laterGroup = new ButtonGroup();
 
-            JRadioButton col1 = new JRadioButton("Above Up Regulatory Threshold");
-            JRadioButton col2 = new JRadioButton("Not Differentially Expressed");
-            JRadioButton col3 = new JRadioButton("Below Down Regulatory Threshold");
+            JRadioButton col1 = new JRadioButton("Over-Active Genes");
+            JRadioButton col2 = new JRadioButton("Unchanged Genes");
+            JRadioButton col3 = new JRadioButton("Under-Active Genes");
 
-            JRadioButton col4 = new JRadioButton("Active Node File");
-            JRadioButton col5 = new JRadioButton("Inactive Node File");
+            JRadioButton col4 = new JRadioButton("Active Genes");
+            JRadioButton col5 = new JRadioButton("Known Inactive Genes");
 
-            JRadioButton col6 = new JRadioButton("Relaxed Node");
-            JRadioButton col7 = new JRadioButton("Non Relaxed Node");
+            JRadioButton col6 = new JRadioButton("Genes Allowed to be Flexible");
+            JRadioButton col7 = new JRadioButton("Genes That Must Match");
 
             JRadioButton[] columns = {col1, col2, col3, col4, col5, col6, col7};
 
@@ -280,7 +302,7 @@ public class ThresholdFilterPanel extends RoundedPanel {
 
             mainPanel.add(new JPanel(new GridLayout(4, 1)) {
                 {
-                    add(new JLabel("Select Regulatory Threshold Field"));
+                    add(new JLabel("Gene Activity Category"));
                     add(col1);
                     add(col2);
                     add(col3);
@@ -290,7 +312,7 @@ public class ThresholdFilterPanel extends RoundedPanel {
 
             mainPanel.add(new JPanel(new GridLayout(3, 1)) {
                 {
-                    add(new JLabel("Select Active or Inactive node"));
+                    add(new JLabel("Gene Activity Status"));
                     add(col4);
                     add(col5);
                     setBorder(BorderFactory.createLineBorder(Theme.BORDER));
@@ -300,7 +322,7 @@ public class ThresholdFilterPanel extends RoundedPanel {
 
             mainPanel.add(new JPanel(new GridLayout(3, 1)) {
                 {
-                    add(new JLabel("Select Relaxed or Non-relaxed Node"));
+                    add(new JLabel("Gene Flexibility"));
                     add(col6);
                     add(col7);
                     setBorder(BorderFactory.createLineBorder(Theme.BORDER));
@@ -404,31 +426,78 @@ public class ThresholdFilterPanel extends RoundedPanel {
         });
     }
 
-    JPanel createStickyPanel(String title, JTextArea textArea) {
+    JPanel createStickyPanel(String title, JTextArea textArea, Color accent, Color tint) {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(Theme.BG_CARD);
+        panel.setBackground(tint);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 4, 0, 0, accent),
+            BorderFactory.createLineBorder(accent.darker(), 1)
+        ));
 
         JLabel label = new JLabel(title, SwingConstants.CENTER);
-        label.setForeground(Theme.TEXT_DARK);
-        label.setFont(Theme.title(12));
+        label.setForeground(Color.WHITE);
+        label.setFont(Theme.title(11));
+        label.setOpaque(true);
+        label.setBackground(accent);
         label.setBorder(BorderFactory.createEmptyBorder(6, 4, 6, 4));
 
-        textArea.setForeground(Color.BLACK);
+        textArea.setForeground(new Color(30, 30, 40));
+        textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
         textArea.setOpaque(true);
-        textArea.setBackground(Theme.BG_CARD);
+        textArea.setBackground(tint);
         textArea.setEditable(false);
 
         JScrollPane scrollPane = new JScrollPane(textArea);
         scrollPane.setOpaque(true);
-        scrollPane.setBackground(Theme.BG_CARD);
+        scrollPane.setBackground(tint);
         scrollPane.getViewport().setOpaque(true);
-        scrollPane.getViewport().setBackground(Theme.BG_CARD);
-        scrollPane.setBorder(BorderFactory.createLineBorder(Theme.BORDER));
+        scrollPane.getViewport().setBackground(tint);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
 
         panel.setOpaque(true);
         panel.add(label, BorderLayout.NORTH);
         panel.add(scrollPane, BorderLayout.CENTER);
         return panel;
+    }
+
+    private JPanel buildLegend() {
+        JPanel legend = new JPanel(new FlowLayout(FlowLayout.LEFT, 14, 6));
+        legend.setBackground(new Color(245, 245, 250));
+        legend.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(1, 0, 1, 0, new Color(210, 212, 220)),
+            BorderFactory.createEmptyBorder(2, 10, 2, 10)
+        ));
+
+        JLabel title = new JLabel("Expression Key:");
+        title.setFont(new Font("SansSerif", Font.BOLD, 11));
+        title.setForeground(new Color(80, 85, 100));
+        legend.add(title);
+
+        legend.add(legendChip("Over-Active",  C_OVER_ACTIVE));
+        legend.add(legendChip("Unchanged",    C_UNCHANGED));
+        legend.add(legendChip("Under-Active", C_UNDER_ACTIVE));
+        legend.add(legendChip("Active",       C_ACTIVE));
+        legend.add(legendChip("Inactive",     C_INACTIVE));
+        legend.add(legendChip("Flexible",     C_FLEXIBLE));
+        legend.add(legendChip("Must Match",   C_MUST_MATCH));
+        return legend;
+    }
+
+    private JLabel legendChip(String text, Color color) {
+        JLabel chip = new JLabel("  " + text + "  ") {
+            @Override protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(color);
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                g2.dispose();
+                super.paintComponent(g);
+            }
+        };
+        chip.setFont(new Font("SansSerif", Font.BOLD, 10));
+        chip.setForeground(Color.WHITE);
+        chip.setOpaque(false);
+        return chip;
     }
 
     private void processFiles(UserInput user) {

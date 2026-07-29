@@ -15,7 +15,7 @@ public class RelaxationBoundsPanel extends RoundedPanel {
         add(header, BorderLayout.NORTH);
 
         // ── Title ────────────────────────────────────────────────────────
-        JLabel title = new JLabel("Relaxation Bounds", JLabel.CENTER);
+        JLabel title = new JLabel("Analysis Flexibility Settings", JLabel.CENTER);
         title.setFont(Theme.title(24));
         title.setForeground(Theme.TEXT_DARK);
         title.setBorder(BorderFactory.createEmptyBorder(20, 0, 16, 0));
@@ -25,9 +25,9 @@ public class RelaxationBoundsPanel extends RoundedPanel {
         RangeSlider edgeSlider = makeSlider(arr[2], arr[3]);
 
         // ── Bound cards ───────────────────────────────────────────────────
-        JPanel nodeCard = makeBoundCard("Node Relaxation Bounds",
+        JPanel nodeCard = makeBoundCard("Gene Expression Exceptions Allowed",
                 arr, 0, 1, nodeSlider);
-        JPanel edgeCard = makeBoundCard("Edge Relaxation Bounds",
+        JPanel edgeCard = makeBoundCard("Interaction Exceptions Allowed",
                 arr, 2, 3, edgeSlider);
 
         JPanel cardsPanel = new JPanel(new GridLayout(2, 1, 0, 16));

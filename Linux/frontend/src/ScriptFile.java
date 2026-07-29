@@ -65,8 +65,8 @@ public class ScriptFile{
 
         replacements.put("%__a16__%", map[0]);
         replacements.put("%__a17__%", map[1]);
-        replacements.put("%__a18__%",""+ user.getTxtFile());
-        replacements.put("%__a19__%", ""+user.getXMLFile());
+        replacements.put("%__a18__%", user.getTxtFile()  != null ? user.getTxtFile()  : "");
+        replacements.put("%__a19__%", user.getXMLFile() != null ? user.getXMLFile() : "");
         replacements.put("%__a20__%", user.gethsaNotFile());
 
         replacements.put("%__c__%", user.getKegg());

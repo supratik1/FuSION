@@ -33,13 +33,13 @@ public class IdEntryPanel extends RoundedPanel {
 
         center.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
 
-        JLabel title = new JLabel("HSA Node IDs");
+        JLabel title = new JLabel("Gene IDs");
         title.setFont(Theme.title(26));
         title.setForeground(Theme.TEXT_DARK);
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
         center.add(title);
         center.add(Box.createVerticalStrut(4));
-        JLabel titleSub = new JLabel("Enter source, target, and candidate node identifiers");
+        JLabel titleSub = new JLabel("Enter starting gene, ending gene, and gene under study");
         titleSub.setFont(Theme.body(14));
         titleSub.setForeground(Theme.TEXT_MED);
         titleSub.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -47,7 +47,7 @@ public class IdEntryPanel extends RoundedPanel {
         center.add(Box.createVerticalStrut(24));
 
         // ---- First row: Source hsa ID ----
-        JLabel label1 = new JLabel("Source HSA ID");
+        JLabel label1 = new JLabel("Starting Gene");
         label1.setFont(Theme.title(13));
         label1.setForeground(Theme.TEXT_DARK);
 
@@ -67,7 +67,7 @@ public class IdEntryPanel extends RoundedPanel {
         center.add(Box.createVerticalStrut(12));
 
         // ---- Second row: Target hsa ID ----
-        JLabel label2 = new JLabel("Target HSA ID");
+        JLabel label2 = new JLabel("Ending Gene");
         label2.setFont(Theme.title(13));
         label2.setForeground(Theme.TEXT_DARK);
 
@@ -87,7 +87,7 @@ public class IdEntryPanel extends RoundedPanel {
         center.add(Box.createVerticalStrut(12));
 
         // ---- Third row: Candidate hsa ID ----
-        JLabel label3 = new JLabel("Candidate Implicated Node HSA ID");
+        JLabel label3 = new JLabel("Gene Under Study (FSC Test)");
         label3.setFont(Theme.title(13));
         label3.setForeground(Theme.TEXT_DARK);
 
@@ -117,7 +117,7 @@ public class IdEntryPanel extends RoundedPanel {
         JPanel hsaInfo = new JPanel();
         hsaInfo.setLayout(new BoxLayout(hsaInfo, BoxLayout.Y_AXIS));
         hsaInfo.setOpaque(false);
-        JLabel hsaJLabel = new JLabel("HSA IDs not to be merged");
+        JLabel hsaJLabel = new JLabel("Genes to Keep Separate");
         hsaJLabel.setFont(Theme.title(13));
         hsaJLabel.setForeground(Theme.TEXT_DARK);
         JLabel ans = new JLabel("No File Selected");

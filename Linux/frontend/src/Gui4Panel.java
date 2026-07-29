@@ -26,6 +26,11 @@ public class Gui4Panel extends RoundedPanel {
             graphEditor.loadPipelineFromString(user.getPipelineData());
         }
 
+        // Auto-generate the full parameter list (all canonical vars + derived)
+        // so the file panel shows the complete entry list, not just the frontend subset.
+        // Runs on EDT after the UI is shown so the file panel is ready.
+        graphEditor.autoGenerateFullDataFile();
+
         Container content = graphEditor.getContentPane();
         add(content, BorderLayout.CENTER);
 
@@ -39,7 +44,11 @@ public class Gui4Panel extends RoundedPanel {
         RoundedButton prevButton    = Theme.navBtn("← Prev", 110);
         RoundedButton sessionBtn    = Theme.warningBtn("Sessions", 140);
 
-        prevButton.addActionListener(e -> cardLayout.show(cardPanel, "edgeEntry"));
+        prevButton.addActionListener(e -> {
+            // Auto-save pipeline so it survives the round-trip through EdgesChooserPanel
+            user.setPipelineData(graphEditor.getPipelineAsString());
+            cardLayout.show(cardPanel, "edgeEntry");
+        });
         sessionBtn.addActionListener(e -> cardLayout.show(cardPanel, "sessions"));
 
         saveSessionBtn.addActionListener(e -> {
@@ -92,18 +101,24 @@ public class Gui4Panel extends RoundedPanel {
             int[]    relax   = user.getRelaxationBounds();
             int[]    solver  = user.getSolverConfig();
 
-            appendEntry(sb, "log_fold_changes",  "file",    user.getLogFoldChangesFile());
-            appendEntry(sb, "microarray_data",   "file",    user.getTxtFile());
-            appendEntry(sb, "kegg_xml",          "file",    user.getXMLFile());
-            appendEntry(sb, "additional_edges",  "file",    edges[0]);
-            appendEntry(sb, "essential_edges",   "file",    edges[1]);
-            appendEntry(sb, "avoid_edges",       "file",    edges[2]);
-            appendEntry(sb, "relaxed_edges",     "file",    edges[3]);
-            appendEntry(sb, "non_relaxed_edges", "file",    edges[4]);
-            appendEntry(sb, "hsa_to_gene_map",   "file",    mapping[0]);
-            appendEntry(sb, "hsa_path_map",      "file",    mapping[1]);
-            appendEntry(sb, "cross_db_map",      "file",    mapping[2]);
-            appendEntry(sb, "hsa_not_merged",    "file",    user.gethsaNotFile());
+            appendEntry(sb, "working_directory",  "string",  user.getWorkingDirectory());
+            appendEntry(sb, "src_node",           "string",  user.getSourceHsaID());
+            appendEntry(sb, "tgt_node",           "string",  user.getTargeHsaID());
+            appendEntry(sb, "node_to_test_for_significance", "string", user.getCandidateID());
+            sb.append("edges_to_target,integer,").append(user.getEdgeRestriction()).append('\n');
+            appendEntry(sb, "log_fold_changes",   "file",    user.getLogFoldChangesFile());
+            appendEntry(sb, "microarray_data",    "file",    user.getTxtFile());
+            appendEntry(sb, "kegg_xml",           "file",    user.getXMLFile());
+            appendEntry(sb, "additional_edges",   "file",    edges[0]);
+            appendEntry(sb, "essential_edges",    "file",    edges[1]);
+            appendEntry(sb, "avoid_edges",        "file",    edges[2]);
+            appendEntry(sb, "relaxed_edges",      "file",    edges[3]);
+            appendEntry(sb, "non_relaxed_edges",  "file",    edges[4]);
+            appendEntry(sb, "coexpression_csv",   "file",    user.getCoexpressionCsv());
+            appendEntry(sb, "hsa_to_gene_map",    "file",    mapping[0]);
+            appendEntry(sb, "hsa_path_map",       "file",    mapping[1]);
+            appendEntry(sb, "cross_db_map",       "file",    mapping[2]);
+            appendEntry(sb, "hsa_not_merged",     "file",    user.gethsaNotFile());
 
             sb.append("signalling_path_length,integer,").append(user.getSignallingPathLength()).append('\n');
             sb.append("node_relax_lower,integer,")      .append(relax[0]).append('\n');
@@ -117,6 +132,8 @@ public class Gui4Panel extends RoundedPanel {
             sb.append("solution_explore,integer,")      .append(solver[3]).append('\n');
             sb.append("up_threshold,float,")  .append(user.getUpThreshold()).append('\n');
             sb.append("down_threshold,float,").append(user.getDownThreshold()).append('\n');
+            sb.append("coexp_thresh,integer,").append(user.getCoexpThresh()).append('\n');
+            sb.append("frozen_thresh,integer,").append(user.getFrozenThresh()).append('\n');
 
             Files.writeString(Path.of("Data_Coming_From_Frontend.txt"), sb.toString());
         } catch (IOException e) {
@@ -126,8 +143,7 @@ public class Gui4Panel extends RoundedPanel {
 
     private static void appendEntry(StringBuilder sb, String name, String type, String value) {
         if (value != null && !value.trim().isEmpty()) {
-            String displayVal = "file".equalsIgnoreCase(type) ? new java.io.File(value).getName() : value;
-            sb.append(name).append(',').append(type).append(',').append(displayVal).append('\n');
+            sb.append(name).append(',').append(type).append(',').append(value).append('\n');
         }
     }
 

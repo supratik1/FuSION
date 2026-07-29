@@ -30,11 +30,11 @@ public class EdgesChooserPanel extends RoundedPanel {
         titleArea.setBackground(Theme.BG);
         titleArea.setBorder(BorderFactory.createEmptyBorder(24, 40, 0, 40));
 
-        JLabel title = new JLabel("Edge Files");
+        JLabel title = new JLabel("Interaction Constraint Files");
         title.setFont(Theme.title(26));
         title.setForeground(Theme.TEXT_DARK);
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
-        JLabel titleSub = new JLabel("Optional files to constrain the pathway search");
+        JLabel titleSub = new JLabel("Optional files to refine pathway analysis");
         titleSub.setFont(Theme.body(14));
         titleSub.setForeground(Theme.TEXT_MED);
         titleSub.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -47,17 +47,17 @@ public class EdgesChooserPanel extends RoundedPanel {
         panel.setBorder(BorderFactory.createEmptyBorder(16, 40, 16, 40));
         panel.setBackground(Theme.BG);
 
-        panel.add(createFileRow("Additional Edges File", 0, false));
+        panel.add(createFileRow("Custom Interactions File", 0, false));
         panel.add(Box.createVerticalStrut(8));
-        panel.add(createFileRow("Essential Edge File", 1, false));
+        panel.add(createFileRow("Required Interactions File", 1, false));
         panel.add(Box.createVerticalStrut(8));
-        panel.add(createFileRow("Avoid Edge File", 2, false));
+        panel.add(createFileRow("Blocked Interactions File", 2, false));
         panel.add(Box.createVerticalStrut(8));
-        panel.add(createFileRow("Relaxed Edges File", 3, false));
+        panel.add(createFileRow("Interactions Allowed to be Flexible", 3, false));
         panel.add(Box.createVerticalStrut(8));
-        panel.add(createFileRow("Non Relaxed Edges File", 4, false));
+        panel.add(createFileRow("Interactions That Must Always Match", 4, false));
         panel.add(Box.createVerticalStrut(8));
-        panel.add(createFileRow("Coexpression CSV File", 5, true));
+        panel.add(createFileRow("Gene Co-Expression File", 5, true));
         panel.add(Box.createVerticalStrut(8));
         panel.add(createIntRow("Coexpression Threshold (COEXP_THRESH)", coexpThreshHolder, 0));
         panel.add(Box.createVerticalStrut(8));
