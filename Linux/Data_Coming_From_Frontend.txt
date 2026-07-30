@@ -1,14 +1,12 @@
-log_fold_changes,file,final_tnfa_p38i_combined.tsv
-kegg_xml,file,merged_kegg_master_graph.xml
-additional_edges,file,empty_file
-essential_edges,file,empty_file
-avoid_edges,file,empty_file
-relaxed_edges,file,empty_file
-non_relaxed_edges,file,empty_file
-hsa_to_gene_map,file,hsa_to_gene_symbol_map_6334.txt
-hsa_path_map,file,hsa_path_to_path_name_map_2822.txt
-cross_db_map,file,empty_file
-hsa_not_merged,file,empty_file
+working_directory,string,/home/linux/Arpit/FuSION/example/example1
+src_node,string,hsa1 - 1
+tgt_node,string,hsa22 - 1
+node_to_test_for_significance,string,hsa10 - -1
+edges_to_target,integer,0
+log_fold_changes,file,/home/linux/Arpit/FuSION/example/example1/example1.tsv
+kegg_xml,file,/home/linux/Arpit/FuSION/example/example1/example1.xml
+hsa_to_gene_map,file,/home/linux/Arpit/FuSION/example/example1/example1.tsv
+hsa_path_map,file,/home/linux/Arpit/FuSION/example/example1/example1.xml
 signalling_path_length,integer,10
 node_relax_lower,integer,0
 node_relax_upper,integer,7
@@ -21,3 +19,5 @@ solution_count,integer,1
 solution_explore,integer,1
 up_threshold,float,0.9
 down_threshold,float,-0.9
+coexp_thresh,integer,0
+frozen_thresh,integer,0
