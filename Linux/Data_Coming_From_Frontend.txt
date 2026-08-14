@@ -1,12 +1,12 @@
-working_directory,string,/home/linux/Arpit/FuSION/example/example1
+working_directory,string,/home/linux/Arpit/FuSION/example
 src_node,string,hsa1 - 1
 tgt_node,string,hsa22 - 1
-node_to_test_for_significance,string,hsa10 - -1
+node_to_test_for_significance,string,hsa12 - 1
 edges_to_target,integer,0
-log_fold_changes,file,/home/linux/Arpit/FuSION/example/example1/example1.tsv
-kegg_xml,file,/home/linux/Arpit/FuSION/example/example1/example1.xml
-hsa_to_gene_map,file,/home/linux/Arpit/FuSION/example/example1/example1.tsv
-hsa_path_map,file,/home/linux/Arpit/FuSION/example/example1/example1.xml
+log_fold_changes,file,/home/linux/Arpit/FuSION/example/with_node_included.tsv
+kegg_xml,file,/home/linux/Arpit/FuSION/example/with_node_included.xml
+hsa_to_gene_map,file,/home/linux/Arpit/FuSION/example/with_node_included.tsv
+hsa_path_map,file,/home/linux/Arpit/FuSION/example/with_node_included.xml
 signalling_path_length,integer,10
 node_relax_lower,integer,0
 node_relax_upper,integer,7

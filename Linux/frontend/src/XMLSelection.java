@@ -214,21 +214,16 @@ public class XMLSelection extends RoundedPanel {
         JTextField nodeSplitField = new JTextField(6);
         nodeSplitField.setText("" + user.getNodeSplitThreshold());
         nodeSplitField.setFont(Theme.body(14));
+        nodeSplitField.setBackground(Color.WHITE);
+        nodeSplitField.setForeground(Color.BLACK);
+        nodeSplitField.setCaretColor(Color.BLACK);
         nodeSplitField.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Theme.BORDER, 1),
             BorderFactory.createEmptyBorder(4, 8, 4, 8)));
 
-        RoundedButton iButton = new RoundedButton("i", 14, new Dimension(28, 28));
-        iButton.setFont(Theme.body(13));
-        iButton.setBackground(Theme.PRIMARY);
-        iButton.setForeground(Color.WHITE);
-        iButton.setFocusPainted(false);
-        iButton.setToolTipText("Threshold to split nodes while merging pathways");
-
         JPanel nodeSplitRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         nodeSplitRight.setOpaque(false);
         nodeSplitRight.add(nodeSplitField);
-        nodeSplitRight.add(iButton);
 
         nodeSplitCard.add(nodeSplitLabel, BorderLayout.CENTER);
         nodeSplitCard.add(nodeSplitRight, BorderLayout.EAST);

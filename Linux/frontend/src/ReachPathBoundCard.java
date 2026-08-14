@@ -38,8 +38,9 @@ public class ReachPathBoundCard extends RoundedPanel {
         reachBoundValue.add(reachValue);
 
         JTextField reachValueField = new JTextField("" + user.getSignallingPathLength());
-        reachValueField.setForeground(Theme.TEXT_DARK);
-        reachValueField.setBackground(Theme.BG_CARD);
+        reachValueField.setForeground(Color.BLACK);
+        reachValueField.setBackground(Color.WHITE);
+        reachValueField.setCaretColor(Color.BLACK);
         reachValueField.setHorizontalAlignment(JTextField.CENTER);
         reachValueField.setPreferredSize(new Dimension(60, 25));
         reachBoundValue.add(reachValueField);
@@ -269,6 +270,9 @@ public class ReachPathBoundCard extends RoundedPanel {
         JTextField textField = new JTextField(8);
         textField.setText(String.valueOf(value));
         textField.setFont(Theme.body(14));
+        textField.setBackground(Color.WHITE);
+        textField.setForeground(Color.BLACK);
+        textField.setCaretColor(Color.BLACK);
         textField.setHorizontalAlignment(JTextField.RIGHT);
         textField.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Theme.BORDER, 1),

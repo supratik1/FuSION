@@ -130,7 +130,9 @@ public class RelaxationBoundsPanel extends RoundedPanel {
 
         JTextField field = new JTextField(String.valueOf(arr[idx]), 4);
         field.setFont(Theme.title(15));
-        field.setForeground(Theme.TEXT_DARK);
+        field.setBackground(Color.WHITE);
+        field.setForeground(Color.BLACK);
+        field.setCaretColor(Color.BLACK);
         field.setHorizontalAlignment(JTextField.CENTER);
         field.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Theme.BORDER, 1),
@@ -138,6 +140,8 @@ public class RelaxationBoundsPanel extends RoundedPanel {
 
         RoundedButton minus = makeStepBtn("−");
         RoundedButton plus  = makeStepBtn("+");
+        minus.setBackground(Theme.PRIMARY);
+        minus.setForeground(Color.WHITE);
         plus.setBackground(Theme.PRIMARY);
         plus.setForeground(Color.WHITE);
 

@@ -3108,15 +3108,55 @@ public class gui4 extends JFrame {
         FunctionBlock block = new FunctionBlock(instanceName, template);
         int x = 100 + functionCounter * 60;
         int y = 100 + functionCounter * 40;
-        
+
         int scaledWidth = (int)(block.getPreferredSize().width * zoomFactor);
         int scaledHeight = (int)(block.getPreferredSize().height * zoomFactor);
         block.setBounds(x, y, scaledWidth, scaledHeight);
         functionCounter++;
         functionBlocks.add(block);
         drawingPanel.add(block);
+        autoMirrorConnections(block, template.name);
+        block.refreshInputBadges();
         updateCanvasSize();
         drawingPanel.repaint();
+    }
+
+    /**
+     * When a new block is placed, copy FileEntry connections and typed values
+     * from the first existing block of the same template type so inputs that
+     * are shared (e.g. the log-fold-change file) don't have to be re-wired.
+     */
+    private void autoMirrorConnections(FunctionBlock newBlock, String templateName) {
+        FunctionBlock source = null;
+        for (FunctionBlock fb : functionBlocks) {
+            if (fb == newBlock) continue;
+            if (fb.originalName.equals(templateName)) { source = fb; break; }
+        }
+        if (source == null || source.template == null || newBlock.template == null) return;
+
+        int slots = Math.min(newBlock.template.inputCount, source.template.inputCount);
+
+        // Copy typed values for every slot
+        if (source.inputValues != null && newBlock.inputValues != null) {
+            for (int i = 0; i < Math.min(slots, source.inputValues.length); i++) {
+                if (i < newBlock.inputValues.length)
+                    newBlock.inputValues[i] = source.inputValues[i];
+            }
+        }
+
+        // Copy FileEntry connections (collect first to avoid ConcurrentModification)
+        List<FileEntryConnection> toAdd = new ArrayList<>();
+        for (FileEntryConnection fec : fileEntryConnections) {
+            if (fec.toBlock != source) continue;
+            if (fec.toInputIndex >= slots) continue;
+            FileEntryConnection copy = new FileEntryConnection(
+                fec.entryName, fec.entryType, fec.entryValue,
+                fec.entryPosition, newBlock, fec.toInputIndex);
+            toAdd.add(copy);
+            if (newBlock.inputValues != null && fec.toInputIndex < newBlock.inputValues.length)
+                newBlock.inputValues[fec.toInputIndex] = fec.entryValue;
+        }
+        fileEntryConnections.addAll(toAdd);
     }
     private void addSelectedBlockInstance() {
         String selected = (String) blockSelector.getSelectedItem();
@@ -4030,7 +4070,7 @@ public class gui4 extends JFrame {
                 }
                 if (connIn != null) {
                     // Resolve variable name: user-set wins, then outputVarNames, then auto-name
-                    String fromBase = connIn.from.originalName.replaceAll("_\\d+$", "");
+                    String fromBase = connIn.from.originalName;
                     String connName;
                     if (connIn.fileName != null && !connIn.fileName.trim().isEmpty()) {
                         connName = connIn.fileName.trim();
@@ -5237,7 +5277,7 @@ public class gui4 extends JFrame {
                 autoNames.put(fb, new String[0]);
                 continue;
             }
-            String base = fb.originalName.replaceAll("_\\d+$", "");
+            String base = fb.originalName;
             String[] names = new String[fb.template.outputCount];
             for (int i = 0; i < fb.template.outputCount; i++) {
                 names[i] = base + "_output" + (i + 1);

@@ -52,12 +52,10 @@ public class IdEntryPanel extends RoundedPanel {
         label1.setForeground(Theme.TEXT_DARK);
 
         inputField1 = new JTextField(18);
-        inputField1.setBackground(Color.WHITE);
-        inputField1.setForeground(Theme.TEXT_DARK);
+        inputField1.setBackground(new Color(243, 247, 255));
+        inputField1.setForeground(new Color(15, 23, 42));
+        inputField1.setCaretColor(Theme.PRIMARY);
         inputField1.setFont(Theme.body(14));
-        inputField1.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 2, 0, Theme.PRIMARY),
-            BorderFactory.createEmptyBorder(4, 8, 4, 8)));
 
         suggestions1 = new JComboBox<>();
         suggestions1.setPreferredSize(new Dimension(280, 30));
@@ -72,12 +70,10 @@ public class IdEntryPanel extends RoundedPanel {
         label2.setForeground(Theme.TEXT_DARK);
 
         inputField2 = new JTextField(18);
-        inputField2.setBackground(Color.WHITE);
-        inputField2.setForeground(Theme.TEXT_DARK);
+        inputField2.setBackground(new Color(243, 247, 255));
+        inputField2.setForeground(new Color(15, 23, 42));
+        inputField2.setCaretColor(Theme.PRIMARY);
         inputField2.setFont(Theme.body(14));
-        inputField2.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 2, 0, Theme.PRIMARY),
-            BorderFactory.createEmptyBorder(4, 8, 4, 8)));
 
         suggestions2 = new JComboBox<>();
         suggestions2.setPreferredSize(new Dimension(280, 30));
@@ -92,12 +88,10 @@ public class IdEntryPanel extends RoundedPanel {
         label3.setForeground(Theme.TEXT_DARK);
 
         inputField3 = new JTextField(18);
-        inputField3.setBackground(Color.WHITE);
-        inputField3.setForeground(Theme.TEXT_DARK);
+        inputField3.setBackground(new Color(243, 247, 255));
+        inputField3.setForeground(new Color(15, 23, 42));
+        inputField3.setCaretColor(Theme.PRIMARY);
         inputField3.setFont(Theme.body(14));
-        inputField3.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 2, 0, Theme.PRIMARY),
-            BorderFactory.createEmptyBorder(4, 8, 4, 8)));
 
         suggestions3 = new JComboBox<>();
         suggestions3.setPreferredSize(new Dimension(280, 30));
@@ -384,9 +378,24 @@ public class IdEntryPanel extends RoundedPanel {
     }
 
     private JPanel createIdRow(JLabel label, JTextField field, JComboBox<String> combo) {
+        // Border styles for normal and focused states
+        javax.swing.border.Border normalBorder = BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(100, 140, 200), 1),
+            BorderFactory.createEmptyBorder(7, 10, 7, 10));
+        javax.swing.border.Border focusBorder = BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Theme.PRIMARY, 2),
+            BorderFactory.createEmptyBorder(6, 9, 6, 9));
+
+        field.setBorder(normalBorder);
+        field.setOpaque(true);
+        field.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent e) { field.setBorder(focusBorder); }
+            public void focusLost(java.awt.event.FocusEvent e)   { field.setBorder(normalBorder); }
+        });
+
         JPanel card = new JPanel(new BorderLayout(10, 4));
         card.setBackground(Theme.BG_CARD);
-        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 72));
+        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 78));
         card.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Theme.BORDER, 1),
             BorderFactory.createEmptyBorder(10, 16, 10, 16)));
@@ -395,9 +404,9 @@ public class IdEntryPanel extends RoundedPanel {
         left.setOpaque(false);
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
         field.setAlignmentX(Component.LEFT_ALIGNMENT);
-        field.setMaximumSize(new Dimension(220, 34));
+        field.setMaximumSize(new Dimension(240, 38));
         left.add(label);
-        left.add(Box.createVerticalStrut(4));
+        left.add(Box.createVerticalStrut(5));
         left.add(field);
         card.add(left, BorderLayout.CENTER);
         card.add(combo, BorderLayout.EAST);

@@ -86,8 +86,8 @@ public class ThresholdFilterPanel extends RoundedPanel {
         lowerField = new JTextField(6);
         lowerField.setText(String.valueOf(user.getDownThreshold()));
         lowerField.setFont(Theme.body(13));
-        lowerField.setForeground(Theme.TEXT_DARK);
-        lowerField.setCaretColor(Theme.TEXT_DARK);
+        lowerField.setForeground(Color.BLACK);
+        lowerField.setCaretColor(Color.BLACK);
         lowerField.setOpaque(true);
         lowerField.setBackground(Color.WHITE);
         lowerField.setBorder(BorderFactory.createCompoundBorder(
@@ -99,10 +99,10 @@ public class ThresholdFilterPanel extends RoundedPanel {
         upLabel.setForeground(Theme.TEXT_MED);
 
         upperField = new JTextField(6);
-        upperField.setCaretColor(Theme.TEXT_DARK);
+        upperField.setCaretColor(Color.BLACK);
         upperField.setText(String.valueOf(user.getUpThreshold()));
         upperField.setFont(Theme.body(13));
-        upperField.setForeground(Theme.TEXT_DARK);
+        upperField.setForeground(Color.BLACK);
         upperField.setOpaque(true);
         upperField.setBackground(Color.WHITE);
         upperField.setBorder(BorderFactory.createCompoundBorder(
@@ -117,6 +117,9 @@ public class ThresholdFilterPanel extends RoundedPanel {
 
         searchField = new JTextField(10);
         searchField.setFont(Theme.body(13));
+        searchField.setBackground(Color.WHITE);
+        searchField.setForeground(Color.BLACK);
+        searchField.setCaretColor(Color.BLACK);
         searchField.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Theme.BORDER, 1),
             BorderFactory.createEmptyBorder(3, 6, 3, 6)));
@@ -225,7 +228,7 @@ public class ThresholdFilterPanel extends RoundedPanel {
                 setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
                 add(prevButton, BorderLayout.EAST);
                 add(goToSessions, BorderLayout.WEST);
-                setBackground(Color.WHITE);
+                setBackground(Theme.BG);
                 setOpaque(false);
             }
         });
@@ -235,7 +238,7 @@ public class ThresholdFilterPanel extends RoundedPanel {
                 setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
                 add(nextButton, BorderLayout.WEST);
                 add(saveButton, BorderLayout.EAST);
-                setBackground(Color.WHITE);
+                setBackground(Theme.BG);
                 setOpaque(false);
             }
         });

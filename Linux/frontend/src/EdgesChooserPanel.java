@@ -182,7 +182,9 @@ public class EdgesChooserPanel extends RoundedPanel {
 
         JTextField valueField = new JTextField(String.valueOf(holder[holderIdx]), 5);
         valueField.setFont(Theme.title(14));
-        valueField.setForeground(Theme.TEXT_DARK);
+        valueField.setBackground(Color.WHITE);
+        valueField.setForeground(Color.BLACK);
+        valueField.setCaretColor(Color.BLACK);
         valueField.setHorizontalAlignment(JTextField.CENTER);
         valueField.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Theme.BORDER, 1),

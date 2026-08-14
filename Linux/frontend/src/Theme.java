@@ -38,14 +38,19 @@ public final class Theme {
     public static final Color T_GRAPH     = new Color(34,  211, 238);  // #22D3EE cyan
     public static final Color T_OTHER     = new Color(148, 163, 184);  // #94A3B8 slate
 
-    // ── DPI scaling ──────────────────────────────────────────────────────────
+    // ── Responsive font scaling ───────────────────────────────────────────────
     private static final float SCALE;
     static {
-        int dpi = java.awt.Toolkit.getDefaultToolkit().getScreenResolution();
-        // Scale up on high-DPI displays; cap at 2.5× to avoid over-scaling
-        SCALE = dpi > 96 ? Math.min(dpi / 96.0f, 2.5f) : 1.0f;
+        java.awt.Dimension screen = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
+        int dpi     = java.awt.Toolkit.getDefaultToolkit().getScreenResolution();
+        // Scale by screen height relative to a 768p baseline
+        float byHeight = screen.height / 768.0f;
+        // Scale by DPI for HiDPI displays (often reports 96 on Windows even on big screens)
+        float byDpi    = dpi / 96.0f;
+        // Take whichever is larger; floor at 1.1 so fonts are never tiny
+        SCALE = Math.max(1.1f, Math.min(Math.max(byHeight, byDpi), 2.5f));
     }
-    /** Scale a pixel/point size by the screen DPI factor. */
+    /** Scale a pixel/point size proportional to screen size. */
     public static int scale(int px) { return Math.round(px * SCALE); }
 
     // ── Typography ───────────────────────────────────────────────────────────

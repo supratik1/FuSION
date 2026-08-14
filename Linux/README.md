@@ -1,66 +1,125 @@
 # Installing FuSION on Linux (tested on Ubuntu 22.04 and 24.04)
 
-1. Download libxml2 and libxml++-2.6 to run the program. Download files in WSL (Debian) or Linux (Ubuntu) environment using the following commands :
+## Prerequisites
 
-   ​ For libxml2 :-
+### 1. libxml2 and libxml++-2.6
 
-   ​ `sudo apt install libxml2 libxml2-dev` // installation.
+```bash
+# Install
+sudo apt install libxml2 libxml2-dev
 
-   ​ `pkg-config --modversion libxml-2.0` // verify installation.
+# Verify
+pkg-config --modversion libxml-2.0
+```
 
-   ​ For libxml++
+```bash
+# Install
+sudo apt install libxml++2.6-dev
 
-   ​ `sudo apt install libxml++2.6-dev` // installation.
+# Verify
+pkg-config --modversion libxml++-2.6
+```
 
-   ​ `pkg-config --modversion libxml++-2.6` // verify installation
+### 2. Z3 SMT Solver
 
-2. Download the Z3 SMT solver and relevant header files for WSL (Debian) or Linux environment using the following command:
+```bash
+# Install
+sudo apt install z3 libz3-dev
 
-   ​ `sudo apt install z3 libz3-dev` // installation.
+# Verify
+z3 --version
+```
 
-   ​ `z3 --version` // verify installation
+### 3. Bison
 
-3. Check if `bison` is installed on your computer by running `bison --version` . If `bison` cannot be found, then run the following command for installation and verification :
+Check if already installed:
+```bash
+bison --version
+```
+If not found:
+```bash
+sudo apt install bison
+bison --version
+```
 
-   ​ `sudo apt install bison` // installation
+### 4. Flex
 
-   ​ `bison --version` // verify installation
+Check if already installed:
+```bash
+flex --version
+```
+If not found:
+```bash
+sudo apt install flex
+flex --version
+```
 
-4. Check if `flex` is installed on your computer by running `flex --version`.  If `flex` cannot be found, then run the following command for installation and verification:
+### 5. Java Development Kit (JDK 17 or higher)
 
-   `sudo apt install flex` // installation
+The graphical front end requires Java 17+.
 
-   `flex --version` // verify installation
-   
-5. Navigate to the `Linux` directory and run the following command to build the tool.  
+Check if already installed:
+```bash
+java -version
+```
+If not found or version is below 17:
+```bash
+sudo apt install openjdk-17-jdk
+java -version
+```
 
-   ​ `make`
+---
 
-  The executable called `fusion` is generated in the `Linux` directory.
+## Building FuSION
 
+Navigate to the `Linux` directory and run:
 
-# Running FuSION on Linux (tested on Ubuntu 22.04)
+```bash
+make
+```
 
-1. Compile the Java-based front end in the `Linux` directory using the following command
+This generates the `fusion` executable in the `Linux` directory.
 
-     `javac GUIForExecutable.java` // you must have JDK installed on your machine3. 
+---
 
-2. Next run the front end as follows
+## Running the Front End
 
-      `java GUIForExecutable`
-   
+FuSION ships with a graphical user interface for configuring and running analyses. The front end handles sessions, working directories, gene IDs, pathway configuration, and pipeline execution.
 
-# Un-installing FuSION 
+### Step 1 — Compile the front end
 
-1. Run the following command in the `Linux` directory to uninstall `fusion`
-   
-     `make clean`
-   
-2. If you also want to un-install the other libraries installed above (while installing `fusion`), you can optionally run the following command
+From inside the `Linux` directory, run:
 
-     `sudo apt remove libxml2 libxml2-dev libxml++2.6-dev z3 libz3-dev bison flex`
+```bash
+cd frontend/src
+javac -cp '.:../lib/json-20250517.jar' *.java
+cd ../..
+```
 
-   
+This compiles all front-end source files. You only need to do this once (or after an update).
 
+### Step 2 — Launch the application
 
-   
+From the `Linux` directory:
+
+```bash
+java -cp frontend/src:frontend/lib/json-20250517.jar LoginPage
+```
+
+The application opens with a login/signup screen. Create an account or log in to start a new analysis session.
+
+---
+
+## Un-installing FuSION
+
+To remove the compiled `fusion` executable:
+
+```bash
+make clean
+```
+
+To also remove the libraries installed during setup:
+
+```bash
+sudo apt remove libxml2 libxml2-dev libxml++2.6-dev z3 libz3-dev bison flex
+```
