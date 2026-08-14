@@ -87,8 +87,8 @@ public class UserInput {
                 String candidateID= obj.optString("CandidateID", "");
                 String hsaNot = obj.optString("HSANotMerged", "");
 
-                String hsaToGene= obj.optString("HsaToGene", "hsa_to_gene_symbol_map_6334.txt");
-                String hsaToPath = obj.optString("HsaToPath", " hsa_path_to_path_name_map_2822.txt");
+                String hsaToGene= obj.optString("HsaToGene", "frontend/hsa_to_gene_symbol_map_6334.txt");
+                String hsaToPath = obj.optString("HsaToPath", "frontend/hsa_path_to_path_name_map_2822.txt");
 
                 String interDB= obj.optString("InterDB", "");
 

@@ -121,9 +121,9 @@ public class HeaderPanel extends JPanel {
 
     private void showNavMenu(Component anchor, CardLayout cl, JPanel cp, UserInput user) {
         JPopupMenu menu = new JPopupMenu();
-        menu.setBackground(Color.WHITE);
+        menu.setBackground(Theme.SURFACE);
         menu.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(Theme.BORDER, 1),
+            BorderFactory.createLineBorder(Theme.BORDER_HI, 1),
             BorderFactory.createEmptyBorder(4, 0, 4, 0)));
 
         for (int i = 0; i < NAV_LABELS.length; i++) {
@@ -131,12 +131,12 @@ public class HeaderPanel extends JPanel {
             JMenuItem item = new JMenuItem(NAV_LABELS[i]);
             item.setFont(new Font("Segoe UI", Font.PLAIN, 13));
             item.setForeground(Theme.TEXT_DARK);
-            item.setBackground(Color.WHITE);
+            item.setBackground(Theme.SURFACE);
             item.setOpaque(true);
             item.setBorder(BorderFactory.createEmptyBorder(6, 16, 6, 24));
             item.addMouseListener(new MouseAdapter() {
-                public void mouseEntered(MouseEvent e) { item.setBackground(new Color(240, 244, 255)); }
-                public void mouseExited(MouseEvent e)  { item.setBackground(Color.WHITE); }
+                public void mouseEntered(MouseEvent e) { item.setBackground(Theme.BG_CARD); }
+                public void mouseExited(MouseEvent e)  { item.setBackground(Theme.SURFACE); }
             });
             item.addActionListener(e -> navigateTo(idx, cl, cp, user));
             menu.add(item);

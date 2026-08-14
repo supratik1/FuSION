@@ -151,7 +151,7 @@ public class MainPanel extends RoundedPanel {
                 setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
                 add(prevButton, BorderLayout.EAST);
                 add(goToSessions, BorderLayout.WEST);
-                setBackground(Color.WHITE);
+                setBackground(Theme.BG);
                 setOpaque(false);
             }
         });
@@ -161,7 +161,7 @@ public class MainPanel extends RoundedPanel {
                 setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
                 add(nextButton, BorderLayout.WEST);
                 add(saveButton, BorderLayout.EAST);
-                setBackground(Color.WHITE);
+                setBackground(Theme.BG);
                 setOpaque(false);
             }
         });

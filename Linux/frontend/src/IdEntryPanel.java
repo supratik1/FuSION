@@ -223,9 +223,10 @@ public class IdEntryPanel extends RoundedPanel {
             }
         });
 
-        // Default load
-        idMappingFile = new File(mappingFile[0]);
-        if (idMappingFile.exists()) {
+        // Default load — try the stored path, then common relative fallbacks
+        idMappingFile = resolveFile(mappingFile[0]);
+        if (idMappingFile != null) {
+            mappingFile[0] = idMappingFile.getPath(); // normalise for later saves
             loadMappingFile(idMappingFile);
         }
         inputField1.getDocument().addDocumentListener(new SuggestionUpdater(inputField1, suggestions1));
@@ -419,6 +420,25 @@ public class IdEntryPanel extends RoundedPanel {
         }
         JOptionPane.showMessageDialog(field, "No exact match found.");
         return true;
+    }
+
+    /**
+     * Tries to locate a mapping file by checking, in order:
+     * 1. The path exactly as given
+     * 2. frontend/<filename>  (when app runs from Linux/)
+     * 3. <filename> in the current dir (bare filename fallback)
+     */
+    private File resolveFile(String path) {
+        if (path == null || path.isBlank()) return null;
+        String trimmed = path.trim();
+        File f = new File(trimmed);
+        if (f.exists()) return f;
+        String name = f.getName();
+        File f2 = new File("frontend/" + name);
+        if (f2.exists()) return f2;
+        File f3 = new File(name);
+        if (f3.exists()) return f3;
+        return null; // not found in any location
     }
 
     private void loadMappingFile(File file) {

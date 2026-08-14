@@ -28,18 +28,18 @@ public class ReachPathBoundCard extends RoundedPanel {
         reachSlider.setPaintLabels(true);
         reachSlider.setMajorTickSpacing(10);
         reachSlider.setMinorTickSpacing(1);
-        reachSlider.setForeground(Color.BLACK);
+        reachSlider.setForeground(Theme.TEXT_MED);
         reachSlider.setBackground(Theme.BG_CARD);
 
         JPanel reachBoundValue = new JPanel(new FlowLayout());
         reachBoundValue.setBackground(Theme.BG_CARD);
         JLabel reachValue = new JLabel("Value: ");
-        reachValue.setForeground(Color.BLACK);
+        reachValue.setForeground(Theme.TEXT_DARK);
         reachBoundValue.add(reachValue);
 
         JTextField reachValueField = new JTextField("" + user.getSignallingPathLength());
-        reachValueField.setForeground(Color.BLACK);
-        reachValueField.setBackground(Color.WHITE);
+        reachValueField.setForeground(Theme.TEXT_DARK);
+        reachValueField.setBackground(Theme.BG_CARD);
         reachValueField.setHorizontalAlignment(JTextField.CENTER);
         reachValueField.setPreferredSize(new Dimension(60, 25));
         reachBoundValue.add(reachValueField);
@@ -82,7 +82,7 @@ public class ReachPathBoundCard extends RoundedPanel {
         // Set foreground and transparent background for radio buttons
         for (JRadioButton rb : new JRadioButton[]{rb1, rb2, rb3}) {
             rb.setBackground(Theme.BG_CARD);
-            rb.setForeground(Color.BLACK);
+            rb.setForeground(Theme.TEXT_DARK);
             rb.setOpaque(true);
             targetPanel.add(rb);
         }
@@ -189,7 +189,7 @@ public class ReachPathBoundCard extends RoundedPanel {
                 setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
                 add(prevButton, BorderLayout.EAST);
                 add(goToSessions, BorderLayout.WEST);
-                setBackground(Color.WHITE);
+                setBackground(Theme.BG);
                 setOpaque(false);
             }
         });
@@ -199,7 +199,7 @@ public class ReachPathBoundCard extends RoundedPanel {
                 setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
                 add(nextButton, BorderLayout.WEST);
                 add(saveButton, BorderLayout.EAST);
-                setBackground(Color.WHITE);
+                setBackground(Theme.BG);
                 setOpaque(false);
             }
         });

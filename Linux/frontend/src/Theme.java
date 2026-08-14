@@ -28,7 +28,7 @@ public final class Theme {
     // ── Text ─────────────────────────────────────────────────────────────────
     public static final Color TEXT_DARK   = new Color(214, 232, 255);  // #D6E8FF hi text
     public static final Color TEXT_MED    = new Color(106, 150, 200);  // #6A96C8 mid text
-    public static final Color TEXT_LIGHT  = new Color(49,  79,  120);  // #314F78 dim text
+    public static final Color TEXT_LIGHT  = new Color(100, 140, 190);  // #648CBE dim text (was too dark)
 
     // ── Type accent colours ───────────────────────────────────────────────────
     public static final Color T_FILE      = new Color(96,  165, 250);  // #60A5FA blue
@@ -38,11 +38,21 @@ public final class Theme {
     public static final Color T_GRAPH     = new Color(34,  211, 238);  // #22D3EE cyan
     public static final Color T_OTHER     = new Color(148, 163, 184);  // #94A3B8 slate
 
+    // ── DPI scaling ──────────────────────────────────────────────────────────
+    private static final float SCALE;
+    static {
+        int dpi = java.awt.Toolkit.getDefaultToolkit().getScreenResolution();
+        // Scale up on high-DPI displays; cap at 2.5× to avoid over-scaling
+        SCALE = dpi > 96 ? Math.min(dpi / 96.0f, 2.5f) : 1.0f;
+    }
+    /** Scale a pixel/point size by the screen DPI factor. */
+    public static int scale(int px) { return Math.round(px * SCALE); }
+
     // ── Typography ───────────────────────────────────────────────────────────
-    public static Font title(int size)    { return new Font("Segoe UI",  Font.BOLD,  size); }
-    public static Font body (int size)    { return new Font("Segoe UI",  Font.PLAIN, size); }
-    public static Font mono (int size)    { return new Font("Consolas",  Font.PLAIN, size); }
-    public static Font monoBold(int size) { return new Font("Consolas",  Font.BOLD,  size); }
+    public static Font title(int size)    { return new Font("Segoe UI",  Font.BOLD,  scale(size)); }
+    public static Font body (int size)    { return new Font("Segoe UI",  Font.PLAIN, scale(size)); }
+    public static Font mono (int size)    { return new Font("Consolas",  Font.PLAIN, scale(size)); }
+    public static Font monoBold(int size) { return new Font("Consolas",  Font.BOLD,  scale(size)); }
 
     // ── Button factories ─────────────────────────────────────────────────────
     public static RoundedButton navBtn(String text, int w) {
@@ -58,7 +68,7 @@ public final class Theme {
         return makeBtn(text, w, DANGER, Color.WHITE);
     }
     private static RoundedButton makeBtn(String text, int w, Color bg, Color fg) {
-        RoundedButton b = new RoundedButton(text, 8, new Dimension(w, 38));
+        RoundedButton b = new RoundedButton(text, 8, new Dimension(scale(w), scale(38)));
         b.setBackground(bg); b.setForeground(fg); b.setFont(title(14));
         return b;
     }
