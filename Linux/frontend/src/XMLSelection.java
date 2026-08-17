@@ -98,7 +98,7 @@ public class XMLSelection extends RoundedPanel {
 
         // File chooser listeners remain same, no UI change needed:
         chooseButton1.addActionListener((ActionEvent e) -> {
-            JFileChooser fileChooser = new JFileChooser();
+            JFileChooser fileChooser = openInWorkDir(user);
             int result = fileChooser.showOpenDialog(this);
             if (result == JFileChooser.APPROVE_OPTION) {
                 txtFile = fileChooser.getSelectedFile();
@@ -108,7 +108,7 @@ public class XMLSelection extends RoundedPanel {
         });
 
         chooseButton2.addActionListener((ActionEvent e) -> {
-            JFileChooser fileChooser = new JFileChooser();
+            JFileChooser fileChooser = openInWorkDir(user);
             int result = fileChooser.showOpenDialog(this);
             if (result == JFileChooser.APPROVE_OPTION) {
                 xmlFile = fileChooser.getSelectedFile();
@@ -294,5 +294,11 @@ public class XMLSelection extends RoundedPanel {
             frame.setLocationRelativeTo(null);
             frame.setVisible(true);
         });
+    }
+
+    private static JFileChooser openInWorkDir(UserInput user) {
+        if (user == null) return new JFileChooser();
+        String wd = user.getWorkingDirectory();
+        return (wd != null && !wd.trim().isEmpty()) ? new JFileChooser(new File(wd)) : new JFileChooser();
     }
 }

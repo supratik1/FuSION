@@ -14,8 +14,11 @@ public class IdEntryPanel extends RoundedPanel {
     private JTextField inputField1, inputField2, inputField3;
     private JComboBox<String> suggestions1, suggestions2, suggestions3;
     Map<String, List<String>> idMap = new HashMap<>();
+    private UserInput user;
+    private JLabel geneStatusLabel;
 
     public IdEntryPanel(CardLayout cardLayout, JPanel cardPanel, UserInput user) {
+        this.user = user;
         setLayout(new BorderLayout());
         setBackground(Theme.BG);
 
@@ -43,7 +46,14 @@ public class IdEntryPanel extends RoundedPanel {
         titleSub.setForeground(Theme.TEXT_MED);
         titleSub.setAlignmentX(Component.CENTER_ALIGNMENT);
         center.add(titleSub);
-        center.add(Box.createVerticalStrut(24));
+        center.add(Box.createVerticalStrut(8));
+
+        geneStatusLabel = new JLabel("Loading gene list…");
+        geneStatusLabel.setFont(Theme.body(12));
+        geneStatusLabel.setForeground(Theme.TEXT_MED);
+        geneStatusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        center.add(geneStatusLabel);
+        center.add(Box.createVerticalStrut(16));
 
         // ---- First row: Source hsa ID ----
         JLabel label1 = new JLabel("Starting Gene");
@@ -207,7 +217,7 @@ public class IdEntryPanel extends RoundedPanel {
         });
 
         hsaButton.addActionListener(e -> {
-            JFileChooser chooser = new JFileChooser();
+            JFileChooser chooser = openInWorkDir();
             int result = chooser.showOpenDialog(this);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File hsaNotmerged = chooser.getSelectedFile();
@@ -216,8 +226,7 @@ public class IdEntryPanel extends RoundedPanel {
             }
         });
 
-        // Load gene IDs from the user's uploaded fold change file
-        loadGeneIdsFromFoldChangeFile(user.getLogFoldChangesFile());
+        // Wire up suggestion listeners (genes loaded in addNotify/reloadGenes)
         inputField1.getDocument().addDocumentListener(new SuggestionUpdater(inputField1, suggestions1));
         inputField2.getDocument().addDocumentListener(new SuggestionUpdater(inputField2, suggestions2));
         inputField3.getDocument().addDocumentListener(new SuggestionUpdater(inputField3, suggestions3));
@@ -296,7 +305,7 @@ public class IdEntryPanel extends RoundedPanel {
                 dialog.dispose();
             });
             hsaToGeneBtn.addActionListener(err -> {
-                JFileChooser chooser = new JFileChooser();
+                JFileChooser chooser = openInWorkDir();
                 int result = chooser.showOpenDialog(dialog);
                 if (result == JFileChooser.APPROVE_OPTION) {
                     mappingFile[0] = chooser.getSelectedFile().getAbsolutePath();
@@ -304,7 +313,7 @@ public class IdEntryPanel extends RoundedPanel {
                 }
             });
             hsaToPathBtn.addActionListener(err -> {
-                JFileChooser chooser = new JFileChooser();
+                JFileChooser chooser = openInWorkDir();
                 int result = chooser.showOpenDialog(dialog);
                 if (result == JFileChooser.APPROVE_OPTION) {
                     File file = chooser.getSelectedFile();
@@ -313,7 +322,7 @@ public class IdEntryPanel extends RoundedPanel {
                 }
             });
             interDBBtn.addActionListener(err -> {
-                JFileChooser chooser = new JFileChooser();
+                JFileChooser chooser = openInWorkDir();
                 int result = chooser.showOpenDialog(dialog);
                 if (result == JFileChooser.APPROVE_OPTION) {
                     File file = chooser.getSelectedFile();
@@ -368,6 +377,32 @@ public class IdEntryPanel extends RoundedPanel {
             }
         });
         add(buttonPanel, BorderLayout.SOUTH);
+    }
+
+    /** Called every time this panel is made visible — reloads genes from the current fold change file. */
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        reloadGenes();
+    }
+
+    private void reloadGenes() {
+        loadGeneIdsFromFoldChangeFile(user.getLogFoldChangesFile());
+        SwingUtilities.invokeLater(() -> {
+            if (idMap.isEmpty()) {
+                String f = user.getLogFoldChangesFile();
+                if (f == null || f.isBlank()) {
+                    geneStatusLabel.setText("No gene list — select your Gene Activity Data file first (Step 2)");
+                } else {
+                    geneStatusLabel.setText("Gene file not found on this device — reselect it in Step 2");
+                }
+                geneStatusLabel.setForeground(Theme.WARNING);
+            } else {
+                String name = new File(user.getLogFoldChangesFile()).getName();
+                geneStatusLabel.setText(idMap.size() + " genes loaded from " + name + " — type to search");
+                geneStatusLabel.setForeground(Theme.SUCCESS);
+            }
+        });
     }
 
     private JPanel createIdRow(JLabel label, JTextField field, JComboBox<String> combo) {
@@ -676,7 +711,8 @@ public class IdEntryPanel extends RoundedPanel {
         };
     }
 
-
-
-
+    private JFileChooser openInWorkDir() {
+        String wd = user.getWorkingDirectory();
+        return (wd != null && !wd.trim().isEmpty()) ? new JFileChooser(new File(wd)) : new JFileChooser();
+    }
 }
