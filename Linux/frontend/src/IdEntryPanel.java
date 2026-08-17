@@ -14,7 +14,6 @@ public class IdEntryPanel extends RoundedPanel {
     private JTextField inputField1, inputField2, inputField3;
     private JComboBox<String> suggestions1, suggestions2, suggestions3;
     Map<String, List<String>> idMap = new HashMap<>();
-    private File idMappingFile;
 
     public IdEntryPanel(CardLayout cardLayout, JPanel cardPanel, UserInput user) {
         setLayout(new BorderLayout());
@@ -217,12 +216,8 @@ public class IdEntryPanel extends RoundedPanel {
             }
         });
 
-        // Default load — try the stored path, then common relative fallbacks
-        idMappingFile = resolveFile(mappingFile[0]);
-        if (idMappingFile != null) {
-            mappingFile[0] = idMappingFile.getPath(); // normalise for later saves
-            loadMappingFile(idMappingFile);
-        }
+        // Load gene IDs from the user's uploaded fold change file
+        loadGeneIdsFromFoldChangeFile(user.getLogFoldChangesFile());
         inputField1.getDocument().addDocumentListener(new SuggestionUpdater(inputField1, suggestions1));
         inputField2.getDocument().addDocumentListener(new SuggestionUpdater(inputField2, suggestions2));
         inputField3.getDocument().addDocumentListener(new SuggestionUpdater(inputField3, suggestions3));
@@ -304,9 +299,7 @@ public class IdEntryPanel extends RoundedPanel {
                 JFileChooser chooser = new JFileChooser();
                 int result = chooser.showOpenDialog(dialog);
                 if (result == JFileChooser.APPROVE_OPTION) {
-                    idMappingFile = chooser.getSelectedFile();
-                    mappingFile[0] = idMappingFile.getAbsolutePath();
-                    loadMappingFile(idMappingFile);
+                    mappingFile[0] = chooser.getSelectedFile().getAbsolutePath();
                     geneField.setText(mappingFile[0]);
                 }
             });
@@ -362,7 +355,7 @@ public class IdEntryPanel extends RoundedPanel {
                 add(prevButton, BorderLayout.EAST);
                 add(goToSessions, BorderLayout.WEST);
                 setOpaque(false);
-                setBackground(Color.WHITE);
+                setBackground(Theme.BG);
             }
         });
         buttonPanel.add(new JPanel(new BorderLayout()) {
@@ -371,7 +364,7 @@ public class IdEntryPanel extends RoundedPanel {
                 add(nextButton, BorderLayout.WEST);
                 add(saveButton, BorderLayout.EAST);
                 setOpaque(false);
-                setBackground(Color.WHITE);
+                setBackground(Theme.BG);
             }
         });
         add(buttonPanel, BorderLayout.SOUTH);
@@ -416,13 +409,9 @@ public class IdEntryPanel extends RoundedPanel {
     private boolean performExactMatch(JTextField field) {
         String input = field.getText().trim().toLowerCase();
         for (Map.Entry<String, List<String>> entry : idMap.entrySet()) {
-
-            String commonName = entry.getKey();
-
             for (String id : entry.getValue()) {
-
-                if (input.equals(commonName) || input.equals(id)) {
-                    field.setText(id + " - " + commonName);
+                if (input.equals(entry.getKey()) || input.equalsIgnoreCase(id)) {
+                    field.setText(id);
                     return true;
                 }
             }
@@ -431,48 +420,25 @@ public class IdEntryPanel extends RoundedPanel {
         return true;
     }
 
-    /**
-     * Tries to locate a mapping file by checking, in order:
-     * 1. The path exactly as given
-     * 2. frontend/<filename>  (when app runs from Linux/)
-     * 3. <filename> in the current dir (bare filename fallback)
-     */
-    private File resolveFile(String path) {
-        if (path == null || path.isBlank()) return null;
-        String trimmed = path.trim();
-        File f = new File(trimmed);
-        if (f.exists()) return f;
-        String name = f.getName();
-        File f2 = new File("frontend/" + name);
-        if (f2.exists()) return f2;
-        File f3 = new File(name);
-        if (f3.exists()) return f3;
-        return null; // not found in any location
-    }
-
-    private void loadMappingFile(File file) {
+    /** Populates idMap from the user's gene activity data (fold change) file. */
+    private void loadGeneIdsFromFoldChangeFile(String filePath) {
         idMap.clear();
-
+        if (filePath == null || filePath.isBlank()) return;
+        File file = new File(filePath.trim());
+        if (!file.exists()) return;
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
-
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
                 if (line.isEmpty()) continue;
-
                 String[] parts = line.split("\\s+");
-
-                if (parts.length >= 2) {
+                if (parts.length >= 1) {
                     String id = parts[0].trim();
-                    String commonName = String.join(" ", Arrays.copyOfRange(parts, 1, parts.length)).toLowerCase();
-
-                    idMap.computeIfAbsent(commonName, k -> new ArrayList<>()).add(id);
+                    if (!id.isEmpty())
+                        idMap.computeIfAbsent(id.toLowerCase(), k -> new ArrayList<>()).add(id);
                 }
             }
-
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "Error reading mapping file: " + ex.getMessage());
-        }
+        } catch (IOException ignored) {}
     }
 
     // Suggestion updater unchanged except handles styling within input/suggestion:
@@ -502,32 +468,22 @@ public class IdEntryPanel extends RoundedPanel {
 
 
         private void updateSuggestions() {
-            String input = field.getText().toLowerCase();
+            String input = field.getText().toLowerCase().trim();
             box.removeAllItems();
-            if (input.isEmpty())
-                return;
-            List<String> exactMatches = new ArrayList<>();
+            if (input.isEmpty()) return;
+            List<String> exactMatches   = new ArrayList<>();
             List<String> partialMatches = new ArrayList<>();
             for (Map.Entry<String, List<String>> entry : idMap.entrySet()) {
-
-                String commonName = entry.getKey();
-                List<String> ids = entry.getValue();
-
-                for (String id : ids) {
-
-                    String display = id + " - " + commonName;
-
-                    if (commonName.equals(input) || id.equals(input)) {
-                        exactMatches.add(display);
-                    } else if (commonName.contains(input) || id.contains(input)) {
-                        partialMatches.add(display);
-                    }
+                String key = entry.getKey();          // lowercase gene id
+                for (String id : entry.getValue()) {  // original-case gene id
+                    if (key.equals(input))
+                        exactMatches.add(id);
+                    else if (key.contains(input))
+                        partialMatches.add(id);
                 }
             }
-            for (String match : exactMatches)
-                box.addItem(match);
-            for (String match : partialMatches)
-                box.addItem(match);
+            for (String m : exactMatches)   box.addItem(m);
+            for (String m : partialMatches) box.addItem(m);
         }
     }
 
