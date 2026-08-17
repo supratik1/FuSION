@@ -9,8 +9,10 @@ public class EdgesChooserPanel extends RoundedPanel {
     private String[] edges;
     private int[] coexpThreshHolder;
     private int[] coexpNHolder;
+    private UserInput user;
 
     public EdgesChooserPanel(CardLayout cardLayout, JPanel cardPanel, UserInput user) {
+        this.user = user;
         setLayout(new BorderLayout());
         setBackground(Theme.BG);
 
@@ -151,7 +153,7 @@ public class EdgesChooserPanel extends RoundedPanel {
 
         RoundedButton chooseButton = Theme.navBtn("Choose", 110);
         chooseButton.addActionListener(e -> {
-            JFileChooser chooser = new JFileChooser();
+            JFileChooser chooser = openInWorkDir();
             if (csvOnly) {
                 chooser.setFileFilter(new FileNameExtensionFilter("CSV files (*.csv)", "csv"));
                 chooser.setAcceptAllFileFilterUsed(false);
@@ -230,5 +232,10 @@ public class EdgesChooserPanel extends RoundedPanel {
         rowPanel.add(titleLabel, BorderLayout.CENTER);
         rowPanel.add(controls, BorderLayout.EAST);
         return rowPanel;
+    }
+
+    private JFileChooser openInWorkDir() {
+        String wd = user.getWorkingDirectory();
+        return (wd != null && !wd.trim().isEmpty()) ? new JFileChooser(new java.io.File(wd)) : new JFileChooser();
     }
 }
