@@ -30,44 +30,40 @@ public class EdgesChooserPanel extends RoundedPanel {
         JPanel titleArea = new JPanel();
         titleArea.setLayout(new BoxLayout(titleArea, BoxLayout.Y_AXIS));
         titleArea.setBackground(Theme.BG);
-        titleArea.setBorder(BorderFactory.createEmptyBorder(24, 40, 0, 40));
+        titleArea.setBorder(BorderFactory.createEmptyBorder(
+            Theme.scale(24), Theme.scale(40), 0, Theme.scale(40)));
 
-        JLabel title = new JLabel("Interaction Constraint Files");
+        JLabel title = new JLabel("Add Edge files");
         title.setFont(Theme.title(26));
         title.setForeground(Theme.TEXT_DARK);
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
-        JLabel titleSub = new JLabel("Optional files to refine pathway analysis");
-        titleSub.setFont(Theme.body(14));
-        titleSub.setForeground(Theme.TEXT_MED);
-        titleSub.setAlignmentX(Component.CENTER_ALIGNMENT);
         titleArea.add(title);
-        titleArea.add(Box.createVerticalStrut(4));
-        titleArea.add(titleSub);
 
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBorder(BorderFactory.createEmptyBorder(16, 40, 16, 40));
+        panel.setBorder(BorderFactory.createEmptyBorder(
+            Theme.scale(16), Theme.scale(40), Theme.scale(16), Theme.scale(40)));
         panel.setBackground(Theme.BG);
 
         panel.add(createFileRow("Custom Interactions File", 0, false));
-        panel.add(Box.createVerticalStrut(8));
+        panel.add(Box.createVerticalStrut(Theme.scale(8)));
         panel.add(createFileRow("Required Interactions File", 1, false));
-        panel.add(Box.createVerticalStrut(8));
+        panel.add(Box.createVerticalStrut(Theme.scale(8)));
         panel.add(createFileRow("Blocked Interactions File", 2, false));
-        panel.add(Box.createVerticalStrut(8));
+        panel.add(Box.createVerticalStrut(Theme.scale(8)));
         panel.add(createFileRow("Interactions Allowed to be Flexible", 3, false));
-        panel.add(Box.createVerticalStrut(8));
+        panel.add(Box.createVerticalStrut(Theme.scale(8)));
         panel.add(createFileRow("Interactions That Must Always Match", 4, false));
-        panel.add(Box.createVerticalStrut(8));
+        panel.add(Box.createVerticalStrut(Theme.scale(8)));
         panel.add(createFileRow("Gene Co-Expression File", 5, true));
-        panel.add(Box.createVerticalStrut(8));
+        panel.add(Box.createVerticalStrut(Theme.scale(8)));
         panel.add(createIntRow("Coexpression Threshold (COEXP_THRESH)", coexpThreshHolder, 0));
-        panel.add(Box.createVerticalStrut(8));
+        panel.add(Box.createVerticalStrut(Theme.scale(8)));
         panel.add(createIntRow("Frozen Threshold (FROZEN_THRESH)", coexpNHolder, 0));
 
         JScrollPane scrollPane = new JScrollPane(panel);
         scrollPane.setBorder(null);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(14);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(Theme.scale(14));
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
         JPanel center = new JPanel(new BorderLayout());
@@ -76,17 +72,18 @@ public class EdgesChooserPanel extends RoundedPanel {
         center.add(scrollPane, BorderLayout.CENTER);
         add(center, BorderLayout.CENTER);
 
-        RoundedButton nextButton    = Theme.navBtn("Next →", 110);
-        RoundedButton goToSessions  = Theme.warningBtn("Sessions", 140);
-        RoundedButton prevButton    = Theme.navBtn("← Prev", 110);
-        RoundedButton saveButton    = Theme.successBtn("Save", 110);
+        RoundedButton nextButton   = Theme.navBtn("Next »", 110);
+        RoundedButton goToSessions = Theme.warningBtn("Sessions", 140);
+        RoundedButton prevButton   = Theme.navBtn("« Prev", 110);
+        RoundedButton saveButton   = Theme.successBtn("Save", 110);
 
         JPanel buttonPanel = new RoundedPanel();
         buttonPanel.setLayout(new GridLayout(1, 2));
         buttonPanel.setBackground(Theme.BG);
 
         buttonPanel.add(new JPanel(new BorderLayout()) {{
-            setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            setBorder(BorderFactory.createEmptyBorder(
+                Theme.scale(10), Theme.scale(10), Theme.scale(10), Theme.scale(10)));
             add(prevButton, BorderLayout.EAST);
             add(goToSessions, BorderLayout.WEST);
             setBackground(Theme.BG);
@@ -94,7 +91,8 @@ public class EdgesChooserPanel extends RoundedPanel {
         }});
 
         buttonPanel.add(new JPanel(new BorderLayout()) {{
-            setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            setBorder(BorderFactory.createEmptyBorder(
+                Theme.scale(10), Theme.scale(10), Theme.scale(10), Theme.scale(10)));
             add(nextButton, BorderLayout.WEST);
             add(saveButton, BorderLayout.EAST);
             setBackground(Theme.BG);
@@ -102,9 +100,7 @@ public class EdgesChooserPanel extends RoundedPanel {
         }});
 
         goToSessions.addActionListener(e -> cardLayout.show(cardPanel, "sessions"));
-
         saveButton.addActionListener(e -> saveToUser(user));
-
         prevButton.addActionListener(e -> cardLayout.show(cardPanel, "threshold"));
 
         nextButton.addActionListener(e -> {
@@ -128,12 +124,13 @@ public class EdgesChooserPanel extends RoundedPanel {
     }
 
     private JPanel createFileRow(String title, int index, boolean csvOnly) {
-        JPanel rowPanel = new JPanel(new BorderLayout(12, 0));
+        JPanel rowPanel = new JPanel(new BorderLayout(Theme.scale(12), 0));
         rowPanel.setBackground(Theme.BG_CARD);
-        rowPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
+        rowPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Theme.scale(60)));
         rowPanel.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Theme.BORDER, 1),
-            BorderFactory.createEmptyBorder(10, 16, 10, 16)));
+            BorderFactory.createEmptyBorder(
+                Theme.scale(10), Theme.scale(16), Theme.scale(10), Theme.scale(16))));
 
         JPanel infoPanel = new JPanel();
         infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
@@ -151,7 +148,7 @@ public class EdgesChooserPanel extends RoundedPanel {
         infoPanel.add(titleLabel);
         infoPanel.add(fileLabels[index]);
 
-        RoundedButton chooseButton = Theme.navBtn("Choose", 110);
+        RoundedButton chooseButton = Theme.navBtn(csvOnly ? "Choose CSV File" : "Choose TXT File", 150);
         chooseButton.addActionListener(e -> {
             JFileChooser chooser = openInWorkDir();
             if (csvOnly) {
@@ -171,12 +168,13 @@ public class EdgesChooserPanel extends RoundedPanel {
     }
 
     private JPanel createIntRow(String title, int[] holder, int holderIdx) {
-        JPanel rowPanel = new JPanel(new BorderLayout(12, 0));
+        JPanel rowPanel = new JPanel(new BorderLayout(Theme.scale(12), 0));
         rowPanel.setBackground(Theme.BG_CARD);
-        rowPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
+        rowPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Theme.scale(60)));
         rowPanel.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Theme.BORDER, 1),
-            BorderFactory.createEmptyBorder(10, 16, 10, 16)));
+            BorderFactory.createEmptyBorder(
+                Theme.scale(10), Theme.scale(16), Theme.scale(10), Theme.scale(16))));
 
         JLabel titleLabel = new JLabel(title);
         titleLabel.setFont(Theme.title(14));
@@ -184,15 +182,13 @@ public class EdgesChooserPanel extends RoundedPanel {
 
         JTextField valueField = new JTextField(String.valueOf(holder[holderIdx]), 5);
         valueField.setFont(Theme.title(14));
-        valueField.setBackground(Color.WHITE);
-        valueField.setForeground(Color.BLACK);
-        valueField.setCaretColor(Color.BLACK);
+        Theme.styleDarkField(valueField);
         valueField.setHorizontalAlignment(JTextField.CENTER);
         valueField.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Theme.BORDER, 1),
-            BorderFactory.createEmptyBorder(2, 6, 2, 6)));
+            BorderFactory.createEmptyBorder(
+                Theme.scale(2), Theme.scale(6), Theme.scale(2), Theme.scale(6))));
 
-        // Sync holder when user types directly
         valueField.addActionListener(e -> {
             try { holder[holderIdx] = Integer.parseInt(valueField.getText().trim()); }
             catch (NumberFormatException ex) { valueField.setText(String.valueOf(holder[holderIdx])); }
@@ -204,12 +200,14 @@ public class EdgesChooserPanel extends RoundedPanel {
             }
         });
 
-        RoundedButton minusBtn = new RoundedButton("−", 8, new Dimension(34, 34));
-        minusBtn.setBackground(Theme.BORDER);
+        RoundedButton minusBtn = new RoundedButton("−", Theme.scale(8),
+            new Dimension(Theme.scale(34), Theme.scale(34)));
+        minusBtn.setBackground(Theme.BG_CARD);
         minusBtn.setForeground(Theme.TEXT_DARK);
         minusBtn.setFont(Theme.title(16));
 
-        RoundedButton plusBtn = new RoundedButton("+", 8, new Dimension(34, 34));
+        RoundedButton plusBtn = new RoundedButton("+", Theme.scale(8),
+            new Dimension(Theme.scale(34), Theme.scale(34)));
         plusBtn.setBackground(Theme.PRIMARY);
         plusBtn.setForeground(Color.WHITE);
         plusBtn.setFont(Theme.title(16));
@@ -223,7 +221,7 @@ public class EdgesChooserPanel extends RoundedPanel {
             valueField.setText(String.valueOf(holder[holderIdx]));
         });
 
-        JPanel controls = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+        JPanel controls = new JPanel(new FlowLayout(FlowLayout.RIGHT, Theme.scale(6), 0));
         controls.setOpaque(false);
         controls.add(minusBtn);
         controls.add(valueField);
@@ -236,6 +234,6 @@ public class EdgesChooserPanel extends RoundedPanel {
 
     private JFileChooser openInWorkDir() {
         String wd = user.getWorkingDirectory();
-        return (wd != null && !wd.trim().isEmpty()) ? new JFileChooser(new java.io.File(wd)) : new JFileChooser();
+        return (wd != null && !wd.trim().isEmpty()) ? new JFileChooser(new File(wd)) : new JFileChooser();
     }
 }

@@ -11,8 +11,8 @@ public class HeaderPanel extends JPanel {
         this.username = username;
         setOpaque(false);
         setLayout(new BorderLayout());
-        setBorder(BorderFactory.createEmptyBorder(8, 16, 8, 12));
-        setPreferredSize(new Dimension(0, 52));
+        setBorder(BorderFactory.createEmptyBorder(Theme.scale(8), Theme.scale(16), Theme.scale(8), Theme.scale(12)));
+        setPreferredSize(new Dimension(0, Theme.scale(52)));
         build(null, null, null);
     }
 
@@ -21,53 +21,57 @@ public class HeaderPanel extends JPanel {
         this.username = username;
         setOpaque(false);
         setLayout(new BorderLayout());
-        setBorder(BorderFactory.createEmptyBorder(8, 16, 8, 12));
-        setPreferredSize(new Dimension(0, 52));
+        setBorder(BorderFactory.createEmptyBorder(Theme.scale(8), Theme.scale(16), Theme.scale(8), Theme.scale(12)));
+        setPreferredSize(new Dimension(0, Theme.scale(52)));
         build(cardLayout, cardPanel, user);
     }
 
     private void build(CardLayout cl, JPanel cp, UserInput user) {
 
         // ── Left: burger (optional) + brand ──────────────────────────────
-        JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, Theme.GAP_SM, 0));
         left.setOpaque(false);
 
         if (cl != null && cp != null && user != null) {
-            RoundedButton burgerBtn = new RoundedButton("☰", 6, new Dimension(34, 30));
+            RoundedButton burgerBtn = new RoundedButton("≡", 6,
+                new Dimension(Theme.scale(34), Theme.scale(30)));
             burgerBtn.setBackground(new Color(255, 255, 255, 40));
             burgerBtn.setForeground(Color.WHITE);
-            burgerBtn.setFont(new Font("SansSerif", Font.BOLD, 16));
+            burgerBtn.setFont(new Font("SansSerif", Font.BOLD, Theme.scale(16)));
             burgerBtn.setToolTipText("Navigate to any step");
             burgerBtn.addActionListener(e -> showNavMenu(burgerBtn, cl, cp, user));
             left.add(burgerBtn);
         }
 
         JLabel brand = new JLabel("FuSION");
-        brand.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        brand.setFont(Theme.title(22));
         brand.setForeground(Color.WHITE);
         left.add(brand);
 
         // ── Right: username chip + window controls ────────────────────────
         JLabel userChip = new JLabel("  👤  " + username + "  ");
-        userChip.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        userChip.setFont(Theme.body(12));
         userChip.setForeground(new Color(210, 220, 255));
 
-        RoundedButton minBtn = new RoundedButton("—", 6, new Dimension(30, 24));
+        RoundedButton minBtn = new RoundedButton("—", 6,
+            new Dimension(Theme.scale(30), Theme.scale(24)));
         minBtn.setBackground(new Color(255, 255, 255, 35));
         minBtn.setForeground(Color.WHITE);
-        minBtn.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        minBtn.setFont(Theme.body(13));
         minBtn.setToolTipText("Minimize");
 
-        RoundedButton maxBtn = new RoundedButton("□", 6, new Dimension(30, 24));
+        RoundedButton maxBtn = new RoundedButton("□", 6,
+            new Dimension(Theme.scale(30), Theme.scale(24)));
         maxBtn.setBackground(new Color(255, 255, 255, 35));
         maxBtn.setForeground(Color.WHITE);
-        maxBtn.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        maxBtn.setFont(Theme.body(13));
         maxBtn.setToolTipText("Maximize");
 
-        RoundedButton closeBtn = new RoundedButton("✕", 6, new Dimension(30, 24));
+        RoundedButton closeBtn = new RoundedButton("x", 6,
+            new Dimension(Theme.scale(30), Theme.scale(24)));
         closeBtn.setBackground(Theme.DANGER);
         closeBtn.setForeground(Color.WHITE);
-        closeBtn.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        closeBtn.setFont(Theme.body(12));
         closeBtn.setToolTipText("Close");
 
         minBtn.addActionListener(e -> {
@@ -94,7 +98,7 @@ public class HeaderPanel extends JPanel {
             }
         });
 
-        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
+        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, Theme.GAP_SM, 0));
         right.setOpaque(false);
         right.add(userChip);
         right.add(minBtn);
@@ -124,16 +128,16 @@ public class HeaderPanel extends JPanel {
         menu.setBackground(Theme.SURFACE);
         menu.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Theme.BORDER_HI, 1),
-            BorderFactory.createEmptyBorder(4, 0, 4, 0)));
+            BorderFactory.createEmptyBorder(Theme.GAP_XS, 0, Theme.GAP_XS, 0)));
 
         for (int i = 0; i < NAV_LABELS.length; i++) {
             final int idx = i;
             JMenuItem item = new JMenuItem(NAV_LABELS[i]);
-            item.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+            item.setFont(Theme.body(13));
             item.setForeground(Theme.TEXT_DARK);
             item.setBackground(Theme.SURFACE);
             item.setOpaque(true);
-            item.setBorder(BorderFactory.createEmptyBorder(6, 16, 6, 24));
+            item.setBorder(BorderFactory.createEmptyBorder(Theme.scale(6), Theme.scale(16), Theme.scale(6), Theme.scale(24)));
             item.addMouseListener(new MouseAdapter() {
                 public void mouseEntered(MouseEvent e) { item.setBackground(Theme.BG_CARD); }
                 public void mouseExited(MouseEvent e)  { item.setBackground(Theme.SURFACE); }

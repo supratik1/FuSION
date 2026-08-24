@@ -11,16 +11,19 @@ public class LoginPage extends JFrame {
     private CardLayout cardLayout;
     private JPanel mainPanel;
 
-    private JTextField loginUsernameField;
+    private JTextField    loginUsernameField;
     private JPasswordField loginPasswordField;
-    private JTextField signupUsernameField;
+    private JTextField    signupUsernameField;
     private JPasswordField signupPasswordField;
-    private JTextField emailField;
+    private JTextField    emailField;
     private RoundedButton loginButton;
     private RoundedButton signupButton;
+
     private static final String USER_DATA_FILE = "fusion_users.dat";
     private Map<String, UserData> userDatabase = new HashMap<>();
-    private final ImageIcon userIcon = new ImageIcon(getClass().getResource("/icons8-male-user-50.png"));
+
+    private final int[] drag = {0, 0};
+    private MouseAdapter dragger;
 
     public LoginPage() {
         initComponents();
@@ -31,553 +34,439 @@ public class LoginPage extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setUndecorated(true);
         setResizable(true);
-        setSize(700, 850);
-        setMinimumSize(new Dimension(500, 600));
+        setSize(Theme.scale(700), Theme.scale(850));
+        setMinimumSize(new Dimension(Theme.scale(500), Theme.scale(620)));
         setLocationRelativeTo(null);
 
+        dragger = new MouseAdapter() {
+            @Override public void mousePressed(MouseEvent e) {
+                drag[0] = e.getXOnScreen() - getX();
+                drag[1] = e.getYOnScreen() - getY();
+            }
+            @Override public void mouseDragged(MouseEvent e) {
+                if ((getExtendedState() & JFrame.MAXIMIZED_BOTH) == 0)
+                    setLocation(e.getXOnScreen() - drag[0], e.getYOnScreen() - drag[1]);
+            }
+        };
+
+        // ── Gradient background ───────────────────────────────
+        JPanel bg = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(6, 13, 22));
+                g2.fillRect(0, 0, getWidth(), getHeight());
+                paintGlow(g2, (int)(getWidth() * 0.30f), (int)(getHeight() * 0.20f),
+                              (int)(getWidth() * 0.58f), new Color(37, 99, 235, 55));
+                paintGlow(g2, (int)(getWidth() * 0.75f), (int)(getHeight() * 0.80f),
+                              (int)(getWidth() * 0.50f), new Color(15, 50, 110, 76));
+                g2.dispose();
+            }
+            private void paintGlow(Graphics2D g2, int cx, int cy, int r, Color c) {
+                RadialGradientPaint p = new RadialGradientPaint(cx, cy, r,
+                    new float[]{0f, 1f}, new Color[]{c, new Color(0, 0, 0, 0)});
+                g2.setPaint(p);
+                g2.fillRect(0, 0, getWidth(), getHeight());
+            }
+        };
+        bg.setLayout(new BorderLayout());
+        bg.addMouseListener(dragger);
+        bg.addMouseMotionListener(dragger);
+
+        // ── Window controls (top-right) ───────────────────────
+        JPanel topBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, Theme.GAP_MD, Theme.GAP_SM));
+        topBar.setOpaque(false);
+
+        JLabel maxIcon = winBtn("□");
+        maxIcon.addMouseListener(new MouseAdapter() {
+            @Override public void mouseClicked(MouseEvent e) {
+                boolean mx = (getExtendedState() & JFrame.MAXIMIZED_BOTH) == JFrame.MAXIMIZED_BOTH;
+                setExtendedState(mx ? JFrame.NORMAL : JFrame.MAXIMIZED_BOTH);
+                maxIcon.setText(mx ? "□" : "❐");
+            }
+            @Override public void mouseEntered(MouseEvent e) { maxIcon.setForeground(new Color(90, 140, 190)); }
+            @Override public void mouseExited(MouseEvent e)  { maxIcon.setForeground(new Color(72, 110, 148)); }
+        });
+
+        JLabel closeIcon = winBtn("x");
+        closeIcon.addMouseListener(new MouseAdapter() {
+            @Override public void mouseClicked(MouseEvent e) { dispose(); }
+            @Override public void mouseEntered(MouseEvent e) { closeIcon.setForeground(new Color(239, 68, 68)); }
+            @Override public void mouseExited(MouseEvent e)  { closeIcon.setForeground(new Color(72, 110, 148)); }
+        });
+
+        topBar.add(maxIcon);
+        topBar.add(closeIcon);
+        bg.add(topBar, BorderLayout.NORTH);
+
+        // ── Centred card layout ───────────────────────────────
         cardLayout = new CardLayout();
-        mainPanel = new JPanel();
-        mainPanel.setLayout(cardLayout);
-        mainPanel.setBackground(Theme.BG);
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(80, 120, 80, 120));
+        mainPanel = new JPanel(cardLayout);
+        mainPanel.setOpaque(false);
+        mainPanel.add(createLoginPanel(), "login");
+        mainPanel.add(createSignupPanel(), "signup");
 
-        RoundedPanel loginPanel = createLoginPanel();
-        RoundedPanel signupPanel = createSignupPanel();
+        JPanel center = new JPanel(new GridBagLayout());
+        center.setOpaque(false);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.anchor = GridBagConstraints.CENTER;
+        center.add(mainPanel, gbc);
+        bg.add(center, BorderLayout.CENTER);
 
-        mainPanel.add(loginPanel, "login");
-        mainPanel.add(signupPanel, "signup");
-        add(mainPanel);
+        add(bg);
     }
 
-    private RoundedPanel createLoginPanel() {
-        RoundedPanel panel = new RoundedPanel();
-        panel.setLayout(new BorderLayout());
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 40, 40, 40));
+    // ── Glass card factory ────────────────────────────────────
 
-        // Header with app name and close button
-        JPanel header = new JPanel(new BorderLayout());
-        header.setOpaque(false);
-        JLabel appName = new JLabel("FuSION");
-        appName.setFont(Theme.title(36));
-        appName.setForeground(Theme.PRIMARY);
-
-        JLabel maxIcon = new JLabel("\u25a1");
-        maxIcon.setFont(new Font("SansSerif", Font.BOLD, 16));
-        maxIcon.setForeground(Theme.TEXT_LIGHT);
-        maxIcon.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        maxIcon.setToolTipText("Maximize / Restore");
-        maxIcon.addMouseListener(new MouseAdapter() {
+    private JPanel glassCard(int w) {
+        JPanel p = new JPanel() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-                if ((LoginPage.this.getExtendedState() & JFrame.MAXIMIZED_BOTH) == JFrame.MAXIMIZED_BOTH) {
-                    LoginPage.this.setExtendedState(JFrame.NORMAL);
-                    maxIcon.setText("\u25a1");
-                } else {
-                    LoginPage.this.setExtendedState(JFrame.MAXIMIZED_BOTH);
-                    maxIcon.setText("\u2750");
-                }
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(15, 28, 46, 218));
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 28, 28);
+                g2.setColor(new Color(59, 130, 246, 46));
+                g2.setStroke(new BasicStroke(1f));
+                g2.drawRoundRect(0, 0, getWidth()-1, getHeight()-1, 28, 28);
+                g2.setColor(new Color(255, 255, 255, 13));
+                g2.drawLine(14, 1, getWidth()-14, 1);
+                g2.dispose();
             }
-        });
+            @Override public boolean isOpaque() { return false; }
+        };
+        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+        p.setBorder(BorderFactory.createEmptyBorder(Theme.scale(34), Theme.scale(36), Theme.scale(30), Theme.scale(36)));
+        p.setMinimumSize(new Dimension(Theme.scale(w), 0));
+        p.addMouseListener(dragger);
+        p.addMouseMotionListener(dragger);
+        return p;
+    }
 
-        JLabel closeIcon = new JLabel("\u2716");
-        closeIcon.setFont(new Font("SansSerif", Font.BOLD, 18));
-        closeIcon.setForeground(Theme.TEXT_LIGHT);
-        closeIcon.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        closeIcon.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                dispose();
-            }
-        });
+    // ── Login panel ───────────────────────────────────────────
 
-        JPanel winControls = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        winControls.setOpaque(false);
-        winControls.add(maxIcon);
-        winControls.add(closeIcon);
+    private JPanel createLoginPanel() {
+        JPanel p = glassCard(380);
 
-        final int[] loginDragStart = {0, 0};
-        header.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) { loginDragStart[0] = e.getX(); loginDragStart[1] = e.getY(); }
-            @Override
-            public void mouseClicked(MouseEvent e) { if (e.getClickCount() == 2) maxIcon.dispatchEvent(e); }
-        });
-        header.addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                if ((LoginPage.this.getExtendedState() & JFrame.MAXIMIZED_BOTH) == 0) {
-                    Point loc = LoginPage.this.getLocation();
-                    LoginPage.this.setLocation(loc.x + e.getX() - loginDragStart[0],
-                                               loc.y + e.getY() - loginDragStart[1]);
-                }
-            }
-        });
+        JLabel mark = new JLabel("FuSION");
+        mark.setFont(Theme.title(26));
+        mark.setForeground(new Color(96, 165, 250));
+        mark.setAlignmentX(LEFT_ALIGNMENT);
+        p.add(mark);
+        p.add(Box.createVerticalStrut(Theme.scale(22)));
 
-        header.add(appName, BorderLayout.CENTER);
-        header.add(winControls, BorderLayout.EAST);
+        JLabel heading = new JLabel("Welcome back");
+        heading.setFont(Theme.title(15));
+        heading.setForeground(new Color(192, 216, 244));
+        heading.setAlignmentX(LEFT_ALIGNMENT);
+        p.add(heading);
+        p.add(Box.createVerticalStrut(Theme.scale(3)));
 
-        panel.add(header, BorderLayout.NORTH);
+        JLabel sub = new JLabel("Sign in to your account");
+        sub.setFont(Theme.body(11));
+        sub.setForeground(Theme.TEXT_MED);
+        sub.setAlignmentX(LEFT_ALIGNMENT);
+        p.add(sub);
+        p.add(Box.createVerticalStrut(Theme.scale(24)));
 
-        // Body
-        JPanel bodyPanel = new JPanel();
-        bodyPanel.setOpaque(false);
-        bodyPanel.setLayout(new BoxLayout(bodyPanel, BoxLayout.Y_AXIS));
-        bodyPanel.setBorder(BorderFactory.createEmptyBorder(30, 50, 20, 50));
+        p.add(glassLabel("Username"));
+        p.add(Box.createVerticalStrut(Theme.scale(5)));
+        loginUsernameField = glassField();
+        loginUsernameField.setAlignmentX(LEFT_ALIGNMENT);
+        p.add(loginUsernameField);
+        p.add(Box.createVerticalStrut(Theme.scale(13)));
 
-        // Icon centered
-        JLabel iconLabel = new JLabel(userIcon);
-        iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        bodyPanel.add(iconLabel);
-        bodyPanel.add(Box.createVerticalStrut(8));
+        p.add(glassLabel("Password"));
+        p.add(Box.createVerticalStrut(Theme.scale(5)));
+        loginPasswordField = glassPassField();
+        loginPasswordField.setAlignmentX(LEFT_ALIGNMENT);
+        p.add(loginPasswordField);
+        p.add(Box.createVerticalStrut(Theme.scale(6)));
 
-        JLabel subtitle = new JLabel("Sign in to your account");
-        subtitle.setFont(Theme.body(13));
-        subtitle.setForeground(Theme.TEXT_MED);
-        subtitle.setAlignmentX(Component.CENTER_ALIGNMENT);
-        bodyPanel.add(subtitle);
-        bodyPanel.add(Box.createVerticalStrut(24));
+        // Forgot password — accessible JButton styled as link
+        JPanel forgotRow = new JPanel(new BorderLayout());
+        forgotRow.setOpaque(false);
+        forgotRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, Theme.scale(22)));
+        forgotRow.setAlignmentX(LEFT_ALIGNMENT);
+        JButton forgot = new JButton("Forgot password?");
+        forgot.setFont(Theme.body(11));
+        forgot.setForeground(Theme.PRIMARY);
+        forgot.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        forgot.setContentAreaFilled(false);
+        forgot.setBorderPainted(false);
+        forgot.setFocusPainted(true);
+        forgot.setOpaque(false);
+        forgot.addActionListener(e -> JOptionPane.showMessageDialog(LoginPage.this,
+            "Please contact your administrator to reset your password.",
+            "Forgot Password", JOptionPane.INFORMATION_MESSAGE));
+        forgotRow.add(forgot, BorderLayout.EAST);
+        p.add(forgotRow);
+        p.add(Box.createVerticalStrut(Theme.scale(16)));
 
-        // Username field \u2014 label above field
-        JPanel usernameBlock = new JPanel();
-        usernameBlock.setLayout(new BoxLayout(usernameBlock, BoxLayout.Y_AXIS));
-        usernameBlock.setOpaque(false);
-        usernameBlock.setMaximumSize(new Dimension(310, 70));
-        usernameBlock.setAlignmentX(Component.CENTER_ALIGNMENT);
-        JLabel userLabel = new JLabel("Username");
-        userLabel.setFont(Theme.body(13));
-        userLabel.setForeground(Theme.TEXT_MED);
-        userLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        loginUsernameField = createStyledTextField();
-        loginUsernameField.setAlignmentX(Component.LEFT_ALIGNMENT);
-        usernameBlock.add(userLabel);
-        usernameBlock.add(Box.createVerticalStrut(4));
-        usernameBlock.add(loginUsernameField);
-        bodyPanel.add(usernameBlock);
-        bodyPanel.add(Box.createVerticalStrut(16));
+        JLabel status = new JLabel(" ");
+        status.setFont(Theme.body(12));
+        status.setForeground(Theme.DANGER);
+        status.setAlignmentX(LEFT_ALIGNMENT);
+        status.setMaximumSize(new Dimension(Integer.MAX_VALUE, Theme.scale(18)));
+        p.add(status);
+        p.add(Box.createVerticalStrut(Theme.scale(6)));
 
-        // Password field \u2014 label above field
-        JPanel passwordBlock = new JPanel();
-        passwordBlock.setLayout(new BoxLayout(passwordBlock, BoxLayout.Y_AXIS));
-        passwordBlock.setOpaque(false);
-        passwordBlock.setMaximumSize(new Dimension(310, 70));
-        passwordBlock.setAlignmentX(Component.CENTER_ALIGNMENT);
-        JLabel passLabel = new JLabel("Password");
-        passLabel.setFont(Theme.body(13));
-        passLabel.setForeground(Theme.TEXT_MED);
-        passLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        loginPasswordField = createStyledPasswordField();
-        loginPasswordField.setAlignmentX(Component.LEFT_ALIGNMENT);
-        passwordBlock.add(passLabel);
-        passwordBlock.add(Box.createVerticalStrut(4));
-        passwordBlock.add(loginPasswordField);
-        bodyPanel.add(passwordBlock);
-        bodyPanel.add(Box.createVerticalStrut(12));
-
-        // Status label
-        JLabel statusLabel = new JLabel(" ");
-        statusLabel.setFont(Theme.body(13));
-        statusLabel.setForeground(Theme.DANGER);
-        statusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        bodyPanel.add(statusLabel);
-        bodyPanel.add(Box.createVerticalStrut(10));
-
-        // Login button
-        loginButton = createStyledButton("Sign In");
+        loginButton = glassBtn("Sign In");
         loginButton.addActionListener(e -> {
-            String username = loginUsernameField.getText();
-            String password = new String(loginPasswordField.getPassword());
-
-            if (authenticateUser(username, password)) {
+            String uname = loginUsernameField.getText().trim();
+            String pwd   = new String(loginPasswordField.getPassword());
+            if (authenticateUser(uname, pwd)) {
                 dispose();
-                File sessionsDir = new File("frontend/sessions");
-
-                if (!sessionsDir.exists()) {
-                    sessionsDir.mkdirs();
+                java.io.File dir = new java.io.File("frontend/sessions");
+                if (!dir.exists()) dir.mkdirs();
+                java.io.File uf = new java.io.File(dir, uname + ".json");
+                if (!uf.exists()) {
+                    try (FileWriter fw = new FileWriter(uf)) { fw.write("[]"); }
+                    catch (IOException err) { err.printStackTrace(); }
                 }
-
-                // Create the user file
-                File userFile = new File(sessionsDir, username + ".json");
-                if (!userFile.exists()) {
-                    try (FileWriter fw = new FileWriter(userFile)) {
-                        fw.write("[]"); // valid empty JSON array
-                    } catch (IOException err) {
-                        err.printStackTrace();
-                    }
-                }
-                SwingUtilities.invokeLater(() -> new SessionFrame(username).setVisible(true));
+                SwingUtilities.invokeLater(() -> new SessionFrame(uname).setVisible(true));
             } else {
-                statusLabel.setText("Invalid username or password");
+                status.setText("Invalid username or password");
                 loginUsernameField.setText("");
                 loginPasswordField.setText("");
-                JOptionPane.showMessageDialog(null, "Wrong password!", "Login Error", JOptionPane.ERROR_MESSAGE);
             }
         });
-        bodyPanel.add(loginButton);
-        bodyPanel.add(Box.createVerticalStrut(20));
+        p.add(loginButton);
+        p.add(Box.createVerticalStrut(Theme.scale(14)));
 
-        // Switch to signup
-        JLabel switchBtn = new JLabel("Don't have an account? Sign up");
-        switchBtn.setFont(Theme.body(13));
-        switchBtn.setForeground(Theme.PRIMARY);
-        switchBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        switchBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
-        switchBtn.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                cardLayout.show(mainPanel, "signup");
-            }
+        JLabel sw = new JLabel("Don't have an account? Sign up");
+        sw.setFont(Theme.body(12));
+        sw.setForeground(Theme.PRIMARY);
+        sw.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        sw.setAlignmentX(LEFT_ALIGNMENT);
+        sw.addMouseListener(new MouseAdapter() {
+            @Override public void mouseClicked(MouseEvent e) { cardLayout.show(mainPanel, "signup"); }
         });
-        bodyPanel.add(switchBtn);
+        p.add(sw);
 
-        panel.add(bodyPanel, BorderLayout.CENTER);
-        return panel;
+        return p;
     }
 
-    private RoundedPanel createSignupPanel() {
-        RoundedPanel panel = new RoundedPanel();
-        panel.setBackground(Color.WHITE);
-        panel.setLayout(new BorderLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 40, 40, 40));
+    // ── Signup panel ──────────────────────────────────────────
 
-        // Header
-        JPanel header = new JPanel(new BorderLayout());
-        header.setOpaque(false);
-        JLabel appName = new JLabel("FuSION");
-        appName.setFont(Theme.title(36));
-        appName.setForeground(Theme.PRIMARY);
+    private JPanel createSignupPanel() {
+        JPanel p = glassCard(380);
 
-        JLabel maxIcon2 = new JLabel("\u25a1");
-        maxIcon2.setFont(new Font("SansSerif", Font.BOLD, 16));
-        maxIcon2.setForeground(Theme.TEXT_LIGHT);
-        maxIcon2.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        maxIcon2.setToolTipText("Maximize / Restore");
-        maxIcon2.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if ((LoginPage.this.getExtendedState() & JFrame.MAXIMIZED_BOTH) == JFrame.MAXIMIZED_BOTH) {
-                    LoginPage.this.setExtendedState(JFrame.NORMAL);
-                    maxIcon2.setText("\u25a1");
-                } else {
-                    LoginPage.this.setExtendedState(JFrame.MAXIMIZED_BOTH);
-                    maxIcon2.setText("\u2750");
-                }
-            }
-        });
+        JLabel mark = new JLabel("FuSION");
+        mark.setFont(Theme.title(26));
+        mark.setForeground(new Color(96, 165, 250));
+        mark.setAlignmentX(LEFT_ALIGNMENT);
+        p.add(mark);
+        p.add(Box.createVerticalStrut(Theme.scale(18)));
 
-        JLabel closeIcon = new JLabel("\u2716");
-        closeIcon.setFont(new Font("SansSerif", Font.BOLD, 18));
-        closeIcon.setForeground(Theme.TEXT_LIGHT);
-        closeIcon.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        closeIcon.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                dispose();
-            }
-        });
+        JLabel heading = new JLabel("Create an account");
+        heading.setFont(Theme.title(15));
+        heading.setForeground(new Color(192, 216, 244));
+        heading.setAlignmentX(LEFT_ALIGNMENT);
+        p.add(heading);
+        p.add(Box.createVerticalStrut(Theme.scale(3)));
 
-        JPanel winControls2 = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        winControls2.setOpaque(false);
-        winControls2.add(maxIcon2);
-        winControls2.add(closeIcon);
+        JLabel sub = new JLabel("Fill in the details below to get started");
+        sub.setFont(Theme.body(11));
+        sub.setForeground(Theme.TEXT_MED);
+        sub.setAlignmentX(LEFT_ALIGNMENT);
+        p.add(sub);
+        p.add(Box.createVerticalStrut(Theme.scale(20)));
 
-        final int[] signupDragStart = {0, 0};
-        header.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent e) { signupDragStart[0] = e.getX(); signupDragStart[1] = e.getY(); }
-        });
-        header.addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
-            public void mouseDragged(MouseEvent e) {
-                if ((LoginPage.this.getExtendedState() & JFrame.MAXIMIZED_BOTH) == 0) {
-                    Point loc = LoginPage.this.getLocation();
-                    LoginPage.this.setLocation(loc.x + e.getX() - signupDragStart[0],
-                                               loc.y + e.getY() - signupDragStart[1]);
-                }
-            }
-        });
+        p.add(glassLabel("Username"));
+        p.add(Box.createVerticalStrut(Theme.scale(5)));
+        signupUsernameField = glassField();
+        signupUsernameField.setAlignmentX(LEFT_ALIGNMENT);
+        p.add(signupUsernameField);
+        p.add(Box.createVerticalStrut(Theme.scale(11)));
 
-        header.add(appName, BorderLayout.WEST);
-        header.add(winControls2, BorderLayout.EAST);
+        p.add(glassLabel("Email"));
+        p.add(Box.createVerticalStrut(Theme.scale(5)));
+        emailField = glassField();
+        emailField.setAlignmentX(LEFT_ALIGNMENT);
+        p.add(emailField);
+        p.add(Box.createVerticalStrut(Theme.scale(11)));
 
-        panel.add(header, BorderLayout.NORTH);
+        p.add(glassLabel("Password"));
+        p.add(Box.createVerticalStrut(Theme.scale(5)));
+        signupPasswordField = glassPassField();
+        signupPasswordField.setAlignmentX(LEFT_ALIGNMENT);
+        p.add(signupPasswordField);
+        p.add(Box.createVerticalStrut(Theme.scale(11)));
 
-        // Body
-        JPanel body = new JPanel();
-        body.setOpaque(false);
-        body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
-        body.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
+        JPasswordField cnfPass = glassPassField();
+        p.add(glassLabel("Confirm Password"));
+        p.add(Box.createVerticalStrut(Theme.scale(5)));
+        cnfPass.setAlignmentX(LEFT_ALIGNMENT);
+        p.add(cnfPass);
+        p.add(Box.createVerticalStrut(Theme.scale(8)));
 
-        JLabel iconLabel = new JLabel(userIcon);
-        iconLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        body.add(iconLabel);
-        body.add(Box.createVerticalStrut(6));
+        JLabel status = new JLabel(" ");
+        status.setFont(Theme.body(12));
+        status.setForeground(Theme.DANGER);
+        status.setAlignmentX(LEFT_ALIGNMENT);
+        status.setMaximumSize(new Dimension(Integer.MAX_VALUE, Theme.scale(18)));
+        p.add(status);
+        p.add(Box.createVerticalStrut(Theme.scale(6)));
 
-        JLabel subtitle2 = new JLabel("Create a new account");
-        subtitle2.setFont(Theme.body(13));
-        subtitle2.setForeground(Theme.TEXT_MED);
-        subtitle2.setAlignmentX(Component.CENTER_ALIGNMENT);
-        body.add(subtitle2);
-        body.add(Box.createVerticalStrut(18));
-
-        // Username
-        JPanel userBlock = new JPanel();
-        userBlock.setLayout(new BoxLayout(userBlock, BoxLayout.Y_AXIS));
-        userBlock.setOpaque(false);
-        userBlock.setMaximumSize(new Dimension(310, 70));
-        userBlock.setAlignmentX(Component.CENTER_ALIGNMENT);
-        JLabel signuserLabel = new JLabel("Username");
-        signuserLabel.setFont(Theme.body(13));
-        signuserLabel.setForeground(Theme.TEXT_MED);
-        signuserLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        signupUsernameField = createStyledTextField();
-        signupUsernameField.setAlignmentX(Component.LEFT_ALIGNMENT);
-        userBlock.add(signuserLabel);
-        userBlock.add(Box.createVerticalStrut(4));
-        userBlock.add(signupUsernameField);
-        body.add(userBlock);
-        body.add(Box.createVerticalStrut(12));
-
-        // Email
-        JPanel emailBlock = new JPanel();
-        emailBlock.setLayout(new BoxLayout(emailBlock, BoxLayout.Y_AXIS));
-        emailBlock.setOpaque(false);
-        emailBlock.setMaximumSize(new Dimension(310, 70));
-        emailBlock.setAlignmentX(Component.CENTER_ALIGNMENT);
-        JLabel emailLabel = new JLabel("Email");
-        emailLabel.setFont(Theme.body(13));
-        emailLabel.setForeground(Theme.TEXT_MED);
-        emailLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        emailField = createStyledTextField();
-        emailField.setAlignmentX(Component.LEFT_ALIGNMENT);
-        emailBlock.add(emailLabel);
-        emailBlock.add(Box.createVerticalStrut(4));
-        emailBlock.add(emailField);
-        body.add(emailBlock);
-        body.add(Box.createVerticalStrut(12));
-
-        // Password
-        JPanel passBlock = new JPanel();
-        passBlock.setLayout(new BoxLayout(passBlock, BoxLayout.Y_AXIS));
-        passBlock.setOpaque(false);
-        passBlock.setMaximumSize(new Dimension(310, 70));
-        passBlock.setAlignmentX(Component.CENTER_ALIGNMENT);
-        JLabel signpassLabel = new JLabel("Password");
-        signpassLabel.setFont(Theme.body(13));
-        signpassLabel.setForeground(Theme.TEXT_MED);
-        signpassLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        signupPasswordField = createStyledPasswordField();
-        signupPasswordField.setAlignmentX(Component.LEFT_ALIGNMENT);
-        passBlock.add(signpassLabel);
-        passBlock.add(Box.createVerticalStrut(4));
-        passBlock.add(signupPasswordField);
-        body.add(passBlock);
-        body.add(Box.createVerticalStrut(12));
-
-        // Confirm password
-        JPanel cnfBlock = new JPanel();
-        cnfBlock.setLayout(new BoxLayout(cnfBlock, BoxLayout.Y_AXIS));
-        cnfBlock.setOpaque(false);
-        cnfBlock.setMaximumSize(new Dimension(310, 70));
-        cnfBlock.setAlignmentX(Component.CENTER_ALIGNMENT);
-        JLabel cnfpassLabel = new JLabel("Confirm Password");
-        cnfpassLabel.setFont(Theme.body(13));
-        cnfpassLabel.setForeground(Theme.TEXT_MED);
-        cnfpassLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        JPasswordField cnfpasswordField = createStyledPasswordField();
-        cnfpasswordField.setAlignmentX(Component.LEFT_ALIGNMENT);
-        cnfBlock.add(cnfpassLabel);
-        cnfBlock.add(Box.createVerticalStrut(4));
-        cnfBlock.add(cnfpasswordField);
-        body.add(cnfBlock);
-        body.add(Box.createVerticalStrut(10));
-
-        // Status
-        JLabel statusLabel = new JLabel(" ");
-        statusLabel.setFont(Theme.body(13));
-        statusLabel.setForeground(Theme.DANGER);
-        statusLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        body.add(statusLabel);
-        body.add(Box.createVerticalStrut(8));
-
-        // Signup button
-        signupButton = createStyledButton("Sign Up");
+        signupButton = glassBtn("Sign Up");
         signupButton.addActionListener(e -> {
-            String email = emailField.getText();
-            String username = signupUsernameField.getText();
-            String password = new String(signupPasswordField.getPassword());
-            String confirmPassword = new String(cnfpasswordField.getPassword());
+            String email = emailField.getText().trim();
+            String uname = signupUsernameField.getText().trim();
+            String pwd   = new String(signupPasswordField.getPassword());
+            String conf  = new String(cnfPass.getPassword());
 
-            if (email.isEmpty() || username.isEmpty() || password.isEmpty()) {
-                statusLabel.setText("All fields are required");
-                return;
+            if (email.isEmpty() || uname.isEmpty() || pwd.isEmpty()) {
+                status.setText("All fields are required"); return;
+            }
+            if (!pwd.equals(conf)) { status.setText("Passwords do not match"); return; }
+            if (userDatabase.containsKey(uname)) { status.setText("Username already exists"); return; }
+
+            UserData nd = new UserData();
+            nd.setUsername(uname); nd.setEmail(email); nd.setPasswordHash(hashPassword(pwd));
+
+            java.io.File dir = new java.io.File("frontend/sessions");
+            if (!dir.exists()) dir.mkdirs();
+            java.io.File uf = new java.io.File(dir, uname + ".json");
+            if (!uf.exists()) {
+                try (FileWriter fw = new FileWriter(uf)) { fw.write("[]"); }
+                catch (IOException err) { err.printStackTrace(); }
             }
 
-            if (!password.equals(confirmPassword)) {
-                statusLabel.setText("Passwords do not match");
-                return;
-            }
-
-            if (userDatabase.containsKey(username)) {
-                statusLabel.setText("User already exists");
-                return;
-            }
-
-            UserData newUser = new UserData();
-            newUser.setUsername(username);
-            newUser.setEmail(email);
-            newUser.setPasswordHash(hashPassword(password));
-
-            File sessionsDir = new File("frontend/sessions");
-
-            if (!sessionsDir.exists()) {
-                sessionsDir.mkdirs();
-            }
-
-            // Create the user file
-            File userFile = new File(sessionsDir, username + ".json");
-            if (!userFile.exists()) {
-                try (FileWriter fw = new FileWriter(userFile)) {
-                    fw.write("[]"); //  valid empty JSON array
-                } catch (IOException err) {
-                    err.printStackTrace();
-                }
-            }
-
-            userDatabase.put(username, newUser);
+            userDatabase.put(uname, nd);
             saveUserData();
-
-            JOptionPane.showMessageDialog(this, "Account created successfully!");
-            signupUsernameField.setText("");
-            emailField.setText("");
-            signupPasswordField.setText("");
-            cnfpasswordField.setText("");
-            statusLabel.setText(" ");
+            JOptionPane.showMessageDialog(this, "Account created! You can now sign in.");
+            signupUsernameField.setText(""); emailField.setText("");
+            signupPasswordField.setText(""); cnfPass.setText(""); status.setText(" ");
             cardLayout.show(mainPanel, "login");
         });
-        body.add(signupButton);
-        body.add(Box.createVerticalStrut(20));
+        p.add(signupButton);
+        p.add(Box.createVerticalStrut(Theme.scale(12)));
 
-        // Switch to login
-        JLabel switchBtn = new JLabel("Already have an account? Sign in");
-        switchBtn.setFont(Theme.body(13));
-        switchBtn.setForeground(Theme.PRIMARY);
-        switchBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        switchBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
-        switchBtn.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                cardLayout.show(mainPanel, "login");
-            }
+        JLabel sw = new JLabel("Already have an account? Sign in");
+        sw.setFont(Theme.body(12));
+        sw.setForeground(Theme.PRIMARY);
+        sw.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        sw.setAlignmentX(LEFT_ALIGNMENT);
+        sw.addMouseListener(new MouseAdapter() {
+            @Override public void mouseClicked(MouseEvent e) { cardLayout.show(mainPanel, "login"); }
         });
-        body.add(switchBtn);
+        p.add(sw);
 
-        panel.add(body, BorderLayout.CENTER);
-        return panel;
+        return p;
     }
 
-    // Style helpers
-    private JTextField createStyledTextField() {
-        JTextField tf = new JTextField();
-        tf.setPreferredSize(new Dimension(310, 40));
-        tf.setBackground(Color.WHITE);
-        tf.setForeground(Color.BLACK);
-        tf.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        tf.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 2, 0, Theme.PRIMARY),
-            BorderFactory.createEmptyBorder(5, 10, 5, 10)));
-        return tf;
+    // ── Shared form element helpers ───────────────────────────
+
+    private JLabel glassLabel(String text) {
+        JLabel l = new JLabel(text.toUpperCase());
+        l.setFont(Theme.title(11));
+        l.setForeground(Theme.TEXT_MED);
+        l.setAlignmentX(LEFT_ALIGNMENT);
+        return l;
     }
 
-    private JPasswordField createStyledPasswordField() {
-        JPasswordField pf = new JPasswordField();
-        pf.setPreferredSize(new Dimension(310, 40));
-        pf.setBackground(Color.WHITE);
-        pf.setForeground(Color.BLACK);
-        pf.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        pf.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createMatteBorder(0, 0, 2, 0, Theme.PRIMARY),
-            BorderFactory.createEmptyBorder(5, 10, 5, 10)));
-        return pf;
+    private JTextField glassField() {
+        JTextField f = new JTextField();
+        styleGlassField(f);
+        return f;
     }
 
-    private RoundedButton createStyledButton(String text) {
-        // RoundedButton uses custom paintComponent so background/foreground
-        // work identically on all platforms (macOS Aqua L&F ignores setBackground
-        // on plain JButton, making white text invisible on white button).
-        RoundedButton btn = new RoundedButton(text, 20, new Dimension(310, 50));
-        btn.setBackground(Theme.PRIMARY);
-        btn.setForeground(Color.WHITE);
-        btn.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        btn.setAlignmentX(Component.CENTER_ALIGNMENT);
-        return btn;
+    private JPasswordField glassPassField() {
+        JPasswordField f = new JPasswordField();
+        styleGlassField(f);
+        return f;
     }
 
-    // Authentication and persistence
+    private void styleGlassField(JTextField f) {
+        f.setColumns(22);
+        f.setMaximumSize(new Dimension(Integer.MAX_VALUE, Theme.scale(40)));
+        f.setMargin(new Insets(Theme.scale(8), Theme.scale(12), Theme.scale(8), Theme.scale(12)));
+        f.setBackground(new Color(8, 16, 26));
+        f.setForeground(new Color(192, 216, 244));
+        f.setCaretColor(Theme.PRIMARY);
+        f.setFont(Theme.body(13));
+        f.setOpaque(true);
+
+        javax.swing.border.Border nb = BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(new Color(59, 130, 246, 51), 1),
+            BorderFactory.createEmptyBorder(Theme.scale(8), Theme.scale(14), Theme.scale(8), Theme.scale(14)));
+        javax.swing.border.Border fb = BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Theme.PRIMARY, 1),
+            BorderFactory.createEmptyBorder(Theme.scale(7), Theme.scale(13), Theme.scale(7), Theme.scale(13)));
+        f.setBorder(nb);
+        f.addFocusListener(new FocusAdapter() {
+            @Override public void focusGained(FocusEvent e) { f.setBorder(fb); }
+            @Override public void focusLost(FocusEvent e)   { f.setBorder(nb); }
+        });
+    }
+
+    private RoundedButton glassBtn(String text) {
+        RoundedButton b = new RoundedButton(text, 8, new Dimension(Integer.MAX_VALUE, Theme.scale(42)));
+        b.setBackground(Theme.PRIMARY);
+        b.setForeground(Color.WHITE);
+        b.setFont(Theme.title(14));
+        b.setAlignmentX(LEFT_ALIGNMENT);
+        b.setMaximumSize(new Dimension(Integer.MAX_VALUE, Theme.scale(42)));
+        return b;
+    }
+
+    private JLabel winBtn(String text) {
+        JLabel l = new JLabel(text);
+        l.setFont(new Font("SansSerif", Font.BOLD, Theme.scale(14)));
+        l.setForeground(new Color(72, 110, 148));
+        l.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        return l;
+    }
+
+    // ── Auth + persistence ────────────────────────────────────
+
     private boolean authenticateUser(String username, String password) {
         if (!userDatabase.containsKey(username)) return false;
-        UserData user = userDatabase.get(username);
-        return hashPassword(password).equals(user.getPasswordHash());
+        return hashPassword(password).equals(userDatabase.get(username).getPasswordHash());
     }
 
     private String hashPassword(String password) {
         try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(password.getBytes());
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hash) {
-                String hex = Integer.toHexString(0xff & b);
-                if (hex.length() == 1) hexString.append('0');
-                hexString.append(hex);
-            }
-            return hexString.toString();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            return null;
-        }
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(password.getBytes());
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hash) { String h = Integer.toHexString(0xff & b); if (h.length() == 1) sb.append('0'); sb.append(h); }
+            return sb.toString();
+        } catch (NoSuchAlgorithmException e) { return null; }
     }
 
     @SuppressWarnings("unchecked")
     private void loadUserData() {
-        File file = new File(USER_DATA_FILE);
-        if (!file.exists()) return;
-        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+        java.io.File f = new java.io.File(USER_DATA_FILE);
+        if (!f.exists()) return;
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(f))) {
             userDatabase = (HashMap<String, UserData>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error loading user data: " + e.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
-        }
+        } catch (IOException | ClassNotFoundException e) { e.printStackTrace(); }
     }
 
     private void saveUserData() {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(USER_DATA_FILE))) {
             oos.writeObject(userDatabase);
-        } catch (IOException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error saving user data: " + e.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
-        }
+        } catch (IOException e) { e.printStackTrace(); }
     }
 
     private static class UserData implements Serializable {
         private static final long serialVersionUID = 1L;
-        private String username;
-        private String fullName;
-        private String email;
-        private String passwordHash;
-        public String getUsername() { return username; }
-        public void setUsername(String username) { this.username = username; }
-        public String getFullName() { return fullName; }
-        public void setFullName(String fullName) { this.fullName = fullName; }
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-        public String getPasswordHash() { return passwordHash; }
-        public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+        private String username, fullName, email, passwordHash;
+        public String getUsername()  { return username; }
+        public void setUsername(String u)  { username = u; }
+        public String getFullName()  { return fullName; }
+        public void setFullName(String n)  { fullName = n; }
+        public String getEmail()     { return email; }
+        public void setEmail(String e)     { email = e; }
+        public String getPasswordHash()    { return passwordHash; }
+        public void setPasswordHash(String h) { passwordHash = h; }
     }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new LoginPage().setVisible(true));
     }
 }
-

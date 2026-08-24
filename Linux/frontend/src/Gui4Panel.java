@@ -35,14 +35,10 @@ public class Gui4Panel extends RoundedPanel {
         add(content, BorderLayout.CENTER);
 
         // ── Bottom buttons ────────────────────────────────────────────────
-        RoundedButton submitBtn     = Theme.successBtn("▶  Submit", 130);
-        submitBtn.setFont(new Font("Segoe UI", Font.BOLD, 14));
-
-        RoundedButton saveSessionBtn = Theme.navBtn("💾  Save Session", 150);
-        saveSessionBtn.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-
-        RoundedButton prevButton    = Theme.navBtn("← Prev", 110);
-        RoundedButton sessionBtn    = Theme.warningBtn("Sessions", 140);
+        RoundedButton submitBtn      = Theme.successBtn("Submit", 130);
+        RoundedButton saveSessionBtn = Theme.navBtn("Save Session", 150);
+        RoundedButton prevButton     = Theme.navBtn("« Prev", 110);
+        RoundedButton sessionBtn     = Theme.warningBtn("Sessions", 140);
 
         prevButton.addActionListener(e -> {
             // Auto-save pipeline so it survives the round-trip through EdgesChooserPanel

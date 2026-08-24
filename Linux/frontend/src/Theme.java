@@ -22,55 +22,96 @@ public final class Theme {
     public static final Color BORDER_HI   = new Color(58,  94,  144);  // #3A5E90 active border
 
     // ── Canvas ───────────────────────────────────────────────────────────────
-    public static final Color CANVAS_BG   = new Color(10,  22,  40);   // same as BG
-    public static final Color CANVAS_DOT  = new Color(22,  41,  72);   // subtle grid dots
+    public static final Color CANVAS_BG   = new Color(10,  22,  40);
+    public static final Color CANVAS_DOT  = new Color(22,  41,  72);
 
     // ── Text ─────────────────────────────────────────────────────────────────
     public static final Color TEXT_DARK   = new Color(214, 232, 255);  // #D6E8FF hi text
     public static final Color TEXT_MED    = new Color(106, 150, 200);  // #6A96C8 mid text
-    public static final Color TEXT_LIGHT  = new Color(100, 140, 190);  // #648CBE dim text (was too dark)
+    public static final Color TEXT_LIGHT  = new Color(100, 140, 190);  // #648CBE dim text
 
     // ── Type accent colours ───────────────────────────────────────────────────
-    public static final Color T_FILE      = new Color(96,  165, 250);  // #60A5FA blue
-    public static final Color T_INT       = new Color(167, 139, 250);  // #A78BFA purple
-    public static final Color T_FLOAT     = new Color(244, 114, 182);  // #F472B6 pink
-    public static final Color T_STRING    = new Color(52,  211, 153);  // #34D399 emerald
-    public static final Color T_GRAPH     = new Color(34,  211, 238);  // #22D3EE cyan
-    public static final Color T_OTHER     = new Color(148, 163, 184);  // #94A3B8 slate
+    public static final Color T_FILE      = new Color(96,  165, 250);
+    public static final Color T_INT       = new Color(167, 139, 250);
+    public static final Color T_FLOAT     = new Color(244, 114, 182);
+    public static final Color T_STRING    = new Color(52,  211, 153);
+    public static final Color T_GRAPH     = new Color(34,  211, 238);
+    public static final Color T_OTHER     = new Color(148, 163, 184);
 
-    // ── Responsive font scaling ───────────────────────────────────────────────
+    // ── Responsive scaling ───────────────────────────────────────────────────
+    // SCALE: layout/spacing (DPI-based, 1.0 on 96-DPI screens)
+    // FONT_SCALE: fonts get an extra 1.25× floor so they stay large and readable
     private static final float SCALE;
+    private static final float FONT_SCALE;
     static {
-        java.awt.Dimension screen = java.awt.Toolkit.getDefaultToolkit().getScreenSize();
-        int dpi     = java.awt.Toolkit.getDefaultToolkit().getScreenResolution();
-        // Scale by screen height relative to a 768p baseline
-        float byHeight = screen.height / 768.0f;
-        // Scale by DPI for HiDPI displays (often reports 96 on Windows even on big screens)
-        float byDpi    = dpi / 96.0f;
-        // Take whichever is larger; floor at 1.1 so fonts are never tiny
-        SCALE = Math.max(1.1f, Math.min(Math.max(byHeight, byDpi), 2.5f));
+        int dpi = java.awt.Toolkit.getDefaultToolkit().getScreenResolution();
+        SCALE      = Math.max(1.0f,  Math.min(dpi / 96.0f, 2.0f));
+        FONT_SCALE = Math.max(1.25f, SCALE);
     }
-    /** Scale a pixel/point size proportional to screen size. */
     public static int scale(int px) { return Math.round(px * SCALE); }
 
+    // ── Platform font detection (picks best available sans/mono) ─────────────
+    private static final String SANS_FONT;
+    private static final String MONO_FONT;
+    static {
+        java.util.Set<String> fam = new java.util.HashSet<>(java.util.Arrays.asList(
+            java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames()));
+        String s = "SansSerif", m = "Monospaced";
+        for (String f : new String[]{"Inter","Roboto","Ubuntu","Noto Sans","Segoe UI","SansSerif"})
+            if (fam.contains(f)) { s = f; break; }
+        for (String f : new String[]{"JetBrains Mono","Fira Code","Ubuntu Mono","DejaVu Sans Mono","Consolas","Monospaced"})
+            if (fam.contains(f)) { m = f; break; }
+        SANS_FONT = s;
+        MONO_FONT = m;
+    }
+
+    // ── Scaled spacing constants ──────────────────────────────────────────────
+    public static final int GAP_XS = scale(4);
+    public static final int GAP_SM = scale(8);
+    public static final int GAP_MD = scale(16);
+    public static final int GAP_LG = scale(24);
+    public static final int GAP_XL = scale(40);
+
+    // ── Scaled radius constants ───────────────────────────────────────────────
+    public static final int RADIUS    = scale(8);
+    public static final int RADIUS_LG = scale(12);
+    public static final int RADIUS_XL = scale(20);
+
+    // ── Convenience helpers ───────────────────────────────────────────────────
+    /** Standard field internal margin: 8 top/bottom, 12 left/right — all scaled. */
+    public static java.awt.Insets fieldInsets() {
+        return new java.awt.Insets(scale(8), scale(12), scale(8), scale(12));
+    }
+    /** Empty border with every value individually scaled. */
+    public static javax.swing.border.Border emptyBorder(int t, int l, int b, int r) {
+        return BorderFactory.createEmptyBorder(scale(t), scale(l), scale(b), scale(r));
+    }
+    /** Dark-themed text field: background, foreground, caret. */
+    public static void styleDarkField(javax.swing.text.JTextComponent f) {
+        f.setBackground(BG);
+        f.setForeground(TEXT_DARK);
+        f.setCaretColor(PRIMARY);
+        f.setOpaque(true);
+    }
+
     // ── Typography ───────────────────────────────────────────────────────────
-    public static Font title(int size)    { return new Font("Segoe UI",  Font.BOLD,  scale(size)); }
-    public static Font body (int size)    { return new Font("Segoe UI",  Font.PLAIN, scale(size)); }
-    public static Font mono (int size)    { return new Font("Consolas",  Font.PLAIN, scale(size)); }
-    public static Font monoBold(int size) { return new Font("Consolas",  Font.BOLD,  scale(size)); }
+    public static Font title(int size)    { return new Font(SANS_FONT, Font.BOLD,  Math.round(size * FONT_SCALE)); }
+    public static Font body (int size)    { return new Font(SANS_FONT, Font.PLAIN, Math.round(size * FONT_SCALE)); }
+    public static Font mono (int size)    { return new Font(MONO_FONT, Font.PLAIN, Math.round(size * FONT_SCALE)); }
+    public static Font monoBold(int size) { return new Font(MONO_FONT, Font.BOLD,  Math.round(size * FONT_SCALE)); }
 
     // ── Button factories ─────────────────────────────────────────────────────
     public static RoundedButton navBtn(String text, int w) {
-        return makeBtn(text, w, PRIMARY, Color.WHITE);
+        return makeBtn(text, w, PRIMARY, java.awt.Color.WHITE);
     }
     public static RoundedButton successBtn(String text, int w) {
-        return makeBtn(text, w, SUCCESS, Color.WHITE);
+        return makeBtn(text, w, SUCCESS, java.awt.Color.WHITE);
     }
     public static RoundedButton warningBtn(String text, int w) {
-        return makeBtn(text, w, WARNING, Color.WHITE);
+        return makeBtn(text, w, WARNING, java.awt.Color.WHITE);
     }
     public static RoundedButton dangerBtn(String text, int w) {
-        return makeBtn(text, w, DANGER, Color.WHITE);
+        return makeBtn(text, w, DANGER, java.awt.Color.WHITE);
     }
     private static RoundedButton makeBtn(String text, int w, Color bg, Color fg) {
         RoundedButton b = new RoundedButton(text, 8, new Dimension(scale(w), scale(38)));

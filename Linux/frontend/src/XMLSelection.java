@@ -1,4 +1,3 @@
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -9,7 +8,6 @@ public class XMLSelection extends RoundedPanel {
     private File txtFile;
     private File xmlFile;
 
-    // Replace your current XMLSelection constructor code with this:
     public XMLSelection(CardLayout cardLayout, JPanel cardPanel, UserInput user) {
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -21,24 +19,18 @@ public class XMLSelection extends RoundedPanel {
         JPanel centerPanel = new JPanel();
         centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
         centerPanel.setBackground(Theme.BG);
-        centerPanel.setBorder(BorderFactory.createEmptyBorder(30, 60, 40, 60));
+        centerPanel.setBorder(BorderFactory.createEmptyBorder(
+            Theme.scale(30), Theme.scale(60), Theme.scale(40), Theme.scale(60)));
 
-        JLabel title = new JLabel("Pathway XML Files");
+        JLabel title = new JLabel("Add XML files");
         title.setFont(Theme.title(26));
         title.setForeground(Theme.TEXT_DARK);
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
         centerPanel.add(title);
-        centerPanel.add(Box.createVerticalStrut(4));
+        centerPanel.add(Box.createVerticalStrut(Theme.scale(24)));
 
-        JLabel titleSub = new JLabel("Choose the source of KEGG pathway data");
-        titleSub.setFont(Theme.body(14));
-        titleSub.setForeground(Theme.TEXT_MED);
-        titleSub.setAlignmentX(Component.CENTER_ALIGNMENT);
-        centerPanel.add(titleSub);
-        centerPanel.add(Box.createVerticalStrut(24));
-
-        // Radio buttons selection section
-        JLabel chooseLabel = new JLabel("Select input type:");
+        // Radio selection
+        JLabel chooseLabel = new JLabel("Which file do you want to choose?");
         chooseLabel.setFont(Theme.title(14));
         chooseLabel.setForeground(Theme.TEXT_DARK);
 
@@ -56,12 +48,12 @@ public class XMLSelection extends RoundedPanel {
         group.add(chooseFile1Radio);
         group.add(chooseFile2Radio);
 
-        // Components for file 1
+        // File 1
         JLabel label1 = new JLabel("List of KEGG XML Files to Merge:");
         label1.setFont(Theme.title(14));
         label1.setForeground(Theme.TEXT_DARK);
 
-        RoundedButton chooseButton1 = Theme.navBtn("Choose", 110);
+        RoundedButton chooseButton1 = Theme.navBtn("Choose TXT File", 150);
         chooseButton1.setEnabled(false);
 
         JLabel fileNameLabel1 = new JLabel();
@@ -76,12 +68,12 @@ public class XMLSelection extends RoundedPanel {
         fileNameLabel1.setFont(Theme.body(13));
         fileNameLabel1.setForeground(Theme.TEXT_MED);
 
-        // Components for file 2
+        // File 2
         JLabel label2 = new JLabel("XML File of Merged KEGG Pathways:");
         label2.setFont(Theme.title(14));
         label2.setForeground(Theme.TEXT_DARK);
 
-        RoundedButton chooseButton2 = Theme.navBtn("Choose", 110);
+        RoundedButton chooseButton2 = Theme.navBtn("Choose XML File", 150);
         chooseButton2.setEnabled(false);
 
         JLabel fileNameLabel2 = new JLabel();
@@ -96,35 +88,33 @@ public class XMLSelection extends RoundedPanel {
         fileNameLabel2.setFont(Theme.body(13));
         fileNameLabel2.setForeground(Theme.TEXT_MED);
 
-        // File chooser listeners remain same, no UI change needed:
+        // File chooser listeners
         chooseButton1.addActionListener((ActionEvent e) -> {
-            JFileChooser fileChooser = openInWorkDir(user);
-            int result = fileChooser.showOpenDialog(this);
+            JFileChooser fc = openInWorkDir(user);
+            int result = fc.showOpenDialog(this);
             if (result == JFileChooser.APPROVE_OPTION) {
-                txtFile = fileChooser.getSelectedFile();
+                txtFile = fc.getSelectedFile();
                 user.setTxtFile(txtFile.getAbsolutePath());
                 fileNameLabel1.setText("Selected: " + txtFile.getName());
             }
         });
 
         chooseButton2.addActionListener((ActionEvent e) -> {
-            JFileChooser fileChooser = openInWorkDir(user);
-            int result = fileChooser.showOpenDialog(this);
+            JFileChooser fc = openInWorkDir(user);
+            int result = fc.showOpenDialog(this);
             if (result == JFileChooser.APPROVE_OPTION) {
-                xmlFile = fileChooser.getSelectedFile();
+                xmlFile = fc.getSelectedFile();
                 user.setXMLFile(xmlFile.getAbsolutePath());
                 fileNameLabel2.setText("Selected: " + xmlFile.getName());
             }
         });
 
-        // Enable/disable buttons according to radio button selection
         chooseFile1Radio.addActionListener(e -> {
             chooseButton1.setEnabled(true);
             chooseButton2.setEnabled(false);
             xmlFile = null;
             user.setXMLFile(null);
             fileNameLabel2.setText("No file selected");
-
             user.setKegg("");
         });
 
@@ -134,38 +124,37 @@ public class XMLSelection extends RoundedPanel {
             txtFile = null;
             user.setTxtFile(null);
             fileNameLabel1.setText("No file selected");
-
             user.setKegg(";;");
         });
 
-        // Radio selection card
+        // Radio card
         JPanel radioCard = new JPanel();
         radioCard.setLayout(new BoxLayout(radioCard, BoxLayout.Y_AXIS));
         radioCard.setBackground(Theme.BG_CARD);
         radioCard.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Theme.BORDER, 1),
-            BorderFactory.createEmptyBorder(12, 16, 12, 16)));
-        radioCard.setMaximumSize(new Dimension(620, 100));
+            BorderFactory.createEmptyBorder(Theme.scale(12), Theme.scale(16), Theme.scale(12), Theme.scale(16))));
+        radioCard.setMaximumSize(new Dimension(Theme.scale(620), Theme.scale(100)));
         radioCard.setAlignmentX(Component.CENTER_ALIGNMENT);
         chooseLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         chooseFile1Radio.setAlignmentX(Component.LEFT_ALIGNMENT);
         chooseFile2Radio.setAlignmentX(Component.LEFT_ALIGNMENT);
         radioCard.add(chooseLabel);
-        radioCard.add(Box.createVerticalStrut(8));
+        radioCard.add(Box.createVerticalStrut(Theme.scale(8)));
         radioCard.add(chooseFile1Radio);
-        radioCard.add(Box.createVerticalStrut(4));
+        radioCard.add(Box.createVerticalStrut(Theme.scale(4)));
         radioCard.add(chooseFile2Radio);
         centerPanel.add(radioCard);
-        centerPanel.add(Box.createVerticalStrut(20));
+        centerPanel.add(Box.createVerticalStrut(Theme.scale(20)));
 
         // File 1 card
-        JPanel file1Card = new JPanel(new BorderLayout(12, 0));
+        JPanel file1Card = new JPanel(new BorderLayout(Theme.GAP_SM, 0));
         file1Card.setBackground(Theme.BG_CARD);
-        file1Card.setMaximumSize(new Dimension(620, 64));
+        file1Card.setMaximumSize(new Dimension(Theme.scale(620), Theme.scale(64)));
         file1Card.setAlignmentX(Component.CENTER_ALIGNMENT);
         file1Card.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Theme.BORDER, 1),
-            BorderFactory.createEmptyBorder(10, 16, 10, 16)));
+            BorderFactory.createEmptyBorder(Theme.scale(10), Theme.scale(16), Theme.scale(10), Theme.scale(16))));
         JPanel file1Info = new JPanel();
         file1Info.setLayout(new BoxLayout(file1Info, BoxLayout.Y_AXIS));
         file1Info.setOpaque(false);
@@ -176,16 +165,16 @@ public class XMLSelection extends RoundedPanel {
         file1Card.add(file1Info, BorderLayout.CENTER);
         file1Card.add(chooseButton1, BorderLayout.EAST);
         centerPanel.add(file1Card);
-        centerPanel.add(Box.createVerticalStrut(12));
+        centerPanel.add(Box.createVerticalStrut(Theme.scale(12)));
 
         // File 2 card
-        JPanel file2Card = new JPanel(new BorderLayout(12, 0));
+        JPanel file2Card = new JPanel(new BorderLayout(Theme.GAP_SM, 0));
         file2Card.setBackground(Theme.BG_CARD);
-        file2Card.setMaximumSize(new Dimension(620, 64));
+        file2Card.setMaximumSize(new Dimension(Theme.scale(620), Theme.scale(64)));
         file2Card.setAlignmentX(Component.CENTER_ALIGNMENT);
         file2Card.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Theme.BORDER, 1),
-            BorderFactory.createEmptyBorder(10, 16, 10, 16)));
+            BorderFactory.createEmptyBorder(Theme.scale(10), Theme.scale(16), Theme.scale(10), Theme.scale(16))));
         JPanel file2Info = new JPanel();
         file2Info.setLayout(new BoxLayout(file2Info, BoxLayout.Y_AXIS));
         file2Info.setOpaque(false);
@@ -196,32 +185,31 @@ public class XMLSelection extends RoundedPanel {
         file2Card.add(file2Info, BorderLayout.CENTER);
         file2Card.add(chooseButton2, BorderLayout.EAST);
         centerPanel.add(file2Card);
-        centerPanel.add(Box.createVerticalStrut(20));
+        centerPanel.add(Box.createVerticalStrut(Theme.scale(20)));
 
-        // Node split threshold section
-        JPanel nodeSplitCard = new JPanel(new BorderLayout(16, 0));
+        // Node split threshold card
+        JPanel nodeSplitCard = new JPanel(new BorderLayout(Theme.GAP_MD, 0));
         nodeSplitCard.setBackground(Theme.BG_CARD);
-        nodeSplitCard.setMaximumSize(new Dimension(620, 56));
+        nodeSplitCard.setMaximumSize(new Dimension(Theme.scale(620), Theme.scale(56)));
         nodeSplitCard.setAlignmentX(Component.CENTER_ALIGNMENT);
         nodeSplitCard.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Theme.BORDER, 1),
-            BorderFactory.createEmptyBorder(10, 16, 10, 16)));
+            BorderFactory.createEmptyBorder(Theme.scale(10), Theme.scale(16), Theme.scale(10), Theme.scale(16))));
 
-        JLabel nodeSplitLabel = new JLabel("Node Split Threshold");
+        JLabel nodeSplitLabel = new JLabel("Threshold to split Nodes while merging");
         nodeSplitLabel.setFont(Theme.title(14));
         nodeSplitLabel.setForeground(Theme.TEXT_DARK);
 
         JTextField nodeSplitField = new JTextField(6);
         nodeSplitField.setText("" + user.getNodeSplitThreshold());
         nodeSplitField.setFont(Theme.body(14));
-        nodeSplitField.setBackground(Color.WHITE);
-        nodeSplitField.setForeground(Color.BLACK);
-        nodeSplitField.setCaretColor(Color.BLACK);
+        Theme.styleDarkField(nodeSplitField);
+        nodeSplitField.setMargin(new Insets(Theme.scale(4), Theme.scale(8), Theme.scale(4), Theme.scale(8)));
         nodeSplitField.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Theme.BORDER, 1),
-            BorderFactory.createEmptyBorder(4, 8, 4, 8)));
+            BorderFactory.createEmptyBorder(0, 0, 0, 0)));
 
-        JPanel nodeSplitRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        JPanel nodeSplitRight = new JPanel(new FlowLayout(FlowLayout.RIGHT, Theme.GAP_SM, 0));
         nodeSplitRight.setOpaque(false);
         nodeSplitRight.add(nodeSplitField);
 
@@ -231,69 +219,44 @@ public class XMLSelection extends RoundedPanel {
 
         add(centerPanel, BorderLayout.CENTER);
 
-        // Button panel - keep white background and standard buttons
+        // Button panel
         RoundedPanel buttonPanel = new RoundedPanel();
         buttonPanel.setLayout(new GridLayout(1, 2));
         buttonPanel.setBackground(Theme.BG);
 
-        RoundedButton nextButton = Theme.navBtn("Next →", 110);
+        RoundedButton nextButton   = Theme.navBtn("Next »", 110);
         RoundedButton goToSessions = Theme.warningBtn("Sessions", 140);
-        RoundedButton prevButton = Theme.navBtn("← Prev", 110);
-        RoundedButton saveButton = Theme.successBtn("Save", 110);
+        RoundedButton prevButton   = Theme.navBtn("« Prev", 110);
+        RoundedButton saveButton   = Theme.successBtn("Save", 110);
 
-        
         nextButton.addActionListener(e -> {
             user.setNodeSplitThreshold(Integer.parseInt(nodeSplitField.getText()));
             ReachPathBoundCard reachBound = new ReachPathBoundCard(cardLayout, cardPanel, user);
             cardPanel.add(reachBound, "reachBound");
             cardLayout.show(cardPanel, "reachBound");
         });
-
         prevButton.addActionListener(e -> cardLayout.show(cardPanel, "fileSelect"));
-
         saveButton.addActionListener(e -> {
             user.setNodeSplitThreshold(Integer.parseInt(nodeSplitField.getText()));
             user.saveData();
         });
-
         goToSessions.addActionListener(e -> cardLayout.show(cardPanel, "sessions"));
 
-        buttonPanel.add(new JPanel(new BorderLayout()) {
-            {
-                setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-                add(prevButton, BorderLayout.EAST);
-                add(goToSessions, BorderLayout.WEST);
-                setOpaque(false);
-            }
-        });
+        buttonPanel.add(new JPanel(new BorderLayout()) {{
+            setBorder(BorderFactory.createEmptyBorder(Theme.scale(10), Theme.scale(10), Theme.scale(10), Theme.scale(10)));
+            add(prevButton, BorderLayout.EAST);
+            add(goToSessions, BorderLayout.WEST);
+            setOpaque(false);
+        }});
 
-        buttonPanel.add(new JPanel(new BorderLayout()) {
-            {
-                setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-                add(nextButton, BorderLayout.WEST);
-                add(saveButton, BorderLayout.EAST);
-                setOpaque(false);
-            }
-        });
+        buttonPanel.add(new JPanel(new BorderLayout()) {{
+            setBorder(BorderFactory.createEmptyBorder(Theme.scale(10), Theme.scale(10), Theme.scale(10), Theme.scale(10)));
+            add(nextButton, BorderLayout.WEST);
+            add(saveButton, BorderLayout.EAST);
+            setOpaque(false);
+        }});
 
         add(buttonPanel, BorderLayout.SOUTH);
-    }
-
-    // public File getSelectedFile1() {
-    //     return selectedFile1;
-    // }
-    // public File getSelectedFile2() {
-    //     return selectedFile2;
-    // }
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("Card: Reach Path Bound");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setSize(500, 300);
-            frame.add(new XMLSelection(null, null, null));
-            frame.setLocationRelativeTo(null);
-            frame.setVisible(true);
-        });
     }
 
     private static JFileChooser openInWorkDir(UserInput user) {

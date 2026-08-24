@@ -14,39 +14,33 @@ public class RelaxationBoundsPanel extends RoundedPanel {
         HeaderPanel header = new HeaderPanel(user.getUsername(), cardLayout, cardPanel, user);
         add(header, BorderLayout.NORTH);
 
-        // ── Title ────────────────────────────────────────────────────────
-        JLabel title = new JLabel("Analysis Flexibility Settings", JLabel.CENTER);
+        JLabel title = new JLabel("Node and Edge Relaxation Bounds", JLabel.CENTER);
         title.setFont(Theme.title(24));
         title.setForeground(Theme.TEXT_DARK);
-        title.setBorder(BorderFactory.createEmptyBorder(20, 0, 16, 0));
+        title.setBorder(BorderFactory.createEmptyBorder(Theme.scale(20), 0, Theme.scale(16), 0));
 
-        // ── Range sliders (synced with steppers) ─────────────────────────
         RangeSlider nodeSlider = makeSlider(arr[0], arr[1]);
         RangeSlider edgeSlider = makeSlider(arr[2], arr[3]);
 
-        // ── Bound cards ───────────────────────────────────────────────────
-        JPanel nodeCard = makeBoundCard("Gene Expression Exceptions Allowed",
-                arr, 0, 1, nodeSlider);
-        JPanel edgeCard = makeBoundCard("Interaction Exceptions Allowed",
-                arr, 2, 3, edgeSlider);
+        JPanel nodeCard = makeBoundCard("Node Relaxation Bounds", arr, 0, 1, nodeSlider);
+        JPanel edgeCard = makeBoundCard("Edge Relaxation Bounds", arr, 2, 3, edgeSlider);
 
-        JPanel cardsPanel = new JPanel(new GridLayout(2, 1, 0, 16));
+        JPanel cardsPanel = new JPanel(new GridLayout(2, 1, 0, Theme.scale(16)));
         cardsPanel.setOpaque(false);
         cardsPanel.add(nodeCard);
         cardsPanel.add(edgeCard);
 
         JPanel center = new JPanel(new BorderLayout());
         center.setOpaque(false);
-        center.setBorder(BorderFactory.createEmptyBorder(0, 48, 16, 48));
+        center.setBorder(BorderFactory.createEmptyBorder(0, Theme.scale(48), Theme.scale(16), Theme.scale(48)));
         center.add(title, BorderLayout.NORTH);
         center.add(cardsPanel, BorderLayout.CENTER);
         add(center, BorderLayout.CENTER);
 
-        // ── Buttons ───────────────────────────────────────────────────────
-        RoundedButton nextButton   = Theme.navBtn("Next →", 110);
-        RoundedButton prevButton   = Theme.navBtn("← Prev", 110);
-        RoundedButton saveButton   = Theme.successBtn("Save", 110);
-        RoundedButton sessionBtn   = Theme.warningBtn("Sessions", 140);
+        RoundedButton nextButton = Theme.navBtn("Next »", 110);
+        RoundedButton prevButton = Theme.navBtn("« Prev", 110);
+        RoundedButton saveButton = Theme.successBtn("Save", 110);
+        RoundedButton sessionBtn = Theme.warningBtn("Sessions", 140);
 
         nextButton.addActionListener(e -> {
             user.setRelaxationBounds(arr);
@@ -62,13 +56,15 @@ public class RelaxationBoundsPanel extends RoundedPanel {
         buttonPanel.setLayout(new GridLayout(1, 2));
         buttonPanel.setBackground(Theme.BG);
         buttonPanel.add(new JPanel(new BorderLayout()) {{
-            setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            setBorder(BorderFactory.createEmptyBorder(
+                Theme.scale(10), Theme.scale(10), Theme.scale(10), Theme.scale(10)));
             add(sessionBtn, BorderLayout.WEST);
             add(prevButton, BorderLayout.EAST);
             setOpaque(false);
         }});
         buttonPanel.add(new JPanel(new BorderLayout()) {{
-            setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+            setBorder(BorderFactory.createEmptyBorder(
+                Theme.scale(10), Theme.scale(10), Theme.scale(10), Theme.scale(10)));
             add(nextButton, BorderLayout.WEST);
             add(saveButton, BorderLayout.EAST);
             setOpaque(false);
@@ -76,52 +72,51 @@ public class RelaxationBoundsPanel extends RoundedPanel {
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    // ── Card: section title + two inline steppers + range slider ─────────
-
-    private JPanel makeBoundCard(String title, int[] arr, int lbIdx, int ubIdx,
-                                  RangeSlider slider) {
-        JPanel card = new JPanel(new BorderLayout(0, 12));
+    private JPanel makeBoundCard(String title, int[] arr, int lbIdx, int ubIdx, RangeSlider slider) {
+        JPanel card = new JPanel();
+        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.setBackground(Theme.BG_CARD);
         card.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Theme.BORDER, 1),
-            BorderFactory.createEmptyBorder(16, 20, 18, 20)));
+            BorderFactory.createEmptyBorder(
+                Theme.scale(16), Theme.scale(20), Theme.scale(18), Theme.scale(20))));
 
-        // Section title
         JLabel titleLabel = new JLabel(title);
         titleLabel.setFont(Theme.title(14));
         titleLabel.setForeground(Theme.TEXT_DARK);
+        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Steppers row
-        JPanel steppers = new JPanel(new GridLayout(1, 2, 24, 0));
+        JPanel steppers = new JPanel(new GridLayout(1, 2, Theme.scale(24), 0));
         steppers.setOpaque(false);
+        steppers.setAlignmentX(Component.LEFT_ALIGNMENT);
+        steppers.setMaximumSize(new Dimension(Integer.MAX_VALUE, Theme.scale(90)));
         steppers.add(makeStepper("Lower Bound", arr, lbIdx, slider, true));
         steppers.add(makeStepper("Upper Bound", arr, ubIdx, slider, false));
 
-        // Slider row
-        JPanel sliderRow = new JPanel(new BorderLayout(8, 0));
-        sliderRow.setOpaque(false);
         JLabel minLbl = new JLabel("0");
         JLabel maxLbl = new JLabel("100");
         minLbl.setFont(Theme.body(11));
         maxLbl.setFont(Theme.body(11));
         minLbl.setForeground(Theme.TEXT_LIGHT);
         maxLbl.setForeground(Theme.TEXT_LIGHT);
+        JPanel sliderRow = new JPanel(new BorderLayout(Theme.scale(8), 0));
+        sliderRow.setOpaque(false);
+        sliderRow.setAlignmentX(Component.LEFT_ALIGNMENT);
         sliderRow.add(minLbl,  BorderLayout.WEST);
         sliderRow.add(slider,  BorderLayout.CENTER);
         sliderRow.add(maxLbl,  BorderLayout.EAST);
 
-        card.add(titleLabel, BorderLayout.NORTH);
-        card.add(steppers,   BorderLayout.CENTER);
-        card.add(sliderRow,  BorderLayout.SOUTH);
-
+        card.add(titleLabel);
+        card.add(Box.createVerticalStrut(Theme.scale(12)));
+        card.add(steppers);
+        card.add(Box.createVerticalStrut(Theme.scale(12)));
+        card.add(sliderRow);
         return card;
     }
 
-    // ── Single stepper: label + [−] [field] [+] ──────────────────────────
-
     private JPanel makeStepper(String label, int[] arr, int idx,
                                 RangeSlider slider, boolean isLower) {
-        JPanel panel = new JPanel(new BorderLayout(0, 6));
+        JPanel panel = new JPanel(new BorderLayout(0, Theme.scale(6)));
         panel.setOpaque(false);
 
         JLabel lbl = new JLabel(label);
@@ -130,22 +125,16 @@ public class RelaxationBoundsPanel extends RoundedPanel {
 
         JTextField field = new JTextField(String.valueOf(arr[idx]), 4);
         field.setFont(Theme.title(15));
-        field.setBackground(Color.WHITE);
-        field.setForeground(Color.BLACK);
-        field.setCaretColor(Color.BLACK);
+        Theme.styleDarkField(field);
         field.setHorizontalAlignment(JTextField.CENTER);
         field.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Theme.BORDER, 1),
-            BorderFactory.createEmptyBorder(4, 8, 4, 8)));
+            BorderFactory.createEmptyBorder(
+                Theme.scale(4), Theme.scale(8), Theme.scale(4), Theme.scale(8))));
 
         RoundedButton minus = makeStepBtn("−");
         RoundedButton plus  = makeStepBtn("+");
-        minus.setBackground(Theme.PRIMARY);
-        minus.setForeground(Color.WHITE);
-        plus.setBackground(Theme.PRIMARY);
-        plus.setForeground(Color.WHITE);
 
-        // sync field → arr + slider
         Runnable syncFromField = () -> {
             try {
                 int v = Integer.parseInt(field.getText().trim());
@@ -176,14 +165,13 @@ public class RelaxationBoundsPanel extends RoundedPanel {
             else         slider.setUpperValue(arr[idx]);
         });
 
-        // sync slider → field + arr
         slider.addChangeListener((ChangeEvent e) -> {
             int v = isLower ? slider.getValue() : slider.getUpperValue();
             arr[idx] = v;
             field.setText(String.valueOf(v));
         });
 
-        JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT, Theme.scale(4), 0));
         controls.setOpaque(false);
         controls.add(minus);
         controls.add(field);
@@ -195,9 +183,10 @@ public class RelaxationBoundsPanel extends RoundedPanel {
     }
 
     private RoundedButton makeStepBtn(String text) {
-        RoundedButton btn = new RoundedButton(text, 8, new Dimension(34, 34));
-        btn.setBackground(new Color(241, 243, 248));
-        btn.setForeground(Theme.TEXT_DARK);
+        RoundedButton btn = new RoundedButton(text, Theme.scale(8),
+            new Dimension(Theme.scale(34), Theme.scale(34)));
+        btn.setBackground(Theme.PRIMARY);
+        btn.setForeground(Color.WHITE);
         btn.setFont(Theme.title(16));
         return btn;
     }
