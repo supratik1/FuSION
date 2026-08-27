@@ -38,8 +38,10 @@ public class ThresholdFilterPanel extends RoundedPanel {
     private JTextArea[] resultAreas;
     private RoundedButton moveTo;
     private String selectedText;
+    private String selectedHsaId;
 
     private Map<String, boolean[]> override = new HashMap<>();
+    private Map<String, String> overrideDisplay = new HashMap<>();
     private Map<String, String> hsaToGene = new HashMap<>();
 
     public ThresholdFilterPanel(CardLayout cardLayout, JPanel cardPanel, UserInput user) {
@@ -115,8 +117,8 @@ public class ThresholdFilterPanel extends RoundedPanel {
 
         searchButton = new RoundedButton("Search", Theme.scale(14),
             new Dimension(Theme.scale(80), Theme.scale(32)));
-        moveTo = new RoundedButton("Highlight", Theme.scale(14),
-            new Dimension(Theme.scale(90), Theme.scale(32)));
+        moveTo = new RoundedButton("Override", Theme.scale(14),
+            new Dimension(Theme.scale(100), Theme.scale(32)));
         moveTo.setEnabled(false);
 
         inputPanel.add(downLabel);
@@ -149,6 +151,10 @@ public class ThresholdFilterPanel extends RoundedPanel {
             activeArea, inactiveArea, relaxedArea, nonrelaxedArea
         };
 
+        for (int i = 0; i < resultAreas.length; i++) {
+            addClickToSelect(resultAreas[i], i);
+        }
+
         resultPanel.add(createStickyPanel("Up Regulatory Threshold:",    aboveArea,      C_OVER_ACTIVE,  T_OVER_ACTIVE));
         resultPanel.add(createStickyPanel("Not Differentially Expressed:", betweenArea,  C_UNCHANGED,    T_UNCHANGED));
         resultPanel.add(createStickyPanel("Down Regulatory Threshold:", belowArea,       C_UNDER_ACTIVE, T_UNDER_ACTIVE));
@@ -172,7 +178,7 @@ public class ThresholdFilterPanel extends RoundedPanel {
             btn.setFont(Theme.title(13));
         }
         moveTo.setBackground(Theme.WARNING);
-        moveTo.setForeground(Color.WHITE);
+        moveTo.setForeground(new Color(26, 17, 0));
         moveTo.setFont(Theme.title(13));
 
         prevButton.addActionListener(e -> cardLayout.show(cardPanel, "idEntry"));
@@ -259,9 +265,7 @@ public class ThresholdFilterPanel extends RoundedPanel {
 
             JPanel mainPanel = new JPanel(new GridLayout(3, 1));
             mainPanel.setBackground(Theme.BG);
-            ButtonGroup mainGroup = new ButtonGroup();
-            ButtonGroup sideGroup = new ButtonGroup();
-            ButtonGroup laterGroup = new ButtonGroup();
+            ButtonGroup allGroup = new ButtonGroup();
 
             JRadioButton col1 = makeDialogRadio("Up Regulatory Threshold");
             JRadioButton col2 = makeDialogRadio("Not Differentially Expressed");
@@ -272,16 +276,14 @@ public class ThresholdFilterPanel extends RoundedPanel {
             JRadioButton col7 = makeDialogRadio("Non-Relaxed Node File");
             JRadioButton[] columns = {col1, col2, col3, col4, col5, col6, col7};
 
-            mainGroup.add(col1); mainGroup.add(col2); mainGroup.add(col3);
-            sideGroup.add(col4); sideGroup.add(col5);
-            laterGroup.add(col6); laterGroup.add(col7);
+            for (JRadioButton rb : columns) allGroup.add(rb);
 
             mainPanel.add(makeDialogGroup("Regulatory Category", col1, col2, col3));
             mainPanel.add(makeDialogGroup("Node Activity", col4, col5));
             mainPanel.add(makeDialogGroup("Node Relaxation", col6, col7));
 
-            if (override.containsKey(selectedText)) {
-                boolean[] flags = override.get(selectedText);
+            if (override.containsKey(selectedHsaId)) {
+                boolean[] flags = override.get(selectedHsaId);
                 for (int i = 0; i < 7; i++) {
                     if (flags[i]) columns[i].setSelected(true);
                 }
@@ -294,32 +296,36 @@ public class ThresholdFilterPanel extends RoundedPanel {
             RoundedButton clear  = Theme.warningBtn("Clear", 100);
 
             ok.addActionListener(ev -> {
-                boolean[] old = override.get(selectedText);
+                // Remove from every area that previously held this node
                 for (int i = 0; i < 7; i++) {
-                    if (old != null && old[i]) {
-                        JTextArea source = resultAreas[i];
-                        source.setText(source.getText().replace(selectedText + "\n", ""));
+                    String raw = resultAreas[i].getText();
+                    StringBuilder sb = new StringBuilder();
+                    for (String ln : raw.split("\n", -1)) {
+                        String t = ln.trim();
+                        if (!t.isEmpty()
+                                && !t.equals(selectedHsaId)
+                                && !t.startsWith(selectedHsaId + " ")
+                                && !t.startsWith(selectedHsaId + "-")) {
+                            sb.append(ln).append("\n");
+                        }
                     }
+                    resultAreas[i].setText(sb.toString());
                 }
-                if (col1.isSelected())      selectedIndices[0] = true;
-                else if (col2.isSelected()) selectedIndices[1] = true;
-                else if (col3.isSelected()) selectedIndices[2] = true;
-                if (col4.isSelected())      selectedIndices[3] = true;
-                else if (col5.isSelected()) selectedIndices[4] = true;
-                if (col6.isSelected())      selectedIndices[5] = true;
-                else if (col7.isSelected()) selectedIndices[6] = true;
+                // Record new single destination
+                for (int i = 0; i < 7; i++) selectedIndices[i] = columns[i].isSelected();
 
-                override.put(selectedText, selectedIndices);
-                if (selectedText != null && !selectedText.isEmpty()) {
+                override.put(selectedHsaId, selectedIndices);
+                if (selectedHsaId != null && !selectedHsaId.isEmpty()) {
                     moveTo.setEnabled(false);
-                    moveToColumn(selectedText);
+                    moveToColumn(selectedHsaId);
                 }
                 dialog.dispose();
             });
 
             cancel.addActionListener(ev -> dialog.dispose());
             clear.addActionListener(ev -> {
-                override.remove(selectedText);
+                override.remove(selectedHsaId);
+                overrideDisplay.remove(selectedHsaId);
                 processFiles(user);
                 dialog.dispose();
             });
@@ -469,10 +475,8 @@ public class ThresholdFilterPanel extends RoundedPanel {
         }
         if (!override.isEmpty()) {
             for (Map.Entry<String, boolean[]> entry : override.entrySet()) {
-                String fileName = entry.getKey();
-                String geneName = hsaToGene.get(fileName);
-                String display = (geneName != null && !geneName.isEmpty())
-                        ? fileName + " - " + geneName : fileName;
+                String hsaId = entry.getKey();
+                String display = overrideDisplay.getOrDefault(hsaId, hsaId);
                 boolean[] arr = entry.getValue();
                 for (int i = 0; i < 7; i++) {
                     if (arr[i]) resultAreas[i].append(display + "\n");
@@ -515,7 +519,7 @@ public class ThresholdFilterPanel extends RoundedPanel {
                 int lineLength = line.length();
                 if (line.toLowerCase().contains(query)) {
                     matchCount++;
-                    uniqueMatches.add(line.toLowerCase());
+                    uniqueMatches.add(line);
                     try {
                         area.getHighlighter().addHighlight(
                                 offset, offset + lineLength,
@@ -532,8 +536,10 @@ public class ThresholdFilterPanel extends RoundedPanel {
 
         if (!uniqueMatches.isEmpty()) {
             selectedText = uniqueMatches.iterator().next();
+            selectedHsaId = selectedText.split("\\s+")[0];
+            overrideDisplay.put(selectedHsaId, selectedText);
+            override.put(selectedHsaId, originalColumnIndex);
         }
-        override.put(selectedText, originalColumnIndex);
 
         if (uniqueMatches.size() > 1) {
             moveTo.setEnabled(false);
@@ -542,10 +548,47 @@ public class ThresholdFilterPanel extends RoundedPanel {
         }
     }
 
-    private void moveToColumn(String text) {
-        boolean[] flag = override.get(text);
+    private void addClickToSelect(JTextArea area, int colIndex) {
+        area.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                int pos = (int) area.viewToModel2D(e.getPoint());
+                if (pos < 0) return;
+                try {
+                    // Use logical line (getLineOf*) so word-wrap doesn't truncate the entry
+                    int lineNum   = area.getLineOfOffset(pos);
+                    int lineStart = area.getLineStartOffset(lineNum);
+                    int lineEnd   = area.getLineEndOffset(lineNum);
+                    String line   = area.getText(lineStart, lineEnd - lineStart).trim();
+                    if (line.isEmpty()) return;
+
+                    for (JTextArea a : resultAreas) a.getHighlighter().removeAllHighlights();
+                    area.getHighlighter().addHighlight(lineStart, lineEnd,
+                        new DefaultHighlighter.DefaultHighlightPainter(Color.GREEN.darker()));
+
+                    selectedText  = line;
+                    selectedHsaId = line.split("\\s+")[0];
+                    overrideDisplay.put(selectedHsaId, line);
+
+                    if (!override.containsKey(selectedHsaId)) {
+                        boolean[] cols = new boolean[7];
+                        cols[colIndex] = true;
+                        override.put(selectedHsaId, cols);
+                    }
+
+                    moveTo.setEnabled(true);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private void moveToColumn(String hsaId) {
+        boolean[] flag = override.get(hsaId);
+        String display = overrideDisplay.getOrDefault(hsaId, hsaId);
         for (int i = 0; i < 7; i++) {
-            if (flag[i]) resultAreas[i].append(text + "\n");
+            if (flag[i]) resultAreas[i].append(display + "\n");
         }
     }
 }

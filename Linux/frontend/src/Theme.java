@@ -108,7 +108,7 @@ public final class Theme {
         return makeBtn(text, w, SUCCESS, java.awt.Color.WHITE);
     }
     public static RoundedButton warningBtn(String text, int w) {
-        return makeBtn(text, w, WARNING, java.awt.Color.WHITE);
+        return makeBtn(text, w, WARNING, new java.awt.Color(26, 17, 0));
     }
     public static RoundedButton dangerBtn(String text, int w) {
         return makeBtn(text, w, DANGER, java.awt.Color.WHITE);
