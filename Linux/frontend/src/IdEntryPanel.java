@@ -57,6 +57,8 @@ public class IdEntryPanel extends RoundedPanel {
         label1.setForeground(Theme.TEXT_DARK);
 
         inputField1 = new JTextField(18);
+        if (user.getSourceHsaID() != null && !user.getSourceHsaID().isEmpty())
+            inputField1.setText(user.getSourceHsaID());
         Theme.styleDarkField(inputField1);
         inputField1.setFont(Theme.body(14));
 
@@ -72,6 +74,8 @@ public class IdEntryPanel extends RoundedPanel {
         label2.setForeground(Theme.TEXT_DARK);
 
         inputField2 = new JTextField(18);
+        if (user.getTargeHsaID() != null && !user.getTargeHsaID().isEmpty())
+            inputField2.setText(user.getTargeHsaID());
         Theme.styleDarkField(inputField2);
         inputField2.setFont(Theme.body(14));
 
@@ -87,6 +91,8 @@ public class IdEntryPanel extends RoundedPanel {
         label3.setForeground(Theme.TEXT_DARK);
 
         inputField3 = new JTextField(18);
+        if (user.getCandidateID() != null && !user.getCandidateID().isEmpty())
+            inputField3.setText(user.getCandidateID());
         Theme.styleDarkField(inputField3);
         inputField3.setFont(Theme.body(14));
 
@@ -110,7 +116,9 @@ public class IdEntryPanel extends RoundedPanel {
         JLabel hsaJLabel = new JLabel("HSA IDs not to be merged:");
         hsaJLabel.setFont(Theme.title(13));
         hsaJLabel.setForeground(Theme.TEXT_DARK);
-        JLabel ans = new JLabel("No File Selected");
+        String existingHsaNot = user.gethsaNotFile();
+        JLabel ans = new JLabel(existingHsaNot != null && !existingHsaNot.isEmpty()
+            ? new File(existingHsaNot).getName() : "No File Selected");
         ans.setFont(Theme.body(12));
         ans.setForeground(Theme.TEXT_MED);
         hsaInfo.add(hsaJLabel);
@@ -295,8 +303,17 @@ public class IdEntryPanel extends RoundedPanel {
         RoundedButton saveButton   = Theme.successBtn("Save", 110);
 
         prevButton.addActionListener(e -> cardLayout.show(cardPanel, "relaxationPanel"));
-        saveButton.addActionListener(e -> { user.setMappingFile(mappingFile); user.saveData(); });
+        saveButton.addActionListener(e -> {
+            user.setSourceHsaID(inputField1.getText());
+            user.setTargetHsaID(inputField2.getText());
+            user.setCandidateID(inputField3.getText());
+            user.setMappingFile(mappingFile);
+            user.saveData();
+        });
         nextButton.addActionListener(e -> {
+            user.setSourceHsaID(inputField1.getText());
+            user.setTargetHsaID(inputField2.getText());
+            user.setCandidateID(inputField3.getText());
             user.setMappingFile(mappingFile);
             ThresholdFilterPanel threshold = new ThresholdFilterPanel(cardLayout, cardPanel, user);
             cardPanel.add(threshold, "threshold");

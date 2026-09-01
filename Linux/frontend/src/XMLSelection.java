@@ -134,8 +134,8 @@ public class XMLSelection extends RoundedPanel {
         radioCard.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Theme.BORDER, 1),
             BorderFactory.createEmptyBorder(Theme.scale(12), Theme.scale(16), Theme.scale(12), Theme.scale(16))));
-        radioCard.setMaximumSize(new Dimension(Theme.scale(620), Theme.scale(100)));
-        radioCard.setAlignmentX(Component.CENTER_ALIGNMENT);
+        radioCard.setMaximumSize(new Dimension(Integer.MAX_VALUE, Theme.scale(120)));
+        radioCard.setAlignmentX(Component.LEFT_ALIGNMENT);
         chooseLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         chooseFile1Radio.setAlignmentX(Component.LEFT_ALIGNMENT);
         chooseFile2Radio.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -150,8 +150,8 @@ public class XMLSelection extends RoundedPanel {
         // File 1 card
         JPanel file1Card = new JPanel(new BorderLayout(Theme.GAP_SM, 0));
         file1Card.setBackground(Theme.BG_CARD);
-        file1Card.setMaximumSize(new Dimension(Theme.scale(620), Theme.scale(64)));
-        file1Card.setAlignmentX(Component.CENTER_ALIGNMENT);
+        file1Card.setMaximumSize(new Dimension(Integer.MAX_VALUE, Theme.scale(76)));
+        file1Card.setAlignmentX(Component.LEFT_ALIGNMENT);
         file1Card.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Theme.BORDER, 1),
             BorderFactory.createEmptyBorder(Theme.scale(10), Theme.scale(16), Theme.scale(10), Theme.scale(16))));
@@ -170,8 +170,8 @@ public class XMLSelection extends RoundedPanel {
         // File 2 card
         JPanel file2Card = new JPanel(new BorderLayout(Theme.GAP_SM, 0));
         file2Card.setBackground(Theme.BG_CARD);
-        file2Card.setMaximumSize(new Dimension(Theme.scale(620), Theme.scale(64)));
-        file2Card.setAlignmentX(Component.CENTER_ALIGNMENT);
+        file2Card.setMaximumSize(new Dimension(Integer.MAX_VALUE, Theme.scale(76)));
+        file2Card.setAlignmentX(Component.LEFT_ALIGNMENT);
         file2Card.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Theme.BORDER, 1),
             BorderFactory.createEmptyBorder(Theme.scale(10), Theme.scale(16), Theme.scale(10), Theme.scale(16))));
@@ -190,8 +190,8 @@ public class XMLSelection extends RoundedPanel {
         // Node split threshold card
         JPanel nodeSplitCard = new JPanel(new BorderLayout(Theme.GAP_MD, 0));
         nodeSplitCard.setBackground(Theme.BG_CARD);
-        nodeSplitCard.setMaximumSize(new Dimension(Theme.scale(620), Theme.scale(56)));
-        nodeSplitCard.setAlignmentX(Component.CENTER_ALIGNMENT);
+        nodeSplitCard.setMaximumSize(new Dimension(Integer.MAX_VALUE, Theme.scale(60)));
+        nodeSplitCard.setAlignmentX(Component.LEFT_ALIGNMENT);
         nodeSplitCard.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(Theme.BORDER, 1),
             BorderFactory.createEmptyBorder(Theme.scale(10), Theme.scale(16), Theme.scale(10), Theme.scale(16))));

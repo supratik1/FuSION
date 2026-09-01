@@ -44,8 +44,13 @@ public final class Theme {
     private static final float SCALE;
     private static final float FONT_SCALE;
     static {
-        int dpi = java.awt.Toolkit.getDefaultToolkit().getScreenResolution();
-        SCALE      = Math.max(1.0f,  Math.min(dpi / 96.0f, 2.0f));
+        int dpi     = java.awt.Toolkit.getDefaultToolkit().getScreenResolution();
+        int screenW = java.awt.Toolkit.getDefaultToolkit().getScreenSize().width;
+        // DPI-based scale (Linux often reports 96 even on large/HiDPI screens)
+        float dpiScale = Math.max(1.0f, Math.min(dpi / 96.0f, 2.0f));
+        // Resolution-based scale: kicks in only above 1920px so current device is unchanged
+        float resScale = Math.max(1.0f, Math.min(screenW / 1920.0f, 2.0f));
+        SCALE      = Math.max(dpiScale, resScale);
         FONT_SCALE = Math.max(1.25f, SCALE);
     }
     public static int scale(int px) { return Math.round(px * SCALE); }

@@ -247,6 +247,14 @@ public class ThresholdFilterPanel extends RoundedPanel {
         }}, BorderLayout.CENTER);
 
         filterButton.addActionListener(e -> processFiles(user));
+
+        // On every panel visit: restore saved overrides, then auto-run filter if file present
+        if (user.hasAnyOverride()) restoreOverrideFromUser(user);
+        String _logFold = user.getLogFoldChangesFile();
+        if (_logFold != null && !_logFold.isBlank() && new File(_logFold).exists()) {
+            SwingUtilities.invokeLater(() -> processFiles(user));
+        }
+
         searchButton.addActionListener(e -> {
             if (lowerField.getText().isBlank() || upperField.getText().isBlank()) {
                 JOptionPane.showMessageDialog(this, "Enter number bounds for filtering");
@@ -589,6 +597,45 @@ public class ThresholdFilterPanel extends RoundedPanel {
         String display = overrideDisplay.getOrDefault(hsaId, hsaId);
         for (int i = 0; i < 7; i++) {
             if (flag[i]) resultAreas[i].append(display + "\n");
+        }
+    }
+
+    private void restoreOverrideFromUser(UserInput user) {
+        override.clear();
+        overrideDisplay.clear();
+        for (int col = 0; col < 7; col++) {
+            java.util.List<String> ids = user.getOverride(col);
+            if (ids != null) {
+                for (String hsaId : ids) {
+                    boolean[] flags = override.computeIfAbsent(hsaId, k -> new boolean[7]);
+                    flags[col] = true;
+                }
+            }
+        }
+        rebuildOverrideDisplay(user);
+    }
+
+    private void rebuildOverrideDisplay(UserInput user) {
+        String logFold = user.getLogFoldChangesFile();
+        if (logFold == null || logFold.isBlank()) return;
+        Map<String, Double> scores = new HashMap<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(logFold))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.trim().split("\\s+");
+                if (parts.length >= 2) {
+                    try { scores.put(parts[0].trim(), Double.parseDouble(parts[1].trim())); }
+                    catch (NumberFormatException ignored) {}
+                }
+            }
+        } catch (IOException ignored) {}
+        for (String hsaId : override.keySet()) {
+            Double score = scores.get(hsaId);
+            String gene = hsaToGene.get(hsaId);
+            String display = (gene != null && !gene.isEmpty())
+                ? hsaId + " - " + gene + (score != null ? " (" + score + ")" : "")
+                : hsaId + (score != null ? " (" + score + ")" : "");
+            overrideDisplay.put(hsaId, display);
         }
     }
 }

@@ -20,11 +20,11 @@ public class UserInput {
     private double downThreshold , upThreshold ;
     private String[] mappingFile;
 
-    private int nodeLBound, nodeUBound, edgeLBound, edgeUBound;
+    private int nodeLBound = 0, nodeUBound = 10, edgeLBound = 0, edgeUBound = 10;
 
     private int incSolver, overSolver, solCount, solExplore, nodeSplitThreshold;
     private int edgeRestriction;
-    private int signallingPathLength;
+    private int signallingPathLength = 10;
 
     private String txtFile, xmlFile;
 
@@ -56,17 +56,17 @@ public class UserInput {
                 
                 String dThres = obj.optString("dThreshold", "0");
                 String uThres = obj.optString("uThreshold", "0");
-                String nodeLB = obj.optString("nodeLBound", "20");
-                String nodeUB = obj.optString("nodeUBound", "80");
-                String edgeLB = obj.optString("edgeLBound", "20");
-                String edgeUB = obj.optString("edgeUBound", "70");
+                String nodeLB = obj.optString("nodeLBound", "0");
+                String nodeUB = obj.optString("nodeUBound", "10");
+                String edgeLB = obj.optString("edgeLBound", "0");
+                String edgeUB = obj.optString("edgeUBound", "10");
 
                 String incSol = obj.optString("incSolv", "60000");
                 String ovSol = obj.optString("overSolv", "150000");
                 String solC = obj.optString("solCount", "1");
                 String solE = obj.optString("solExplore", "1");
 
-                String pathLength = obj.optString("SignallingPath","50");
+                String pathLength = obj.optString("SignallingPath","10");
                 String txt = obj.optString("TxtFile", "");
                 String xml = obj.optString("XmlFile","");
                 String nodeSplit = obj.optString("nodeSplitThreshold", "15000");
@@ -132,7 +132,17 @@ public class UserInput {
                 this.hsaNotMerged= hsaNot;
                 this.kegg= kegg;
 
-            
+                if (obj.has("overrideMap")) {
+                    JSONObject overJson = obj.getJSONObject("overrideMap");
+                    for (String key : overJson.keySet()) {
+                        JSONArray arr = overJson.getJSONArray(key);
+                        java.util.List<String> ids = new java.util.ArrayList<>();
+                        for (int i = 0; i < arr.length(); i++) ids.add(arr.getString(i));
+                        this.over.put(Integer.parseInt(key), ids);
+                    }
+                }
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -329,6 +339,10 @@ public class UserInput {
         over.clear();
     }
 
+    public boolean hasAnyOverride() {
+        return !over.isEmpty();
+    }
+
     public String getCoexpressionCsv() { return coexpressionCsv; }
     public void setCoexpressionCsv(String f) { this.coexpressionCsv = f; }
 
@@ -394,7 +408,15 @@ public class UserInput {
                 sessionData.put("CoexpThresh", coexpThresh);
                 sessionData.put("FrozenThresh", frozenThresh);
                 sessionData.put("pipelineData", pipelineData != null ? pipelineData : "");
-                 
+
+                JSONObject overJson = new JSONObject();
+                for (Map.Entry<Integer, java.util.List<String>> entry : over.entrySet()) {
+                    JSONArray arr = new JSONArray();
+                    for (String s : entry.getValue()) arr.put(s);
+                    overJson.put(String.valueOf(entry.getKey()), arr);
+                }
+                sessionData.put("overrideMap", overJson);
+
                 try (FileWriter fw = new FileWriter(fileName)) {
                     fw.write(sessionsArray.toString(2)); // Pretty print with 2 spaces
                 } catch (IOException er) {
