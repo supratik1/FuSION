@@ -86,25 +86,20 @@ This generates the `fusion` executable in the `Linux` directory.
 
 FuSION ships with a graphical user interface for configuring and running analyses. The front end handles sessions, working directories, gene IDs, pathway configuration, and pipeline execution.
 
+> **Requires JDK 21 or higher.** Check your version with `java -version` before proceeding.
+
 ### Step 1 — Compile the front end
 
 From inside the `Linux` directory, run:
 
 ```bash
-cd frontend/src
-javac -cp '.:../lib/json-20250517.jar' *.java
-cd ../..
+javac -d frontend/out -cp "frontend/lib/json-20250517.jar" frontend/src/*.java
 ```
-
-This compiles all front-end source files. You only need to do this once (or after an update).
 
 ### Step 2 — Launch the application
 
-From the `Linux` directory:
+java -cp "frontend/out:frontend/resources:frontend/lib/json-20250517.jar" LoginPage
 
-```bash
-java -cp frontend/src:frontend/lib/json-20250517.jar LoginPage
-```
 
 The application opens with a login/signup screen. Create an account or log in to start a new analysis session.
 
