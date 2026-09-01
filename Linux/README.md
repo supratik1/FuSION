@@ -97,9 +97,9 @@ javac -d frontend/out -cp "frontend/lib/json-20250517.jar" frontend/src/*.java
 ```
 
 ### Step 2 — Launch the application
-
+```bash
 java -cp "frontend/out:frontend/resources:frontend/lib/json-20250517.jar" LoginPage
-
+```
 
 The application opens with a login/signup screen. Create an account or log in to start a new analysis session.
 
